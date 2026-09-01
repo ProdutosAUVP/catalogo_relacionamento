@@ -6,7 +6,7 @@ import { saldoDoMes } from '@/lib/saldo'
 import { formatarBRL } from '@/lib/money'
 import { formatarData } from '@/lib/datas'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -16,7 +16,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { StatusBadge } from '@/components/status-badge'
-import { CabecalhoDaPagina } from '@/components/pagina'
+import { Stat } from '@/components/stat'
+import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
 
 /**
  * Lista das solicitações do consultor, com o saldo do mês em destaque.
@@ -41,12 +42,21 @@ export default async function SolicitacoesPage() {
     saldoDoMes(usuario.id),
   ])
 
+  const mes = new Intl.DateTimeFormat('pt-BR', {
+    month: 'long',
+    timeZone: 'America/Sao_Paulo',
+  }).format(new Date())
+
+  const podeCriar = pode(usuario.perfil, 'solicitacao.criar')
+
   return (
     <>
       <CabecalhoDaPagina
-        titulo="Minhas solicitações"
+        sobrancelha="Minhas solicitações"
+        titulo="Solicitações"
+        descricao="Os presentes que você pediu, com o status de cada envio."
         acoes={
-          pode(usuario.perfil, 'solicitacao.criar') ? (
+          podeCriar ? (
             <Button asChild>
               <Link href="/solicitacoes/nova">Nova solicitação</Link>
             </Button>
@@ -54,51 +64,81 @@ export default async function SolicitacoesPage() {
         }
       />
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardDescription>Gasto no mês</CardDescription>
-          <CardTitle className="text-2xl">{formatarBRL(saldo.gasto)}</CardTitle>
-        </CardHeader>
-        {saldo.limite ? (
-          <CardContent className="space-y-2">
-            <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
-              <div
-                className={saldo.estourou ? 'bg-error h-full' : 'bg-success h-full'}
-                style={{ width: `${Math.min(100, saldo.percentual ?? 0)}%` }}
-              />
-            </div>
-            <p className="text-muted-foreground text-sm">
-              {formatarBRL(saldo.gasto)} de {formatarBRL(saldo.limite)}
-              {/* V1 apenas sinaliza. O bloqueio depende de decisão da área. */}
-              {saldo.estourou ? ' — limite do mês ultrapassado.' : ''}
-            </p>
-          </CardContent>
-        ) : null}
-      </Card>
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Stat
+          destaque
+          rotulo={`Gasto em ${mes}`}
+          valor={formatarBRL(saldo.gasto)}
+          className="sm:col-span-2 lg:col-span-1"
+          apoio={
+            saldo.limite ? (
+              <div className="space-y-2">
+                <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+                  <div
+                    className={saldo.estourou ? 'bg-error h-full' : 'bg-success h-full'}
+                    style={{ width: `${Math.min(100, saldo.percentual ?? 0)}%` }}
+                  />
+                </div>
+                <p>
+                  de {formatarBRL(saldo.limite)}
+                  {saldo.estourou ? ' — limite do mês ultrapassado.' : ' no limite do mês.'}
+                </p>
+              </div>
+            ) : (
+              'Sem limite mensal definido. Canceladas e devolvidas não entram na conta.'
+            )
+          }
+        />
+        <Stat rotulo="Solicitações" valor={solicitacoes.length} apoio="Total já criado por você." />
+        <Stat
+          rotulo="Entregues"
+          valor={
+            solicitacoes.filter((s) => s.status === 'entregue' || s.status === 'cliente_confirmou')
+              .length
+          }
+          apoio="Chegaram ao cliente."
+        />
+      </div>
 
       {solicitacoes.length === 0 ? (
-        <p className="text-muted-foreground text-sm">Você ainda não fez nenhuma solicitação.</p>
+        <EstadoVazio
+          titulo="Você ainda não fez nenhuma solicitação"
+          descricao="Escolha um presente no catálogo, informe o cliente e escreva a carta que acompanha o envio."
+          acao={
+            podeCriar ? (
+              <Button asChild>
+                <Link href="/solicitacoes/nova">Criar a primeira</Link>
+              </Button>
+            ) : null
+          }
+        />
       ) : (
-        <Card>
+        <Card className="overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Código</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Cliente</TableHead>
-                <TableHead>Itens</TableHead>
-                <TableHead>Valor</TableHead>
+                <TableHead className="text-right">Itens</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {solicitacoes.map((s) => (
                 <TableRow key={s.id}>
-                  <TableCell className="font-medium">{s.codigo}</TableCell>
-                  <TableCell>{formatarData(s.dataSolicitacao)}</TableCell>
+                  <TableCell className="font-medium whitespace-nowrap tabular-nums">
+                    {s.codigo}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground whitespace-nowrap tabular-nums">
+                    {formatarData(s.dataSolicitacao)}
+                  </TableCell>
                   <TableCell>{s.cliente.nome}</TableCell>
-                  <TableCell>{s._count.itens}</TableCell>
-                  <TableCell>{formatarBRL(s.valorTotal)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{s._count.itens}</TableCell>
+                  <TableCell className="text-right font-medium whitespace-nowrap tabular-nums">
+                    {formatarBRL(s.valorTotal)}
+                  </TableCell>
                   <TableCell>
                     <StatusBadge status={s.status} />
                   </TableCell>

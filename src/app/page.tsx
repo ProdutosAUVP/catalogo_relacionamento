@@ -1,50 +1,86 @@
 import Link from 'next/link'
 import type { Route } from 'next'
+import { db } from '@/lib/db'
 import { exigirUsuario } from '@/lib/auth-guards'
-import { pode, type Acao } from '@/lib/permissions'
-import { saldoDoMes } from '@/lib/saldo'
+import { filtroDeSolicitacoes, pode, type Acao } from '@/lib/permissions'
+import { saldoDoMes, saldoDoMesDoTime } from '@/lib/saldo'
 import { formatarBRL } from '@/lib/money'
+import { formatarData, intervaloDoMes } from '@/lib/datas'
+import { STATUS_FORA_DO_SALDO } from '@/lib/status'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { StatusBadge } from '@/components/status-badge'
+import { Stat } from '@/components/stat'
 import { CabecalhoDaPagina } from '@/components/pagina'
 
-type Atalho = {
-  href: Route
-  titulo: string
-  texto: string
-  acao: Acao
-}
+type Atalho = { href: Route; titulo: string; texto: string; acao: Acao }
 
 export default async function Home() {
   const usuario = await exigirUsuario()
-  const mostraSaldo = pode(usuario.perfil, 'saldo.verProprio')
-  const saldo = mostraSaldo ? await saldoDoMes(usuario.id) : null
+  const { inicio, fim } = intervaloDoMes()
+
+  // O escopo vem da matriz de permissões: o consultor conta só as próprias.
+  const escopo = filtroDeSolicitacoes(usuario.perfil, usuario.id) ?? {}
+
+  // Admin e Financeiro não criam solicitações, então o gasto pessoal deles
+  // seria sempre zero. Para esses perfis o número que interessa é o do time.
+  const veTudo = pode(usuario.perfil, 'saldo.verTodos')
+
+  const [saldoProprio, saldoTime, noMes, emAndamento, recentes] = await Promise.all([
+    pode(usuario.perfil, 'saldo.verProprio') ? saldoDoMes(usuario.id) : null,
+    veTudo ? saldoDoMesDoTime() : null,
+    db.solicitacao.count({ where: { ...escopo, dataSolicitacao: { gte: inicio, lt: fim } } }),
+    db.solicitacao.count({
+      where: { ...escopo, status: { notIn: [...STATUS_FORA_DO_SALDO, 'cliente_confirmou'] } },
+    }),
+    db.solicitacao.findMany({
+      where: escopo,
+      include: { cliente: { select: { nome: true } }, consultor: { select: { nome: true } } },
+      orderBy: { dataSolicitacao: 'desc' },
+      take: 5,
+    }),
+  ])
+
+  const mes = new Intl.DateTimeFormat('pt-BR', {
+    month: 'long',
+    timeZone: 'America/Sao_Paulo',
+  }).format(new Date())
+
+  const gasto = veTudo ? (saldoTime?.gasto ?? null) : (saldoProprio?.gasto ?? null)
 
   // `Route` é exigido por `typedRoutes`: o href é validado em compilação.
   // A anotação fica no literal, e não no resultado do filtro, porque a tipagem
   // contextual não atravessa o `.filter()`.
   const todos: Atalho[] = [
     {
-      href: '/catalogo',
-      titulo: 'Catálogo',
-      texto: 'Ver os presentes disponíveis',
-      acao: 'catalogo.ver',
-    },
-    {
       href: '/solicitacoes/nova',
       titulo: 'Nova solicitação',
-      texto: 'Escolher cliente, itens e escrever a carta',
+      texto: 'Cliente, itens, entrega e a carta que acompanha o envio.',
       acao: 'solicitacao.criar',
+    },
+    {
+      href: '/catalogo',
+      titulo: 'Catálogo',
+      texto: 'Ver os presentes disponíveis e o que há em estoque.',
+      acao: 'catalogo.ver',
     },
     {
       href: '/financeiro/compras',
       titulo: 'Fila de compras',
-      texto: 'Itens enviados para compra',
+      texto: 'Itens enviados para compra, com valor e site.',
       acao: 'compras.verFila',
     },
     {
       href: '/admin/solicitacoes',
       titulo: 'Gestão',
-      texto: 'Acompanhar e alterar status',
+      texto: 'Acompanhar o fluxo, alterar status e exportar.',
       acao: 'solicitacao.verTodas',
     },
   ]
@@ -54,36 +90,134 @@ export default async function Home() {
   return (
     <>
       <CabecalhoDaPagina
+        sobrancelha="Relacionamento AUVP"
         titulo={`Olá, ${usuario.nome.split(' ')[0]}`}
-        descricao="O que você quer fazer?"
+        descricao="Presentes para clientes: solicitação, acompanhamento e custo por consultor."
       />
 
-      {saldo ? (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardDescription>Gasto no mês</CardDescription>
-            <CardTitle className="text-2xl">{formatarBRL(saldo.gasto)}</CardTitle>
-          </CardHeader>
-          {saldo.limite ? (
-            <CardContent className="text-muted-foreground text-sm">
-              Limite mensal de {formatarBRL(saldo.limite)}
-              {saldo.estourou ? ' — limite ultrapassado.' : '.'}
-            </CardContent>
-          ) : null}
-        </Card>
-      ) : null}
+      <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {gasto ? (
+          // Número principal da tela — o único em tamanho de destaque.
+          <Stat
+            destaque
+            rotulo={veTudo ? `Gasto do time em ${mes}` : `Seu gasto em ${mes}`}
+            valor={formatarBRL(gasto)}
+            apoio={
+              !veTudo && saldoProprio?.limite ? (
+                <div className="space-y-2">
+                  <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+                    <div
+                      className={saldoProprio.estourou ? 'bg-error h-full' : 'bg-success h-full'}
+                      style={{ width: `${Math.min(100, saldoProprio.percentual ?? 0)}%` }}
+                    />
+                  </div>
+                  <p>
+                    de {formatarBRL(saldoProprio.limite)}
+                    {/* O V1 apenas sinaliza. O bloqueio depende de decisão da área. */}
+                    {saldoProprio.estourou ? ' — limite ultrapassado.' : ' no limite do mês.'}
+                  </p>
+                </div>
+              ) : (
+                'Canceladas e devolvidas ficam fora da conta.'
+              )
+            }
+          />
+        ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {atalhos.map((a) => (
-          <Link key={a.href} href={a.href}>
-            <Card className="hover:border-foreground/20 h-full transition-colors">
-              <CardHeader>
-                <CardTitle className="text-base">{a.titulo}</CardTitle>
-                <CardDescription>{a.texto}</CardDescription>
-              </CardHeader>
+        <Stat
+          rotulo={`Solicitações em ${mes}`}
+          valor={noMes}
+          apoio={noMes === 0 ? 'Nenhuma ainda neste mês.' : 'Criadas no mês corrente.'}
+        />
+        <Stat
+          rotulo="Em andamento"
+          valor={emAndamento}
+          apoio="Ainda não confirmadas pelo cliente."
+        />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <h2 className="font-ui text-muted-foreground mb-3 text-xs font-semibold tracking-[0.14em] uppercase">
+            Últimas solicitações
+          </h2>
+
+          {recentes.length === 0 ? (
+            <Card>
+              <CardContent className="text-muted-foreground py-10 text-center text-sm">
+                Nenhuma solicitação ainda.
+              </CardContent>
             </Card>
-          </Link>
-        ))}
+          ) : (
+            <Card className="overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Código</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>{veTudo ? 'Consultor' : 'Cliente'}</TableHead>
+                    <TableHead className="text-right">Valor</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentes.map((s) => (
+                    <TableRow key={s.id}>
+                      <TableCell className="font-medium whitespace-nowrap tabular-nums">
+                        {pode(usuario.perfil, 'solicitacao.verTodas') ? (
+                          <Link
+                            href={`/admin/solicitacoes/${s.id}`}
+                            className="hover:text-primary-emphasis underline-offset-4 hover:underline"
+                          >
+                            {s.codigo}
+                          </Link>
+                        ) : (
+                          s.codigo
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap tabular-nums">
+                        {formatarData(s.dataSolicitacao)}
+                      </TableCell>
+                      <TableCell>{veTudo ? s.consultor.nome : s.cliente.nome}</TableCell>
+                      <TableCell className="text-right font-medium whitespace-nowrap tabular-nums">
+                        {formatarBRL(s.valorTotal)}
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={s.status} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+          )}
+        </div>
+
+        <div>
+          <h2 className="font-ui text-muted-foreground mb-3 text-xs font-semibold tracking-[0.14em] uppercase">
+            Atalhos
+          </h2>
+          <div className="grid gap-3">
+            {atalhos.map((a) => (
+              <Link key={a.href} href={a.href} className="group">
+                <Card className="hover:border-primary/30 transition-[box-shadow,border-color] duration-200 hover:shadow-[0_8px_24px_-12px_rgba(11,41,5,0.28)]">
+                  <CardHeader className="p-5">
+                    <CardTitle className="group-hover:text-primary-emphasis flex items-center gap-2 text-base transition-colors">
+                      {a.titulo}
+                      <span
+                        aria-hidden="true"
+                        className="transition-transform duration-200 group-hover:translate-x-1"
+                      >
+                        →
+                      </span>
+                    </CardTitle>
+                    <CardDescription className="text-pretty">{a.texto}</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
     </>
   )

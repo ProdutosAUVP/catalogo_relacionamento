@@ -45,9 +45,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="pt-BR" className={`${anek.variable} ${roboto.variable} ${sora.variable}`}>
-      <body className="min-h-screen antialiased">
+      {/* O fundo da aplicação é levemente tingido para que os cards brancos
+          leiam como superfície elevada, e não como recortes do próprio fundo. */}
+      <body className="bg-muted/40 min-h-screen antialiased">
         {usuario ? <Nav perfil={usuario.perfil} nome={usuario.nome} /> : null}
-        <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
+        <main className="mx-auto max-w-7xl px-4 py-10">{children}</main>
       </body>
     </html>
   )

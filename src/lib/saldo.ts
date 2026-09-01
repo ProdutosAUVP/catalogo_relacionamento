@@ -101,3 +101,29 @@ export async function saldoDoMesPorConsultor(referencia: Date = new Date()) {
     }
   })
 }
+
+/**
+ * Gasto do time no mês.
+ *
+ * Para Admin e Financeiro, o próprio gasto costuma ser zero — eles não criam
+ * solicitações. O número que interessa a esses perfis é o do time inteiro.
+ */
+export async function saldoDoMesDoTime(referencia: Date = new Date()) {
+  const { inicio, fim } = intervaloDoMes(referencia)
+
+  const agregado = await db.solicitacao.aggregate({
+    _sum: { valorTotal: true },
+    _count: { _all: true },
+    where: {
+      dataSolicitacao: { gte: inicio, lt: fim },
+      status: { notIn: [...STATUS_FORA_DO_SALDO] },
+    },
+  })
+
+  return {
+    gasto: dinheiro(agregado._sum.valorTotal ?? ZERO),
+    solicitacoes: agregado._count._all,
+    inicio,
+    fim,
+  }
+}
