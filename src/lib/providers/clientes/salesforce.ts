@@ -8,7 +8,7 @@ import { ProviderIndisponivelError, type ClienteProvider } from '../types'
  *
  * Quando entrar, `salesforce_id` já existe em `clientes` desde o V1, então o
  * casamento dos registros não exige migração.
- * Ver docs/06-integracoes-fase-2.md.
+ * Ver docs/04-integracoes-fase-2.md.
  */
 
 function naoImplementado(): never {

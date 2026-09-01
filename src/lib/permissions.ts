@@ -15,7 +15,7 @@ import { Perfil } from '@prisma/client'
  * coerência com a permissão de exportar, já que a exportação da spec carrega
  * CPF, telefone e endereço. Único ponto ainda não confirmado do perfil, e por
  * isso isolado em `PENDENTE_CONFIRMACAO`.
- * Ver docs/07-perguntas-em-aberto.md.
+ * Ver docs/05-perguntas-em-aberto.md.
  */
 
 export const ACOES = [

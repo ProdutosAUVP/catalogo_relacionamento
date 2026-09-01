@@ -88,7 +88,7 @@ function carregar() {
     if (faltando.length > 0) {
       throw new Error(
         `Em produção o SSO é obrigatório. Faltam: ${faltando.join(', ')}. ` +
-          'Ver docs/09-deploy-railway.md.',
+          'Ver docs/07-deploy.md.',
       )
     }
 

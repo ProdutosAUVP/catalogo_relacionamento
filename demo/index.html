@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catálogo de Presentes — demonstração V1</title>
+    <meta
+      name="description"
+      content="Demonstração navegável do Catálogo e Solicitação de Presentes da área de Relacionamento."
+    />
+    <!-- Favicon embutido: evita uma requisição a mais e o 404 no console. -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>"
+    />
+    <link rel="stylesheet" href="estilo.css" />
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <!-- A vitrine existe para mostrar as telas a quem aprova o V1. Deixar isso
+         explícito no topo evita que alguém confunda a demonstração com o
+         sistema em uso. -->
+    <div
+      class="border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-center text-sm text-amber-900"
+    >
+      <strong>Demonstração.</strong> Dados fictícios, sem login e sem banco de dados. O sistema real
+      roda com SSO da AUVP e Postgres.
+    </div>
+
+    <header class="border-b bg-white">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+        <span class="text-sm font-semibold">Presentes</span>
+        <nav id="abas" class="flex flex-wrap items-center gap-x-1 gap-y-1"></nav>
+        <div class="ml-auto flex items-center gap-2 text-sm">
+          <label for="perfil" class="text-slate-500">Ver como</label>
+          <select id="perfil" class="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm">
+            <option value="consultor">Consultor</option>
+            <option value="admin" selected>Admin</option>
+            <option value="financeiro">Financeiro</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <main id="conteudo" class="mx-auto max-w-7xl px-4 py-8"></main>
+
+    <footer class="mx-auto max-w-7xl px-4 pb-12 text-xs text-slate-500">
+      Catálogo e Solicitação de Presentes — V1. As telas de escrita (formulário de solicitação,
+      cadastro de produto, importação de clientes) estão em construção no sistema real e aparecem
+      aqui apenas como estrutura.
+    </footer>
+
+    <script src="dados.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

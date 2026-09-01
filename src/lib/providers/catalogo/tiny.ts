@@ -8,7 +8,7 @@ import { ProviderIndisponivelError, type CatalogoProvider } from '../types'
  * Tiny, casada com `sku_tiny`, e a decisão sobre itens externos, que não têm
  * SKU e continuarão vindo do catálogo local.
  *
- * Ver docs/06-integracoes-fase-2.md.
+ * Ver docs/04-integracoes-fase-2.md.
  */
 
 function naoImplementado(): never {

@@ -1,0 +1,16 @@
+/*
+ * Fonte do CSS da vitrine.
+ *
+ * O CSS é compilado no build (`npm run demo:build`) em vez de vir do CDN do
+ * Tailwind: a página é mostrada a quem aprova o projeto e não pode depender de
+ * uma rede externa nem do build de desenvolvimento do Tailwind, que não é feito
+ * para produção.
+ *
+ * `@source` diz ao Tailwind onde procurar as classes, já que elas são montadas
+ * dentro de strings no JavaScript.
+ */
+
+@import 'tailwindcss';
+
+@source './index.html';
+@source './app.js';

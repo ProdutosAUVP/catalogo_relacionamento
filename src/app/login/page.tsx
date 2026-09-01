@@ -42,7 +42,7 @@ export default async function LoginPage() {
               <p className="mt-2">
                 Faltam <code>AUTH_OIDC_ISSUER</code>, <code>AUTH_OIDC_CLIENT_ID</code> e{' '}
                 <code>AUTH_OIDC_CLIENT_SECRET</code>. Ver{' '}
-                <code>docs/07-perguntas-em-aberto.md</code>.
+                <code>docs/05-perguntas-em-aberto.md</code>.
               </p>
             </div>
           )}

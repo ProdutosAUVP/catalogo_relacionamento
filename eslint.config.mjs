@@ -21,6 +21,27 @@ const config = [
       ],
     },
   },
+  {
+    // A vitrine é feita de scripts de navegador carregados por <script>, sem
+    // módulos nem build: as constantes de dados.js são globais consumidas por
+    // app.js, e não exportações não utilizadas.
+    files: ['demo/**/*.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: {
+        document: 'readonly',
+        window: 'readonly',
+        CATEGORIAS: 'readonly',
+        PRODUTOS: 'readonly',
+        SOLICITACOES: 'readonly',
+        STATUS: 'readonly',
+        CONSULTORES: 'readonly',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
 ]
 
 export default config

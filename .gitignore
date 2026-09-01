@@ -40,3 +40,6 @@ yarn-error.log*
 # uploads locais de desenvolvimento
 /public/uploads
 /tmp
+
+# CSS da vitrine: gerado por `npm run demo:build`.
+demo/estilo.css

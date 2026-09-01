@@ -21,7 +21,7 @@ import { devBypassHabilitado, env, ssoConfigurado } from './env'
  *
  * Pendência: confirmar o provedor (Google Workspace, Entra ID, Keycloak ou
  * outro) e se ele devolve grupos mapeáveis para perfil.
- * Ver docs/07-perguntas-em-aberto.md.
+ * Ver docs/05-perguntas-em-aberto.md.
  */
 
 function montarProviders(): Provider[] {
