@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualidade:
+    name: Formato, lint, tipos e testes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # O client do Prisma é gerado, não versionado: sem isso o typecheck não
+      # encontra os tipos das tabelas.
+      - run: npx prisma generate
+
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  build:
+    name: Build de produção
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # O build não recebe credenciais reais: as exigências de produção do
+      # env.ts valem no processo que serve a aplicação, não no que a compila.
+      - run: npm run build
+        env:
+          DATABASE_URL: postgresql://build:build@localhost:5432/build
+          NEXT_TELEMETRY_DISABLED: '1'
+
+  banco:
+    name: Migrations e seed
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: catalogo
+          POSTGRES_PASSWORD: catalogo
+          POSTGRES_DB: catalogo_presentes
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U catalogo"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://catalogo:catalogo@localhost:5432/catalogo_presentes?schema=public
+      # Banco separado e descartável para o Prisma comparar schema e migrations.
+      # Precisa ser outro banco: o Prisma o recria durante a comparação.
+      SHADOW_DATABASE_URL: postgresql://catalogo:catalogo@localhost:5432/catalogo_shadow?schema=public
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Criar o banco de sombra
+        run: PGPASSWORD=catalogo psql -h localhost -U catalogo -d catalogo_presentes -c 'CREATE DATABASE catalogo_shadow;'
+
+      # Aplica as migrations do zero: pega migration quebrada antes do deploy.
+      - run: npx prisma migrate deploy
+
+      # O schema precisa bater com as migrations. Sai diferente de zero quando
+      # alguém edita o schema.prisma sem gerar a migration correspondente.
+      - name: Conferir se o schema bate com as migrations
+        run: |
+          npx prisma migrate diff \
+            --from-migrations prisma/migrations \
+            --to-schema-datamodel prisma/schema.prisma \
+            --shadow-database-url "$SHADOW_DATABASE_URL" \
+            --exit-code
+
+      # O seed roda duas vezes de propósito: ele precisa ser idempotente.
+      - run: npm run db:seed
+      - run: npm run db:seed

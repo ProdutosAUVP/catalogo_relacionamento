@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+@import '../styles/auvp-tokens.css';
+
+/*
+ * Estilos globais da aplicação.
+ *
+ * A identidade visual — cores, tipografia, raio — vive em
+ * `src/styles/auvp-tokens.css`, compartilhada com a vitrine estática.
+ */

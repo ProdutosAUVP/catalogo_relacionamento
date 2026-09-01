@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catálogo de Presentes — demonstração V1</title>
+    <meta
+      name="description"
+      content="Demonstração navegável do Catálogo e Solicitação de Presentes da área de Relacionamento."
+    />
+    <link rel="icon" type="image/svg+xml" href="icone.svg" />
+    <!-- A vitrine não passa pelo next/font, então as fontes do DS vêm do
+         Google Fonts, como na Central. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&family=Sora:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="estilo.css" />
+  </head>
+  <body class="bg-background text-foreground">
+    <!-- A vitrine existe para mostrar as telas a quem aprova o V1. Deixar isso
+         explícito no topo evita que alguém confunda a demonstração com o
+         sistema em uso. -->
+    <div
+      class="border-warning/40 bg-warning/15 text-foreground border-b px-4 py-2.5 text-center text-sm"
+    >
+      <strong>Demonstração.</strong> Dados fictícios, sem login e sem banco de dados. O sistema real
+      roda com SSO da AUVP e Postgres.
+    </div>
+
+    <header class="bg-brand-dark border-b border-white/10">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+        <span class="font-display text-base font-semibold tracking-tight text-white"
+          >Presentes</span
+        >
+        <nav id="abas" class="flex flex-wrap items-center gap-x-1 gap-y-1"></nav>
+        <div class="ml-auto flex items-center gap-2 text-sm">
+          <label for="perfil" class="text-white/60">Ver como</label>
+          <select
+            id="perfil"
+            class="border-input bg-background text-foreground rounded-md border px-2 py-1 text-sm"
+          >
+            <option value="consultor">Consultor</option>
+            <option value="admin" selected>Admin</option>
+            <option value="financeiro">Financeiro</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <main id="conteudo" class="mx-auto max-w-7xl px-4 py-8"></main>
+
+    <footer class="text-muted-foreground mx-auto max-w-7xl px-4 pb-12 text-xs">
+      Catálogo e Solicitação de Presentes — V1. As telas de escrita (formulário de solicitação,
+      cadastro de produto, importação de clientes) estão em construção no sistema real e aparecem
+      aqui apenas como estrutura.
+    </footer>
+
+    <script src="dados.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
