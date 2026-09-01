@@ -226,20 +226,32 @@ const SOLICITACOES = [
   },
 ]
 
+/**
+ * Cores dos status, iguais às de `src/components/status-badge.tsx`.
+ *
+ * cinza = não começou · âmbar = parado esperando alguém · azul = em andamento
+ * verde = terminou bem · vermelho = deu errado (vazado quando já encerrado)
+ */
 const STATUS = {
-  pendente: { rotulo: 'Pendente', classe: 'bg-slate-100 text-slate-700' },
-  aguardando_aprovacao: { rotulo: 'Aguardando aprovação', classe: 'bg-amber-100 text-amber-800' },
-  aguardando_compra: { rotulo: 'Aguardando compra', classe: 'bg-amber-100 text-amber-800' },
-  comprado: { rotulo: 'Comprado', classe: 'bg-blue-100 text-blue-800' },
-  organizando_envio: { rotulo: 'Organizando envio', classe: 'bg-blue-100 text-blue-800' },
-  entregue: { rotulo: 'Entregue / rastreio finalizado', classe: 'bg-emerald-100 text-emerald-800' },
+  pendente: { rotulo: 'Pendente', classe: 'bg-muted text-muted-foreground' },
+  aguardando_aprovacao: {
+    rotulo: 'Aguardando aprovação',
+    classe: 'bg-warning text-warning-foreground',
+  },
+  aguardando_compra: { rotulo: 'Aguardando compra', classe: 'bg-warning text-warning-foreground' },
+  comprado: { rotulo: 'Comprado', classe: 'bg-info text-info-foreground' },
+  organizando_envio: { rotulo: 'Organizando envio', classe: 'bg-info text-info-foreground' },
+  entregue: {
+    rotulo: 'Entregue / rastreio finalizado',
+    classe: 'bg-success text-success-foreground',
+  },
   cliente_confirmou: {
     rotulo: 'Cliente confirmou recebimento',
-    classe: 'bg-emerald-600 text-white',
+    classe: 'bg-primary text-primary-foreground',
   },
-  deu_problema: { rotulo: 'Deu problema', classe: 'bg-red-100 text-red-800' },
-  devolvido: { rotulo: 'Devolvido', classe: 'bg-orange-100 text-orange-800' },
-  cancelado: { rotulo: 'Cancelado', classe: 'bg-slate-200 text-slate-600' },
+  deu_problema: { rotulo: 'Deu problema', classe: 'bg-error text-error-foreground' },
+  devolvido: { rotulo: 'Devolvido', classe: 'border border-error text-error' },
+  cancelado: { rotulo: 'Cancelado', classe: 'border border-border text-muted-foreground' },
 }
 
 const CONSULTORES = [

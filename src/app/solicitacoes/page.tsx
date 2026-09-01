@@ -63,7 +63,7 @@ export default async function SolicitacoesPage() {
           <CardContent className="space-y-2">
             <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
               <div
-                className={saldo.estourou ? 'h-full bg-red-500' : 'h-full bg-emerald-500'}
+                className={saldo.estourou ? 'bg-error h-full' : 'bg-success h-full'}
                 style={{ width: `${Math.min(100, saldo.percentual ?? 0)}%` }}
               />
             </div>

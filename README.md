@@ -68,7 +68,8 @@ src/
     financeiro/compras/   fila de compras do Financeiro
     admin/                gestão, catálogo, clientes, usuários
     api/                  auth, consulta de CEP, exportação
-  components/             UI compartilhada (shadcn/ui)
+  components/             UI compartilhada (shadcn/ui do DS AUVP)
+  styles/                 tokens do Design System AUVP
   lib/
     permissions.ts        matriz de permissões — fonte única
     status.ts             máquina de estados do fluxo
@@ -92,6 +93,7 @@ docs/                     documentação de decisões e operação
 - [Perguntas em aberto](docs/05-perguntas-em-aberto.md)
 - [Ambiente local](docs/06-ambiente-local.md)
 - [Deploy](docs/07-deploy.md)
+- [Identidade visual](docs/08-identidade-visual.md)
 - [Decisões de arquitetura](docs/adr/)
 
 ## Onde isso roda

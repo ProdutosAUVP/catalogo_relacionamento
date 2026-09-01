@@ -2,8 +2,15 @@ import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
+/**
+ * Selo do Design System AUVP. Portado da Central — cápsula arredondada, não o
+ * retângulo do shadcn padrão.
+ *
+ * As variantes de status usam os tokens semânticos do DS, que já vêm com o
+ * contraste resolvido nos dois temas.
+ */
 const badgeVariants = cva(
-  'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium transition-colors',
+  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors',
   {
     variants: {
       variant: {
@@ -11,6 +18,11 @@ const badgeVariants = cva(
         secondary: 'border-transparent bg-secondary text-secondary-foreground',
         destructive: 'border-transparent bg-destructive text-destructive-foreground',
         outline: 'text-foreground',
+        success: 'border-transparent bg-success text-success-foreground',
+        warning: 'border-transparent bg-warning text-warning-foreground',
+        info: 'border-transparent bg-info text-info-foreground',
+        error: 'border-transparent bg-error text-error-foreground',
+        muted: 'border-transparent bg-muted text-muted-foreground',
       },
     },
     defaultVariants: { variant: 'default' },

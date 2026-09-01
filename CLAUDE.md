@@ -15,16 +15,17 @@ resposta que já foi assumida em algum lugar.
 Cada regra de negócio tem **um** lugar. Ao mexer numa delas, mexa lá — nunca
 duplique numa tela.
 
-| Regra                           | Arquivo                  |
-| ------------------------------- | ------------------------ |
-| Quem pode o quê                 | `src/lib/permissions.ts` |
-| Transições de status e motivos  | `src/lib/status.ts`      |
-| Gasto do mês e limite           | `src/lib/saldo.ts`       |
-| Fila de compras do Financeiro   | `src/lib/compras.ts`     |
-| Aritmética de dinheiro          | `src/lib/money.ts`       |
-| Colunas e formato da exportação | `src/lib/export/`        |
-| Validação de formulário         | `src/lib/validators/`    |
-| Leitura de catálogo e clientes  | `src/lib/providers/`     |
+| Regra                           | Arquivo                      |
+| ------------------------------- | ---------------------------- |
+| Quem pode o quê                 | `src/lib/permissions.ts`     |
+| Transições de status e motivos  | `src/lib/status.ts`          |
+| Gasto do mês e limite           | `src/lib/saldo.ts`           |
+| Fila de compras do Financeiro   | `src/lib/compras.ts`         |
+| Aritmética de dinheiro          | `src/lib/money.ts`           |
+| Colunas e formato da exportação | `src/lib/export/`            |
+| Validação de formulário         | `src/lib/validators/`        |
+| Leitura de catálogo e clientes  | `src/lib/providers/`         |
+| Cores, tipografia e raio        | `src/styles/auvp-tokens.css` |
 
 ## Invariantes
 
@@ -41,6 +42,11 @@ Coisas que o código já garante e que não devem ser afrouxadas:
 - **Consultor só enxerga as próprias solicitações.** Use
   `filtroDeSolicitacoes`, não um `where` escrito à mão.
 - **Telas leem catálogo e clientes pelos providers**, não pelo Prisma direto.
+- **A identidade visual vem do Design System AUVP**, portada de
+  `ProdutosAUVP/central`. Use os tokens (`bg-success`, `text-muted-foreground`),
+  nunca a paleta crua do Tailwind (`bg-amber-100`) — ela não passa pelas travas
+  de contraste do DS nem acompanha o tema escuro. Ver
+  `docs/08-identidade-visual.md`.
 
 ## Convenções
 

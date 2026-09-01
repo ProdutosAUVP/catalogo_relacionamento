@@ -1,24 +1,40 @@
 import type { StatusSolicitacao } from '@prisma/client'
-import { Badge } from '@/components/ui/badge'
+import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { ROTULO_STATUS } from '@/lib/status'
 import { cn } from '@/lib/utils'
 
 /**
- * Cor por status. O painel de gestão é lido em varredura, então a cor precisa
- * separar três coisas de longe: o que está andando, o que terminou bem e o que
- * precisa de atenção.
+ * Selo de status, nas cores semânticas do Design System AUVP.
+ *
+ * Antes usava a paleta crua do Tailwind (`bg-amber-100`), que não passa pelas
+ * travas de contraste do DS e não acompanha o tema escuro. Agora cada status
+ * mapeia para um token semântico — `success`, `warning`, `info`, `error` —,
+ * que já vem com o par fundo/texto resolvido nos dois temas.
+ *
+ * O agrupamento é o que o painel precisa comunicar numa varredura:
+ *
+ * - cinza    → ainda não começou
+ * - âmbar    → parado esperando alguém agir
+ * - azul     → em andamento
+ * - verde    → terminou bem
+ * - vermelho → deu errado (sólido enquanto aberto, vazado quando encerrado)
  */
-const CLASSE: Record<StatusSolicitacao, string> = {
-  pendente: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
-  aguardando_aprovacao: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
-  aguardando_compra: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
-  comprado: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200',
-  organizando_envio: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200',
-  entregue: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
-  cliente_confirmou: 'bg-emerald-600 text-white dark:bg-emerald-700',
-  deu_problema: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
-  devolvido: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200',
-  cancelado: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+type Estilo = { variant: BadgeProps['variant']; className?: string }
+
+const ESTILO: Record<StatusSolicitacao, Estilo> = {
+  pendente: { variant: 'muted' },
+  aguardando_aprovacao: { variant: 'warning' },
+  aguardando_compra: { variant: 'warning' },
+  comprado: { variant: 'info' },
+  organizando_envio: { variant: 'info' },
+  entregue: { variant: 'success' },
+  // Desfecho ideal: recebe o verde cheio da marca, e não o verde de status.
+  cliente_confirmou: { variant: 'default' },
+  deu_problema: { variant: 'error' },
+  // Vazado: também é desfecho negativo, mas encerrado — não pede ação como
+  // "deu problema", que segue aberto.
+  devolvido: { variant: 'outline', className: 'border-error text-error' },
+  cancelado: { variant: 'outline', className: 'text-muted-foreground' },
 }
 
 export function StatusBadge({
@@ -28,8 +44,10 @@ export function StatusBadge({
   status: StatusSolicitacao
   className?: string
 }) {
+  const estilo = ESTILO[status]
+
   return (
-    <Badge variant="secondary" className={cn('border-transparent', CLASSE[status], className)}>
+    <Badge variant={estilo.variant} className={cn(estilo.className, className)}>
       {ROTULO_STATUS[status]}
     </Badge>
   )

@@ -26,25 +26,28 @@ export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
   const visiveis = ITENS.filter((item) => pode(perfil, item.acao))
 
   return (
-    <header className="border-b">
+    // Barra escura da marca, como na Central: o verde-escuro AUVP no claro e
+    // o preto no escuro. Como o fundo é sempre escuro, o texto é claro nos
+    // dois temas, e por isso as cores aqui são literais em vez de tokens.
+    <header className="bg-brand-dark dark:bg-background border-b border-white/10">
       <nav className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-        <Link href="/" className="text-sm font-semibold">
+        <Link href="/" className="font-display text-base font-semibold tracking-tight text-white">
           Presentes
         </Link>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
           {visiveis.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+              className="rounded-md px-2.5 py-1 text-sm text-white/75 transition-colors hover:bg-white/10 hover:text-white"
             >
               {item.rotulo}
             </Link>
           ))}
         </div>
 
-        <div className="text-muted-foreground ml-auto text-sm">
+        <div className="ml-auto text-sm text-white/60">
           {nome} · {ROTULO_PERFIL[perfil]}
         </div>
       </nav>
