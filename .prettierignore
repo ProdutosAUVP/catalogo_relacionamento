@@ -1,0 +1,8 @@
+.next
+node_modules
+package-lock.json
+prisma/migrations
+
+# Documento de origem: preservado exatamente como recebido.
+catalogo-presentes-spec-v1.md
+docs/spec/
