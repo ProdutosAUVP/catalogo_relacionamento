@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { forwardRef, useState } from 'react'
 import Link, { useLinkStatus } from 'next/link'
 import type { Route } from 'next'
 import { usePathname } from 'next/navigation'
@@ -10,6 +10,7 @@ import {
   Gift,
   ListChecks,
   Package,
+  Settings2,
   ShoppingCart,
   Users,
   UserSquare,
@@ -28,16 +29,20 @@ import { cn } from '@/lib/utils'
 
 /**
  * Navegação superior, no padrão do `GlobalNav` da Central: barra clara com
- * blur, o olho solto sobre o fundo, itens em Anek com sublinhado fino no ativo
- * e um balão de descrição no hover.
+ * blur, o olho solto sobre ela, itens em Anek e o ativo marcado por um
+ * sublinhado fino.
+ *
+ * A barra **não rola**. Duas decisões sustentam isso:
+ *
+ * - os três CRUDs de administração ficam sob um único item "Administração",
+ *   o que mantém a barra em cinco itens, como a da Central;
+ * - não existe `overflow-x-auto` aqui. Além de a barra de rolagem horizontal
+ *   ficar feia, `overflow-x: auto` obriga o `overflow-y` a virar `auto`
+ *   também — o que criava uma segunda barra, vertical, e ainda cortava os
+ *   balões de hover, que são filhos posicionados do item.
  *
  * O menu é montado a partir da matriz de permissões, mas **não é controle de
- * acesso** — cada rota tem a própria guarda de servidor. Ele existe para não
- * oferecer um caminho que terminaria em redirect.
- *
- * Client Component por três coisas: `usePathname` marca o item ativo,
- * `useLinkStatus` acende o item enquanto a rota carrega, e o balão de hover
- * precisa de estado. Perfil e nome chegam prontos do servidor.
+ * acesso** — cada rota tem a própria guarda de servidor.
  */
 
 type ItemDeMenu = {
@@ -49,7 +54,8 @@ type ItemDeMenu = {
   acao: Acao
 }
 
-const ITENS: readonly ItemDeMenu[] = [
+/** Itens de primeiro nível. */
+const PRINCIPAIS: readonly ItemDeMenu[] = [
   {
     id: 'catalogo',
     href: '/catalogo',
@@ -82,6 +88,10 @@ const ITENS: readonly ItemDeMenu[] = [
     icone: Table2,
     acao: 'solicitacao.verTodas',
   },
+] as const
+
+/** Cadastros, agrupados sob "Administração" para a barra não crescer. */
+const ADMINISTRACAO: readonly ItemDeMenu[] = [
   {
     id: 'produtos',
     href: '/admin/catalogo',
@@ -131,13 +141,64 @@ function Pendente() {
   )
 }
 
+/** Caixa do ícone, igual na barra, no balão e no menu suspenso. */
+function IconeDoItem({ Icone, ativo }: { Icone: LucideIcon; ativo: boolean }) {
+  return (
+    <span
+      className={cn(
+        'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
+        ativo ? 'bg-foreground text-background border-foreground' : 'bg-card text-foreground',
+      )}
+    >
+      <Icone className="h-4 w-4" aria-hidden="true" />
+    </span>
+  )
+}
+
+/**
+ * Linha do menu suspenso.
+ *
+ * Precisa encaminhar `className`, `ref` e o resto das props: o `asChild` do
+ * Radix entrega os estilos e os handlers do item ao filho, e um componente que
+ * os ignora perde o layout inteiro — foi assim que o ícone e o texto acabaram
+ * empilhados em vez de lado a lado.
+ */
+const ItemDeLista = forwardRef<
+  HTMLAnchorElement,
+  { item: ItemDeMenu; ativo: boolean } & Omit<React.ComponentPropsWithoutRef<typeof Link>, 'href'>
+>(function ItemDeLista({ item, ativo, ...props }, ref) {
+  return (
+    <Link {...props} ref={ref} href={item.href}>
+      <IconeDoItem Icone={item.icone} ativo={ativo} />
+      <span className="min-w-0 flex-1">
+        <span className="font-display text-foreground block text-sm leading-tight font-bold">
+          {item.rotulo}
+        </span>
+        <span className="text-muted-foreground font-roboto mt-0.5 block text-xs leading-snug">
+          {item.descricao}
+        </span>
+      </span>
+      {ativo ? (
+        <span className="bg-background font-roboto mt-1 shrink-0 rounded-md border px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase">
+          Atual
+        </span>
+      ) : null}
+    </Link>
+  )
+})
+
 export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
   const caminho = usePathname()
   const [emHover, setEmHover] = useState<string | null>(null)
-  const visiveis = ITENS.filter((item) => pode(perfil, item.acao))
 
   const ativo = (href: Route) => caminho === href || caminho.startsWith(`${href}/`)
-  const atual = visiveis.find((item) => ativo(item.href))
+
+  const principais = PRINCIPAIS.filter((item) => pode(perfil, item.acao))
+  const administracao = ADMINISTRACAO.filter((item) => pode(perfil, item.acao))
+  const todos = [...principais, ...administracao]
+
+  const atual = todos.find((item) => ativo(item.href))
+  const adminAtivo = administracao.some((item) => ativo(item.href))
 
   const iniciais = nome
     .split(' ')
@@ -149,10 +210,10 @@ export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
   return (
     <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-b backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 md:h-16 md:px-8">
-        <div className="flex items-center gap-3">
-          {/* O olho fica solto sobre o fundo da navegação, sem caixa. Como usa
-              `currentColor`, ele acompanha o tema sozinho — escuro no claro,
-              claro no escuro, que é a regra do Design System. */}
+        <div className="flex min-w-0 items-center gap-3">
+          {/* O olho fica solto sobre o fundo, sem caixa. Como usa
+              `currentColor`, acompanha o tema sozinho — escuro no claro, claro
+              no escuro, que é a regra do Design System. */}
           <Link
             href="/"
             aria-label="Ir para a página inicial"
@@ -161,11 +222,7 @@ export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
             <Olho className="text-foreground w-8 md:w-10" />
           </Link>
 
-          <span className="font-roboto shrink-0 rounded-full border border-amber-500/30 bg-amber-500/15 px-1.5 py-0.5 text-[9px] leading-none font-bold tracking-wider text-amber-600 uppercase dark:text-amber-400">
-            v1
-          </span>
-
-          {/* Celular: o nome da seção atual vira o gatilho de um menu. */}
+          {/* Celular: o nome da seção atual vira o gatilho do menu. */}
           <div className="md:hidden">
             <DropdownMenu>
               <DropdownMenuTrigger className="hover:bg-muted -mx-2 flex items-center gap-2 rounded-xl px-2 py-1.5 transition-colors outline-none">
@@ -184,48 +241,18 @@ export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="start" className="w-72">
-                {visiveis.map((item) => {
-                  const Icone = item.icone
-                  const estaAtivo = ativo(item.href)
-
-                  return (
-                    <DropdownMenuItem key={item.id} asChild>
-                      <Link href={item.href}>
-                        <span
-                          className={cn(
-                            'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
-                            estaAtivo
-                              ? 'bg-foreground text-background border-foreground'
-                              : 'bg-card text-foreground',
-                          )}
-                        >
-                          <Icone className="h-4 w-4" aria-hidden="true" />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="font-display text-foreground block text-sm leading-tight font-bold">
-                            {item.rotulo}
-                          </span>
-                          <span className="text-muted-foreground font-roboto mt-0.5 block text-xs leading-snug">
-                            {item.descricao}
-                          </span>
-                        </span>
-                        {estaAtivo ? (
-                          <span className="bg-background font-roboto mt-1 shrink-0 rounded-md border px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase">
-                            Atual
-                          </span>
-                        ) : null}
-                      </Link>
-                    </DropdownMenuItem>
-                  )
-                })}
+                {todos.map((item) => (
+                  <DropdownMenuItem key={item.id} asChild>
+                    <ItemDeLista item={item} ativo={ativo(item.href)} />
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
 
           {/* Desktop: navegação horizontal com balão de descrição no hover. */}
           <nav className="hidden items-center gap-0.5 md:flex">
-            {visiveis.map((item) => {
-              const Icone = item.icone
+            {principais.map((item) => {
               const estaAtivo = ativo(item.href)
               const aberto = emHover === item.id
 
@@ -240,7 +267,7 @@ export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
                     href={item.href}
                     aria-current={estaAtivo ? 'page' : undefined}
                     className={cn(
-                      'font-display relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-normal transition-colors duration-200',
+                      'font-display relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-normal whitespace-nowrap transition-colors duration-200',
                       estaAtivo
                         ? 'text-foreground'
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -271,16 +298,7 @@ export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
                     <div className="bg-popover relative rounded-xl border p-3 shadow-lg">
                       <div className="bg-popover absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 rotate-45 rounded-sm border-t border-l" />
                       <div className="flex items-start gap-3">
-                        <span
-                          className={cn(
-                            'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
-                            estaAtivo
-                              ? 'bg-foreground text-background border-foreground'
-                              : 'bg-card text-foreground',
-                          )}
-                        >
-                          <Icone className="h-4 w-4" aria-hidden="true" />
-                        </span>
+                        <IconeDoItem Icone={item.icone} ativo={estaAtivo} />
                         <div className="min-w-0">
                           <p className="font-display text-foreground text-sm leading-tight font-medium">
                             {item.rotulo}
@@ -295,6 +313,34 @@ export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
                 </div>
               )
             })}
+
+            {administracao.length > 0 ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className={cn(
+                    'font-display relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-normal whitespace-nowrap transition-colors duration-200 outline-none',
+                    adminAtivo
+                      ? 'text-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  )}
+                >
+                  <Settings2 className="h-4 w-4" aria-hidden="true" />
+                  Administração
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  {adminAtivo ? (
+                    <span className="bg-foreground/30 absolute right-3 bottom-1 left-3 h-px rounded-full" />
+                  ) : null}
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="start" className="w-72">
+                  {administracao.map((item) => (
+                    <DropdownMenuItem key={item.id} asChild>
+                      <ItemDeLista item={item} ativo={ativo(item.href)} />
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
           </nav>
         </div>
 

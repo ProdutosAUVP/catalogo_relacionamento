@@ -40,12 +40,39 @@ const ICONES: Record<string, string> = {
   boxes: 'sacolas & caixas',
   package: 'padrao',
   'rotate-cw': 'girar',
+
+  // Ícones do menu superior, os mesmos de `src/components/nav.tsx`.
+  gift: 'tela:catalogo',
+  'square-pen': 'tela:nova',
+  'list-checks': 'tela:minhas',
+  'shopping-cart': 'tela:compras',
+  'table-2': 'tela:gestao',
+  'user-square': 'tela:clientes',
+  users: 'tela:usuarios',
+  'settings-2': 'tela:administracao',
 }
 
 const svgs: Record<string, string> = {}
 
-for (const [arquivo, chave] of Object.entries(ICONES)) {
+/**
+ * Lê o traçado de um ícone do lucide.
+ *
+ * Alguns nomes são apenas apelidos — `user-square.js` só reexporta
+ * `square-user.js` —, então a leitura segue a indireção antes de tentar
+ * extrair as formas.
+ */
+function lerIcone(arquivo: string, saltos = 0): string {
+  if (saltos > 3) throw new Error(`Cadeia de apelidos longa demais: ${arquivo}`)
+
   const fonte = readFileSync(`node_modules/lucide-react/dist/esm/icons/${arquivo}.js`, 'utf8')
+  const apelido = fonte.match(/export \{ default \} from '\.\/([\w-]+)\.js'/)
+  if (apelido) return lerIcone(apelido[1]!, saltos + 1)
+
+  return fonte
+}
+
+for (const [arquivo, chave] of Object.entries(ICONES)) {
+  const fonte = lerIcone(arquivo)
   // Traçado longo vem quebrado em várias linhas no pacote, então o casamento
   // precisa atravessar quebras de linha.
   const nos = [...fonte.matchAll(/\[\s*"(\w+)",\s*\{([\s\S]*?)\}\s*\]/g)]
@@ -63,6 +90,9 @@ for (const [arquivo, chave] of Object.entries(ICONES)) {
   if (!markup) throw new Error(`Ícone sem traçado: ${arquivo}`)
   svgs[chave] = markup
 }
+
+// Produtos usa o mesmo traçado de `padrao` (o pacote), como no menu da aplicação.
+svgs['tela:produtos'] = svgs.padrao!
 
 writeFileSync(
   'demo/icones.js',

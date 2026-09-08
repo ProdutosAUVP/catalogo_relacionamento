@@ -15,6 +15,9 @@ const PERMISSOES = {
   financeiro: ['catalogo', 'gestao', 'detalhe', 'compras'],
 }
 
+/** Telas que ficam sob o item "Administração", para a barra não crescer. */
+const SOB_ADMINISTRACAO = ['produtos', 'usuarios']
+
 const TELAS = [
   {
     id: 'catalogo',
@@ -37,11 +40,6 @@ const TELAS = [
     descricao: 'Itens enviados para compra, com valor e site',
   },
   { id: 'gestao', rotulo: 'Gestão', descricao: 'Fluxo completo, mudança de status e exportação' },
-  {
-    id: 'detalhe',
-    rotulo: 'Detalhe',
-    descricao: 'Itens, entrega, carta e histórico da solicitação',
-  },
   { id: 'produtos', rotulo: 'Produtos', descricao: 'Cadastro, edição e ativação do catálogo' },
   { id: 'usuarios', rotulo: 'Usuários', descricao: 'Perfil de acesso e limite mensal' },
 ]
@@ -679,10 +677,30 @@ function render() {
   const permitidas = PERMISSOES[perfil]
   if (!permitidas.includes(tela)) tela = permitidas[0]
 
-  document.getElementById('abas').innerHTML = TELAS.filter((t) => permitidas.includes(t.id))
-    .map((t) => {
-      const ativo = t.id === tela
-      return `
+  const visiveis = TELAS.filter((t) => permitidas.includes(t.id))
+  const principais = visiveis.filter((t) => !SOB_ADMINISTRACAO.includes(t.id))
+  const administracao = visiveis.filter((t) => SOB_ADMINISTRACAO.includes(t.id))
+  const adminAtivo = administracao.some((t) => t.id === tela)
+
+  const balao = (t, ativo) => `
+    <div class="pointer-events-none absolute left-1/2 top-full z-50 mt-1.5 w-56 -translate-x-1/2 -translate-y-[5px] opacity-0 transition-[opacity,transform] duration-200 ease-apple group-hover/item:translate-y-0 group-hover/item:opacity-100">
+      <div class="bg-popover relative rounded-xl border p-3 shadow-lg">
+        <div class="bg-popover absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 rotate-45 rounded-sm border-l border-t"></div>
+        <div class="flex items-start gap-3">
+          <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+            ativo ? 'bg-foreground text-background border-foreground' : 'bg-card text-foreground'
+          }">${iconeSvg('tela:' + t.id, 'h-4 w-4')}</span>
+          <div class="min-w-0">
+            <p class="font-display text-foreground text-sm font-medium leading-tight">${esc(t.rotulo)}</p>
+            <p class="text-muted-foreground font-roboto mt-0.5 text-xs leading-snug">${esc(t.descricao)}</p>
+          </div>
+        </div>
+      </div>
+    </div>`
+
+  const itemPrincipal = (t) => {
+    const ativo = t.id === tela
+    return `
       <div class="group/item relative">
         <button data-tela="${t.id}" aria-current="${ativo ? 'page' : 'false'}"
           class="font-display relative whitespace-nowrap rounded-lg px-3 py-2 text-sm font-normal transition-colors duration-200 ${
@@ -691,27 +709,49 @@ function render() {
           ${esc(t.rotulo)}
           ${ativo ? '<span class="bg-foreground/30 absolute bottom-1 left-3 right-3 h-px rounded-full"></span>' : ''}
         </button>
-        <!-- O balão fica sempre no DOM e entra por opacidade e deslocamento:
-             montar e desmontar no hover recalcularia layout a cada passagem. -->
-        <div class="pointer-events-none absolute left-1/2 top-full z-50 mt-1.5 w-56 -translate-x-1/2 -translate-y-[5px] opacity-0 transition-[opacity,transform] duration-200 ease-apple group-hover/item:translate-y-0 group-hover/item:opacity-100">
-          <div class="bg-popover relative rounded-xl border p-3 shadow-lg">
-            <div class="bg-popover absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 rotate-45 rounded-sm border-l border-t"></div>
-            <div class="flex items-start gap-3">
-              <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
-                ativo
-                  ? 'bg-foreground text-background border-foreground'
-                  : 'bg-card text-foreground'
-              }">${iconeSvg('padrao', 'h-4 w-4')}</span>
-              <div class="min-w-0">
-                <p class="font-display text-foreground text-sm font-medium leading-tight">${esc(t.rotulo)}</p>
-                <p class="text-muted-foreground font-roboto mt-0.5 text-xs leading-snug">${esc(t.descricao)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        ${balao(t, ativo)}
       </div>`
-    })
-    .join('')
+  }
+
+  // O submenu usa <details> nativo: abre no clique, fecha no Esc e funciona
+  // pelo teclado sem nenhuma linha de JavaScript.
+  const grupoAdmin = administracao.length
+    ? `
+      <details class="group/admin relative">
+        <summary class="font-display relative flex cursor-pointer list-none items-center gap-1 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-normal transition-colors duration-200 ${
+          adminAtivo
+            ? 'text-foreground'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        }">
+          ${iconeSvg('tela:administracao', 'h-4 w-4')}
+          Administração
+          <span class="transition-transform duration-200 group-open/admin:rotate-180">▾</span>
+          ${adminAtivo ? '<span class="bg-foreground/30 absolute bottom-1 left-3 right-3 h-px rounded-full"></span>' : ''}
+        </summary>
+        <div class="bg-popover absolute left-0 top-full z-50 mt-1.5 w-72 rounded-xl border p-1.5 shadow-lg">
+          ${administracao
+            .map((t) => {
+              const ativo = t.id === tela
+              return `
+              <button data-tela="${t.id}" class="flex w-full items-start gap-3 rounded-lg p-2.5 text-left transition-colors hover:bg-muted">
+                <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+                  ativo
+                    ? 'bg-foreground text-background border-foreground'
+                    : 'bg-card text-foreground'
+                }">${iconeSvg('tela:' + t.id, 'h-4 w-4')}</span>
+                <span class="min-w-0 flex-1">
+                  <span class="font-display text-foreground block text-sm font-bold leading-tight">${esc(t.rotulo)}</span>
+                  <span class="text-muted-foreground font-roboto mt-0.5 block text-xs leading-snug">${esc(t.descricao)}</span>
+                </span>
+                ${ativo ? '<span class="bg-background font-roboto mt-1 shrink-0 rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider">Atual</span>' : ''}
+              </button>`
+            })
+            .join('')}
+        </div>
+      </details>`
+    : ''
+
+  document.getElementById('abas').innerHTML = principais.map(itemPrincipal).join('') + grupoAdmin
 
   // Reinicia a animação de entrada a cada troca de tela: recriar o elemento é
   // o que faz o navegador rodar a animação de novo. Só opacity e transform,
@@ -731,6 +771,8 @@ document.addEventListener('click', (e) => {
   const aba = e.target.closest('[data-tela]')
   if (aba) {
     tela = aba.dataset.tela
+    // Fecha o submenu antes de redesenhar, senão ele reabre já aberto.
+    document.querySelectorAll('details[open]').forEach((d) => d.removeAttribute('open'))
     render()
     return
   }
