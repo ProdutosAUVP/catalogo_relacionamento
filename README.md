@@ -9,9 +9,9 @@ O documento de origem está em
 
 ## Estado atual
 
-A base do V1 está de pé: modelo de dados completo, regras de negócio
-implementadas e testadas, telas de leitura navegáveis e deploy configurado.
-Os formulários de escrita são o próximo passo — cada tela diz o que falta nela.
+O V1 está de pé de ponta a ponta: o consultor pede, o Admin move o status, o
+Financeiro compra e a expedição recebe o pedido pronto. Falta ligar o SSO da
+AUVP, que depende de credenciais do provedor.
 
 | Área                                         | Situação                                       |
 | -------------------------------------------- | ---------------------------------------------- |
@@ -22,8 +22,10 @@ Os formulários de escrita são o próximo passo — cada tela diz o que falta n
 | Exportação CSV/XLSX                          | pronto e testado                               |
 | Autenticação SSO (OIDC)                      | pronto, aguardando credenciais do provedor     |
 | Catálogo, gestão, fila de compras, listagens | telas prontas                                  |
-| Formulário de solicitação                    | a construir                                    |
-| CRUD de produto, cliente e usuário           | a construir                                    |
+| Formulário de solicitação                    | pronto, em cinco etapas                        |
+| Mudança de status, com motivo e histórico    | pronto                                         |
+| Fila da expedição, com CSV e XLSX            | pronto — substitui a planilha feita à mão      |
+| CRUD de produto, cliente e usuário           | pronto, com foto e importação por CSV          |
 | Tiny ERP e Salesforce                        | fase 2, contratos já fixados                   |
 
 ## Como rodar

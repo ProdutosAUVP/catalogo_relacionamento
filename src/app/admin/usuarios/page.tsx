@@ -13,7 +13,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Stat } from '@/components/stat'
-import { CabecalhoDaPagina, AConstruir } from '@/components/pagina'
+import { CabecalhoDaPagina } from '@/components/pagina'
+import { EditorDeUsuario } from './editor-de-usuario'
 
 /**
  * CRUD de usuários: perfil e limite mensal.
@@ -50,14 +51,10 @@ export default async function AdminUsuariosPage() {
         />
       </div>
 
-      <div className="mb-6">
-        <AConstruir>
-          <p>
-            Faltam a troca de perfil, a definição do limite mensal e a desativação. Usuários não são
-            criados aqui: entram sozinhos no primeiro login pelo SSO, como consultor.
-          </p>
-        </AConstruir>
-      </div>
+      <p className="text-muted-foreground mb-6 text-sm">
+        Usuários não são criados aqui: entram sozinhos no primeiro login pelo SSO, como consultor.
+        Esta tela promove, define o teto mensal e desativa quem saiu do time.
+      </p>
 
       <Card className="overflow-hidden">
         <Table>
@@ -69,12 +66,13 @@ export default async function AdminUsuariosPage() {
               <TableHead className="text-right">Limite mensal</TableHead>
               <TableHead className="text-right">Solicitações</TableHead>
               <TableHead>Situação</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {usuarios.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground py-10 text-center">
+                <TableCell colSpan={7} className="text-muted-foreground py-10 text-center">
                   Nenhum usuário ainda.
                 </TableCell>
               </TableRow>
@@ -94,6 +92,20 @@ export default async function AdminUsuariosPage() {
                     <Badge variant={u.ativo ? 'outline' : 'muted'}>
                       {u.ativo ? 'ativo' : 'desativado'}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <EditorDeUsuario
+                      usuario={{
+                        id: u.id,
+                        nome: u.nome,
+                        email: u.email,
+                        perfil: u.perfil,
+                        limiteMensal: u.limiteMensal
+                          ? u.limiteMensal.toFixed(2).replace('.', ',')
+                          : null,
+                        ativo: u.ativo,
+                      }}
+                    />
                   </TableCell>
                 </TableRow>
               ))

@@ -3,13 +3,14 @@
 import { revalidatePath } from 'next/cache'
 import { Prisma, StatusSolicitacao } from '@prisma/client'
 import { db } from '@/lib/db'
-import { autorizarAction, SemPermissaoError } from '@/lib/auth-guards'
+import { autorizarAction } from '@/lib/auth-guards'
 import { proximoCodigo } from '@/lib/codigo'
 import { totalDosItens } from '@/lib/money'
 import { normalizarCpf } from '@/lib/cpf'
 import { validarMudancaDeStatus } from '@/lib/status'
 import { solicitacaoSchema, mudancaDeStatusSchema } from '@/lib/validators/solicitacao'
 import { clienteSchema } from '@/lib/validators/cliente'
+import { comoErro, primeiroErro, type ResultadoDaAction } from './comuns'
 
 /**
  * Escritas de solicitação.
@@ -17,20 +18,6 @@ import { clienteSchema } from '@/lib/validators/cliente'
  * Toda ação começa por `autorizarAction`: esconder um botão não é controle de
  * acesso, e estas funções são endpoints acessíveis diretamente.
  */
-
-export type ResultadoDaAction<T = undefined> =
-  { ok: true; dados: T } | { ok: false; erro: string; campo?: string }
-
-function comoErro(e: unknown): { ok: false; erro: string } {
-  if (e instanceof SemPermissaoError) return { ok: false, erro: e.message }
-
-  if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-    return { ok: false, erro: 'Já existe um registro com esse valor.' }
-  }
-
-  console.error(e)
-  return { ok: false, erro: 'Não foi possível concluir. Tente de novo.' }
-}
 
 export type ClienteEncontrado = {
   id: string
@@ -72,14 +59,7 @@ export async function criarCliente(entrada: unknown): Promise<ResultadoDaAction<
     const usuario = await autorizarAction('solicitacao.criar')
 
     const validado = clienteSchema.safeParse(entrada)
-    if (!validado.success) {
-      const primeiro = validado.error.issues[0]
-      return {
-        ok: false,
-        erro: primeiro?.message ?? 'Dados inválidos.',
-        campo: String(primeiro?.path[0] ?? ''),
-      }
-    }
+    if (!validado.success) return primeiroErro(validado.error)
 
     // CPF repetido não vira erro: devolve quem já existe, que é o que a tela
     // precisa para oferecer o cliente em vez de duplicar.
@@ -119,14 +99,7 @@ export async function criarSolicitacao(
     const usuario = await autorizarAction('solicitacao.criar')
 
     const validado = solicitacaoSchema.safeParse(entrada)
-    if (!validado.success) {
-      const primeiro = validado.error.issues[0]
-      return {
-        ok: false,
-        erro: primeiro?.message ?? 'Dados inválidos.',
-        campo: primeiro?.path.join('.'),
-      }
-    }
+    if (!validado.success) return primeiroErro(validado.error)
     const dados = validado.data
 
     const idsDeProdutos = dados.itens.map((i) => i.produtoId).filter((id): id is string => !!id)
@@ -221,9 +194,7 @@ export async function alterarStatus(entrada: unknown): Promise<ResultadoDaAction
     const usuario = await autorizarAction('solicitacao.alterarStatus')
 
     const validado = mudancaDeStatusSchema.safeParse(entrada)
-    if (!validado.success) {
-      return { ok: false, erro: validado.error.issues[0]?.message ?? 'Dados inválidos.' }
-    }
+    if (!validado.success) return primeiroErro(validado.error)
     const { solicitacaoId, statusNovo, motivo } = validado.data
 
     const solicitacao = await db.solicitacao.findUnique({

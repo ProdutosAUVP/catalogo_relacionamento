@@ -12,7 +12,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Stat } from '@/components/stat'
-import { CabecalhoDaPagina, AConstruir, EstadoVazio } from '@/components/pagina'
+import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
+import { EditorDeProduto, BotaoAtivar } from './editor-de-produto'
+import { EditorDeCategorias } from './editor-de-categorias'
 
 /**
  * CRUD do catálogo — operado pela própria área de Relacionamento.
@@ -33,12 +35,22 @@ export default async function AdminCatalogoPage() {
 
   const ativos = produtos.filter((p) => p.ativo).length
 
+  // `Prisma.Decimal` não atravessa a fronteira do servidor: o valor vai como
+  // texto no formato que o formulário edita.
+  const opcoesDeCategoria = categorias.map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo }))
+
   return (
     <>
       <CabecalhoDaPagina
         sobrancelha="Administração"
         titulo="Gerenciar catálogo"
         descricao="Cadastro, edição e ativação de produtos — feitos pela própria área, sem depender do time técnico."
+        acoes={
+          <>
+            <EditorDeCategorias categorias={opcoesDeCategoria} />
+            <EditorDeProduto categorias={opcoesDeCategoria} />
+          </>
+        }
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
@@ -51,22 +63,11 @@ export default async function AdminCatalogoPage() {
         <Stat rotulo="Categorias" valor={categorias.length} />
       </div>
 
-      <div className="mb-6">
-        <AConstruir>
-          <p>
-            Faltam o cadastro e a edição de produto com upload de foto para o bucket, e o CRUD de
-            categorias. As regras de validação já estão em{' '}
-            <code>src/lib/validators/produto.ts</code>. Produto nunca é excluído: a ação é
-            desativar, e o desativado some do catálogo do consultor mas continua nas solicitações
-            antigas.
-          </p>
-        </AConstruir>
-      </div>
-
       {produtos.length === 0 ? (
         <EstadoVazio
           titulo="Nenhum produto cadastrado"
-          descricao="Rode npm run db:seed para carregar exemplos, ou cadastre o primeiro produto quando o formulário estiver pronto."
+          descricao="Cadastre o primeiro produto no botão acima, ou rode npm run db:seed para carregar exemplos."
+          acao={<EditorDeProduto categorias={opcoesDeCategoria} />}
         />
       ) : (
         <Card className="overflow-hidden">
@@ -79,6 +80,7 @@ export default async function AdminCatalogoPage() {
                 <TableHead className="text-right">Estoque</TableHead>
                 <TableHead className="text-right">Usos</TableHead>
                 <TableHead>Situação</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -100,6 +102,25 @@ export default async function AdminCatalogoPage() {
                     <Badge variant={p.ativo ? 'outline' : 'muted'}>
                       {p.ativo ? 'ativo' : 'desativado'}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-right whitespace-nowrap">
+                    <EditorDeProduto
+                      categorias={opcoesDeCategoria}
+                      produto={{
+                        id: p.id,
+                        nome: p.nome,
+                        descricao: p.descricao,
+                        categoriaId: p.categoriaId,
+                        fotoUrl: p.fotoUrl,
+                        valor: p.valor.toFixed(2).replace('.', ','),
+                        tipoValor: p.tipoValor,
+                        controlaEstoque: p.controlaEstoque,
+                        estoque: p.estoque,
+                        ativo: p.ativo,
+                        skuTiny: p.skuTiny,
+                      }}
+                    />
+                    <BotaoAtivar id={p.id} ativo={p.ativo} />
                   </TableCell>
                 </TableRow>
               ))}

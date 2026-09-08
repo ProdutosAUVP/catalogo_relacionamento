@@ -24,6 +24,16 @@ import { cn } from '@/lib/utils'
 const LARGURA = 900
 const ALTURA = 1200
 
+/**
+ * Foto guardada no nosso banco não passa pelo otimizador do Next.
+ *
+ * `/api/arquivos/...` fica atrás da sessão, e o otimizador busca a origem do
+ * servidor, sem cookie — a resposta seria 401 e a imagem, um quadro quebrado.
+ * O upload já é limitado a 5 MB e a foto de catálogo é pequena, então o custo
+ * de servir o original é menor que o de abrir essa rota para fora.
+ */
+const semOtimizador = (url: string) => url.startsWith('/api/arquivos/')
+
 export function ProdutoImagem({
   fotoUrl,
   fotoVersoUrl,
@@ -87,6 +97,7 @@ export function ProdutoImagem({
               width={LARGURA}
               height={ALTURA}
               priority={prioridade}
+              unoptimized={semOtimizador(fotoUrl)}
               sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 90vw"
               className="absolute inset-0 h-full w-full object-cover [backface-visibility:hidden]"
             />
@@ -95,6 +106,7 @@ export function ProdutoImagem({
               alt={`${nome} — verso`}
               width={LARGURA}
               height={ALTURA}
+              unoptimized={semOtimizador(fotoVersoUrl!)}
               sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 90vw"
               className="absolute inset-0 h-full w-full [transform:rotateY(180deg)] object-cover [backface-visibility:hidden]"
             />
@@ -122,6 +134,7 @@ export function ProdutoImagem({
           width={LARGURA}
           height={ALTURA}
           priority={prioridade}
+          unoptimized={semOtimizador(fotoUrl)}
           sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 90vw"
           className="ease-apple h-full w-full object-cover transition-transform duration-500 sm:group-hover:scale-105"
         />

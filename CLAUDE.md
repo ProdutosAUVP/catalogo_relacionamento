@@ -15,19 +15,21 @@ resposta que já foi assumida em algum lugar.
 Cada regra de negócio tem **um** lugar. Ao mexer numa delas, mexa lá — nunca
 duplique numa tela.
 
-| Regra                           | Arquivo                      |
-| ------------------------------- | ---------------------------- |
-| Quem pode o quê                 | `src/lib/permissions.ts`     |
-| Transições de status e motivos  | `src/lib/status.ts`          |
-| Gasto do mês e limite           | `src/lib/saldo.ts`           |
-| Fila de compras do Financeiro   | `src/lib/compras.ts`         |
-| Fila da expedição               | `src/lib/expedicao.ts`       |
-| Fornecedor padrão por categoria | `src/lib/fornecedores.ts`    |
-| Aritmética de dinheiro          | `src/lib/money.ts`           |
-| Colunas e formato da exportação | `src/lib/export/`            |
-| Validação de formulário         | `src/lib/validators/`        |
-| Leitura de catálogo e clientes  | `src/lib/providers/`         |
-| Cores, tipografia e raio        | `src/styles/auvp-tokens.css` |
+| Regra                           | Arquivo                          |
+| ------------------------------- | -------------------------------- |
+| Quem pode o quê                 | `src/lib/permissions.ts`         |
+| Transições de status e motivos  | `src/lib/status.ts`              |
+| Gasto do mês e limite           | `src/lib/saldo.ts`               |
+| Fila de compras do Financeiro   | `src/lib/compras.ts`             |
+| Fila da expedição               | `src/lib/expedicao.ts`           |
+| Fornecedor padrão por categoria | `src/lib/fornecedores.ts`        |
+| Upload e leitura de foto        | `src/lib/arquivos.ts`            |
+| Leitura do CSV de clientes      | `src/lib/importacao-clientes.ts` |
+| Aritmética de dinheiro          | `src/lib/money.ts`               |
+| Colunas e formato da exportação | `src/lib/export/`                |
+| Validação de formulário         | `src/lib/validators/`            |
+| Leitura de catálogo e clientes  | `src/lib/providers/`             |
+| Cores, tipografia e raio        | `src/styles/auvp-tokens.css`     |
 
 ## Invariantes
 
@@ -89,12 +91,15 @@ siga o mesmo padrão.
 
 ## O que está construído e o que não está
 
-Pronto: modelo de dados, permissões, fluxo de status, saldo, exportação, SSO,
-providers, as telas de leitura, o formulário de nova solicitação, a mudança de
-status e a fila da expedição.
+O caminho principal está construído de ponta a ponta: catálogo, nova
+solicitação, mudança de status, fila de compras, fila da expedição com
+exportação, CRUD de produto e categoria com upload de foto, CRUD de cliente
+com importação CSV e edição de usuário.
 
-A construir: CRUD de produto com upload de foto, CRUD de cliente com importação
-CSV e edição de usuário. Cada tela em construção lista o que falta nela.
+O que continua fora do V1, por decisão registrada em
+`docs/05-perguntas-em-aberto.md`: geração da carta em formato de impressão,
+integração de escrita com o sistema da expedição e as integrações da fase 2
+(Tiny e Salesforce, que já têm provider e campos reservados).
 
 ## Vitrine estática
 

@@ -8,12 +8,23 @@ import { Skeleton } from '@/components/ui/skeleton'
  * que ele deveria evitar — e um mais alto também, porque o rodapé sobe quando
  * o conteúdo chega.
  *
- * A quantidade de linhas de tabela é a única medida que não dá para acertar
- * sempre: ela depende de quantos registros a consulta devolve. Cinco é a
- * aproximação escolhida; o resíduo de deslocamento que sobra vem daí.
+ * A quantidade de linhas é a única medida que não dá para acertar sempre: ela
+ * depende de quantos registros a consulta devolve. Por isso cada `loading.tsx`
+ * passa o número que corresponde ao tamanho típico da sua lista — o catálogo
+ * tem dezenas de produtos, a lista de usuários tem o time — em vez de todos
+ * usarem o mesmo padrão. Errar esse número é a única fonte de deslocamento que
+ * sobra, e ela cresce com a diferença: um esqueleto de 5 linhas antes de uma
+ * tabela de 13 move o rodapé meia tela.
  */
 
-export function EsqueletoDeCabecalho({ comAcoes = false }: { comAcoes?: boolean }) {
+export function EsqueletoDeCabecalho({
+  comAcoes = false,
+  acoes = 1,
+}: {
+  comAcoes?: boolean
+  /** Quantos botões a tela põe no cabeçalho — dois reservam mais largura. */
+  acoes?: number
+}) {
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
@@ -22,7 +33,13 @@ export function EsqueletoDeCabecalho({ comAcoes = false }: { comAcoes?: boolean 
         <Skeleton className="h-9 w-56" />
         <Skeleton className="mt-2 h-4 w-96 max-w-full" />
       </div>
-      {comAcoes ? <Skeleton className="h-10 w-40" /> : null}
+      {comAcoes ? (
+        <div className="flex gap-2">
+          {Array.from({ length: acoes }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-40" />
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -93,11 +110,13 @@ export function EsqueletoDeCatalogo({ cards = 8 }: { cards?: number }) {
  * Altura fixa por cartão porque a coluna do endereço tem sempre as mesmas cinco
  * linhas — é o dado de envio, não texto livre.
  */
-export function EsqueletoDePedidos({ cards = 3 }: { cards?: number }) {
+export function EsqueletoDePedidos({ cards = 2 }: { cards?: number }) {
   return (
     <div className="space-y-4">
       {Array.from({ length: cards }).map((_, i) => (
-        <Skeleton key={i} className="h-[248px] rounded-lg" />
+        // h-[305px] = cabeçalho do cartão + duas linhas de item + o endereço,
+        // que tem sempre as mesmas cinco linhas por ser dado de envio.
+        <Skeleton key={i} className="h-[305px] rounded-lg" />
       ))}
     </div>
   )

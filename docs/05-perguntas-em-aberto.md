@@ -153,9 +153,16 @@ Admin promove. `BOOTSTRAP_ADMIN_EMAILS` resolve o problema do primeiro Admin.
 
 ### Onde ficam as fotos de produto?
 
-O bucket S3-compatível está previsto em variáveis de ambiente, mas o upload
-ainda não foi construído. Falta saber qual bucket usar (Railway, Cloudflare R2,
-S3) e quem cria as credenciais.
+**Assumido:** no próprio Postgres, tabela `arquivos`, servidas por
+`/api/arquivos/[id]` atrás da sessão. Ver
+[ADR 0007](adr/0007-fotos-no-banco.md).
+
+Foi o que destravou o CRUD de produto sem depender de bucket provisionado. As
+variáveis `STORAGE_*` continuam reservadas: quando o bucket existir, muda
+`salvarFoto` em `src/lib/arquivos.ts` e nada mais — `fotoUrl` já é uma URL.
+
+**Ainda em aberto:** qual bucket (Railway, Cloudflare R2, S3) e quem cria as
+credenciais. Vira urgente se o catálogo passar de algumas dezenas de fotos.
 
 ## Técnicas, para a fase 2
 

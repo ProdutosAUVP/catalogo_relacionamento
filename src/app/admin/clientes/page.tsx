@@ -14,7 +14,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Stat } from '@/components/stat'
-import { CabecalhoDaPagina, AConstruir, EstadoVazio } from '@/components/pagina'
+import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
+import { EditorDeCliente } from './editor-de-cliente'
+import { ImportarClientes } from './importar-clientes'
 
 /** Lista, edição e importação de clientes por CSV. */
 export default async function AdminClientesPage() {
@@ -33,6 +35,12 @@ export default async function AdminClientesPage() {
         sobrancelha="Administração"
         titulo="Clientes"
         descricao="Cadastro manual ou importação por CSV. O CPF é a chave que evita duplicatas."
+        acoes={
+          <>
+            <ImportarClientes />
+            <EditorDeCliente />
+          </>
+        }
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
@@ -48,20 +56,11 @@ export default async function AdminClientesPage() {
         />
       </div>
 
-      <div className="mb-6">
-        <AConstruir>
-          <p>
-            Faltam o formulário de cadastro/edição e a importação por CSV. A validação de cada linha
-            já está em <code>linhaImportacaoClienteSchema</code>. O CPF é a chave de deduplicação:
-            linha com CPF existente atualiza o cliente em vez de criar outro.
-          </p>
-        </AConstruir>
-      </div>
-
       {clientes.length === 0 ? (
         <EstadoVazio
           titulo="Nenhum cliente cadastrado"
           descricao="Cadastre manualmente ou importe um CSV. O CPF é a chave que impede duplicatas."
+          acao={<EditorDeCliente />}
         />
       ) : (
         <Card className="overflow-hidden">
@@ -74,6 +73,7 @@ export default async function AdminClientesPage() {
                 <TableHead>Origem</TableHead>
                 <TableHead className="text-right">Solicitações</TableHead>
                 <TableHead>Cadastro</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -92,6 +92,17 @@ export default async function AdminClientesPage() {
                   <TableCell className="text-right tabular-nums">{c._count.solicitacoes}</TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatarData(c.criadoEm)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <EditorDeCliente
+                      cliente={{
+                        id: c.id,
+                        nome: c.nome,
+                        cpf: c.cpf,
+                        telefone: c.telefone,
+                        email: c.email,
+                      }}
+                    />
                   </TableCell>
                 </TableRow>
               ))}

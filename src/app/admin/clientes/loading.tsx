@@ -3,9 +3,10 @@ import { EsqueletoDeCabecalho, EsqueletoDeStats, EsqueletoDeTabela } from '@/com
 export default function Carregando() {
   return (
     <>
-      <EsqueletoDeCabecalho />
+      <EsqueletoDeCabecalho comAcoes acoes={2} />
       <EsqueletoDeStats />
-      <EsqueletoDeTabela linhas={5} />
+      {/* A lista de clientes é paginada em 200; oito é a altura típica da primeira tela. */}
+      <EsqueletoDeTabela linhas={8} />
     </>
   )
 }
