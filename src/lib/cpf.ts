@@ -40,3 +40,15 @@ export function cpfValido(valor: string): boolean {
 
   return digito(9) === Number(d[9]) && digito(10) === Number(d[10])
 }
+
+/**
+ * Telefone brasileiro para exibição.
+ *
+ * Gravado só com dígitos, como o CPF: a máscara é assunto de tela.
+ */
+export function formatarTelefone(valor: string | null | undefined): string {
+  const d = (valor ?? '').replace(/\D/g, '')
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
+  return valor ?? ''
+}

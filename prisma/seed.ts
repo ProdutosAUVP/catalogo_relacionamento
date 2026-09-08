@@ -16,103 +16,156 @@ import { totalDosItens } from '../src/lib/money'
 const db = new PrismaClient()
 
 const CATEGORIAS = [
-  'Vinhos e destilados',
-  'Casa e decoração',
-  'Livros',
-  'Gourmet',
-  'Bem-estar',
-  'Placas e troféus',
+  'Bebidas',
+  'Vestuário',
+  'Acessórios',
+  'Canecas e garrafas',
+  'Papelaria',
+  'Sacolas & caixas',
+  'Casa & mesa',
 ]
 
+/**
+ * Catálogo real: os brindes físicos da AUVP, com as fotos de estúdio do
+ * repositório ProdutosAUVP/central. Nome, descrição e categoria vêm de lá
+ * (`src/data/produtosFisicos.ts`); valor e estoque são plausíveis e existem
+ * para as telas terem número — a área ajusta no CRUD de catálogo.
+ *
+ * `slug` casa com o arquivo em `public/produtos/<slug>.webp`.
+ */
 const PRODUTOS: {
+  slug: string
   nome: string
   descricao: string
   categoria: string
   valor: string
   tipoValor?: TipoValor
-  controlaEstoque?: boolean
+  controlaEstoque: boolean
   estoque?: number
   ativo?: boolean
+  /** Sem arquivo em public/produtos: a tela cai na ilustração da categoria. */
+  semFoto?: boolean
 }[] = [
   {
-    nome: 'Vinho tinto Malbec reserva',
-    descricao: 'Garrafa 750ml, safra selecionada, com caixa de presente.',
-    categoria: 'Vinhos e destilados',
-    valor: '189.90',
-    controlaEstoque: true,
-    estoque: 24,
-  },
-  {
-    nome: 'Espumante brut nacional',
-    descricao: 'Garrafa 750ml em embalagem individual.',
-    categoria: 'Vinhos e destilados',
-    valor: '129.00',
-    controlaEstoque: true,
-    estoque: 40,
-  },
-  {
-    nome: 'Kit de taças de cristal',
-    descricao: 'Duas taças de cristal com gravação opcional.',
-    categoria: 'Casa e decoração',
-    valor: '245.00',
-    controlaEstoque: true,
-    estoque: 12,
-  },
-  {
-    nome: 'Difusor de ambiente',
-    descricao: 'Difusor 250ml com varetas, fragrância amadeirada.',
-    categoria: 'Casa e decoração',
-    valor: '98.50',
-    controlaEstoque: true,
-    estoque: 30,
-  },
-  {
-    nome: 'Livro — O Investidor Inteligente',
-    descricao: 'Edição capa dura, clássico de Benjamin Graham.',
-    categoria: 'Livros',
-    valor: '89.90',
-    controlaEstoque: true,
-    estoque: 50,
-  },
-  {
-    nome: 'Cesta gourmet completa',
-    descricao: 'Cesta com azeite, geleias, castanhas, café especial e biscoitos.',
-    categoria: 'Gourmet',
-    valor: '320.00',
+    slug: 'bourbon-auvp',
+    nome: 'Licor AUVP “Punch Me Up”',
+    descricao: 'Garrafa de 700 ml com rótulo autoral, feita para as ativações e eventos.',
+    categoria: 'Bebidas',
+    valor: '189.00',
     tipoValor: TipoValor.medio,
-    // Montada sob encomenda pelo fornecedor: não há estoque a controlar.
     controlaEstoque: false,
   },
   {
-    nome: 'Caixa de chocolates belgas',
-    descricao: 'Caixa com 24 bombons sortidos.',
-    categoria: 'Gourmet',
-    valor: '156.00',
+    slug: 'meia-sardinha',
+    nome: 'Meia Investidor Sardinha',
+    descricao:
+      'Meia vermelha com o símbolo do Investidor Sardinha no cano e recado bordado na ponta do pé.',
+    categoria: 'Vestuário',
+    valor: '49.90',
+    controlaEstoque: true,
+    estoque: 120,
+  },
+  {
+    slug: 'bone-capitalismo',
+    nome: 'Boné “O capitalismo é simplesmente maravilhoso”',
+    descricao:
+      'Boné vermelho com patch bordado circular — um dos brindes mais pedidos da comunidade.',
+    categoria: 'Vestuário',
+    valor: '89.00',
+    controlaEstoque: true,
+    estoque: 60,
+  },
+  {
+    slug: 'canivete-agro',
+    nome: 'Canivete AUVP Agro',
+    descricao: 'Canivete com cabo de madeira e gravação AUVP Agro, entregue em caixa kraft.',
+    categoria: 'Acessórios',
+    valor: '245.00',
     controlaEstoque: true,
     estoque: 18,
   },
   {
-    nome: 'Kit de chá premium',
-    descricao: 'Seleção de seis chás em lata, com infusor.',
-    categoria: 'Bem-estar',
-    valor: '142.00',
+    slug: 'caneca-aupo11',
+    nome: 'Caneca AUPO11',
+    descricao:
+      'Caneca preta com o porco coroado do AUPO11 na frente e, no verso, o recado: “Aproveite seu café com calma, seu dinheiro está no AUPO11.”',
+    categoria: 'Canecas e garrafas',
+    valor: '72.00',
     controlaEstoque: true,
-    estoque: 15,
+    estoque: 85,
   },
   {
-    nome: 'Placa comemorativa primeiro milhão',
-    descricao: 'Placa em acrílico com gravação personalizada do nome do cliente.',
-    categoria: 'Placas e troféus',
-    valor: '380.00',
-    tipoValor: TipoValor.medio,
-    controlaEstoque: false,
+    slug: 'garrafa-olho',
+    nome: 'Garrafa térmica AUVP',
+    descricao: 'Garrafa térmica preta fosca com o olho AUVP aplicado em dourado.',
+    categoria: 'Canecas e garrafas',
+    valor: '139.00',
+    controlaEstoque: true,
+    estoque: 40,
   },
   {
-    nome: 'Caneca personalizada (descontinuada)',
-    descricao: 'Modelo antigo, mantido apenas para histórico.',
-    categoria: 'Casa e decoração',
-    valor: '65.00',
+    slug: 'caneca-auvp-dourada',
+    nome: 'Caneca AUVP II — grafismo dourado',
+    descricao: 'Caneca preta fosca com o grafismo de ondas concêntricas e o olho AUVP em dourado.',
+    categoria: 'Canecas e garrafas',
+    valor: '68.00',
+    controlaEstoque: true,
+    estoque: 70,
+  },
+  {
+    slug: 'caneca-porcelana',
+    nome: 'Caneca AUVP I — “Coma, durma, aporte”',
+    descricao:
+      'Caneca de porcelana preta com o lembrete que virou lema: “Coma, durma, aporte, pare de reclamar.”',
+    categoria: 'Canecas e garrafas',
+    valor: '64.00',
+    controlaEstoque: true,
+    estoque: 95,
+  },
+  {
+    slug: 'agenda-auvp',
+    nome: 'Agenda AUVP',
+    descricao: 'Agenda preta com elástico e a frase “Projetar futuro. Realizar com consistência.”',
+    categoria: 'Papelaria',
+    valor: '98.00',
+    controlaEstoque: true,
+    estoque: 50,
+  },
+  {
+    slug: 'ecobag',
+    nome: 'Ecobag “Bolsa? Só a de valores”',
+    descricao: 'Sacola de algodão preta com estampa em silk e o trocadilho da casa.',
+    categoria: 'Sacolas & caixas',
+    valor: '42.00',
+    controlaEstoque: true,
+    estoque: 200,
+  },
+  {
+    slug: 'porta-cartao-preto',
+    nome: 'Porta-cartão AUVP preto',
+    descricao: 'Porta-cartão dobrável em couro preto com a marca AUVP gravada em baixo relevo.',
+    categoria: 'Acessórios',
+    valor: '165.00',
+    controlaEstoque: true,
+    estoque: 25,
+  },
+  {
+    slug: 'vela-aromatica',
+    nome: 'Vela aromática AUVP',
+    descricao: 'Vela de flor de laranjeira (193 g) em pote de vidro com tampa dourada.',
+    categoria: 'Casa & mesa',
+    valor: '112.00',
+    controlaEstoque: true,
+    estoque: 45,
+  },
+  {
+    slug: 'caneca-porcelana-antiga',
+    nome: 'Caneca AUVP (modelo descontinuado)',
+    descricao: 'Modelo antigo, mantido apenas para histórico de solicitações.',
+    categoria: 'Canecas e garrafas',
+    valor: '58.00',
     controlaEstoque: false,
+    semFoto: true,
     // Desativado de propósito: deve sumir do catálogo e permanecer nas
     // solicitações antigas.
     ativo: false,
@@ -164,6 +217,9 @@ async function main() {
       nome: p.nome,
       descricao: p.descricao,
       categoriaId: categorias.get(p.categoria)!,
+      // A foto é servida do próprio domínio, de `public/produtos/`. Quando o
+      // upload para o bucket existir, este campo passa a receber a URL de lá.
+      fotoUrl: p.semFoto ? null : `/produtos/${p.slug}.webp`,
       valor: p.valor,
       tipoValor: p.tipoValor ?? TipoValor.exato,
       controlaEstoque: p.controlaEstoque ?? false,
@@ -238,8 +294,8 @@ async function main() {
       mensagemCarta:
         'Marina, parabéns pelo seu dia! Que o novo ciclo venha cheio de conquistas. Um abraço da AUVP.',
       itens: [
-        { produto: 'Vinho tinto Malbec reserva', quantidade: 1 },
-        { produto: 'Caixa de chocolates belgas', quantidade: 1 },
+        { produto: 'Garrafa térmica AUVP', quantidade: 1 },
+        { produto: 'Caneca AUPO11', quantidade: 1 },
       ],
       entrega: {
         entregaCep: '01310100',
@@ -260,8 +316,8 @@ async function main() {
       mensagemCarta:
         'Roberto, o primeiro milhão é resultado de disciplina. Parabéns por essa marca!',
       itens: [
-        { produto: 'Placa comemorativa primeiro milhão', quantidade: 1 },
-        { produto: 'Espumante brut nacional', quantidade: 1 },
+        { produto: 'Licor AUVP “Punch Me Up”', quantidade: 1 },
+        { produto: 'Porta-cartão AUVP preto', quantidade: 1 },
       ],
       entrega: {
         entregaCep: '22071900',
@@ -281,7 +337,7 @@ async function main() {
       status: StatusSolicitacao.aguardando_compra,
       mensagemCarta: 'Juliana, felicidades para a família que acaba de crescer!',
       itens: [
-        { produto: 'Kit de chá premium', quantidade: 1 },
+        { produto: 'Vela aromática AUVP', quantidade: 1 },
         // Presente específico: fora do catálogo, com link onde comprar.
         {
           descricaoLivre: 'Enxoval de berço bordado com o nome do bebê',

@@ -43,3 +43,6 @@ yarn-error.log*
 
 # CSS da vitrine: gerado por `npm run demo:build`.
 demo/estilo.css
+demo/ilustracoes.js
+demo/icones.js
+demo/produtos/

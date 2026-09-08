@@ -2,13 +2,14 @@ import Link from 'next/link'
 import { db } from '@/lib/db'
 import { exigirPermissao } from '@/lib/auth-guards'
 import { pode } from '@/lib/permissions'
-import { formatarBRL } from '@/lib/money'
+import { formatarBRL, totalDosItens } from '@/lib/money'
 import { formatarData } from '@/lib/datas'
 import { filtroSolicitacoesSchema, whereDeSolicitacoes } from '@/lib/validators/filtros'
-import { ROTULO_STATUS } from '@/lib/status'
+import { ROTULO_STATUS, STATUS_FORA_DO_SALDO } from '@/lib/status'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -18,7 +19,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { StatusBadge } from '@/components/status-badge'
-import { CabecalhoDaPagina } from '@/components/pagina'
+import { Stat } from '@/components/stat'
+import { BarraDeFiltros, CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
 
 /**
  * Painel de gestão.
@@ -41,7 +43,7 @@ export default async function AdminSolicitacoesPage({
 
   const where = whereDeSolicitacoes(filtro)
 
-  const [solicitacoes, total, consultores] = await Promise.all([
+  const [solicitacoes, total, consultores, comProblema, soma] = await Promise.all([
     db.solicitacao.findMany({
       where,
       include: {
@@ -59,6 +61,11 @@ export default async function AdminSolicitacoesPage({
       select: { id: true, nome: true },
       orderBy: { nome: 'asc' },
     }),
+    db.solicitacao.count({ where: { ...where, status: 'deu_problema' } }),
+    db.solicitacao.aggregate({
+      where: { ...where, status: { notIn: [...STATUS_FORA_DO_SALDO] } },
+      _sum: { valorTotal: true },
+    }),
   ])
 
   // A exportação recebe exatamente os mesmos parâmetros da tela.
@@ -68,11 +75,16 @@ export default async function AdminSolicitacoesPage({
     ),
   ).toString()
 
+  const filtrando = Boolean(
+    params.busca || params.de || params.ate || params.consultorId || params.status,
+  )
+
   return (
     <>
       <CabecalhoDaPagina
+        sobrancelha="Gestão"
         titulo="Solicitações"
-        descricao={`${total} ${total === 1 ? 'solicitação' : 'solicitações'} no filtro atual`}
+        descricao="Acompanhe o fluxo inteiro, corrija dados e exporte o resultado filtrado."
         acoes={
           pode(usuario.perfil, 'exportar') ? (
             <>
@@ -87,96 +99,139 @@ export default async function AdminSolicitacoesPage({
         }
       />
 
-      <form method="get" className="mb-6 flex flex-wrap items-end gap-2">
-        <Input
-          name="busca"
-          defaultValue={filtro.busca}
-          placeholder="Código, cliente ou consultor"
-          className="max-w-56"
+      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+        <Stat rotulo="Solicitações no filtro" valor={total} />
+        <Stat
+          rotulo="Valor somado"
+          valor={formatarBRL(soma._sum.valorTotal ?? totalDosItens([]))}
+          apoio="Canceladas e devolvidas fora da conta."
         />
-        <Input name="de" type="date" defaultValue={params.de as string} className="max-w-40" />
-        <Input name="ate" type="date" defaultValue={params.ate as string} className="max-w-40" />
-        <select
-          name="consultorId"
-          defaultValue={filtro.consultorId ?? ''}
-          className="border-input bg-background h-9 rounded-md border px-3 text-sm"
-        >
-          <option value="">Todos os consultores</option>
-          {consultores.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nome}
-            </option>
-          ))}
-        </select>
-        <select
-          name="status"
-          defaultValue={(params.status as string) ?? ''}
-          className="border-input bg-background h-9 rounded-md border px-3 text-sm"
-        >
-          <option value="">Todos os status</option>
-          {Object.entries(ROTULO_STATUS).map(([valor, rotulo]) => (
-            <option key={valor} value={valor}>
-              {rotulo}
-            </option>
-          ))}
-        </select>
-        <Button type="submit" variant="secondary">
-          Filtrar
-        </Button>
-        <Button variant="ghost" asChild>
-          <Link href="/admin/solicitacoes">Limpar</Link>
-        </Button>
-      </form>
+        <Stat
+          rotulo="Precisando de atenção"
+          valor={comProblema}
+          apoio={comProblema === 0 ? 'Nenhuma com problema.' : 'Com status “deu problema”.'}
+        />
+      </div>
 
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Código</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Consultor</TableHead>
-              <TableHead>Cliente</TableHead>
-              <TableHead className="text-right">Itens</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {solicitacoes.length === 0 ? (
+      <BarraDeFiltros>
+        <form method="get" className="flex flex-1 flex-wrap items-center gap-2">
+          <Input
+            name="busca"
+            defaultValue={filtro.busca}
+            placeholder="Código, cliente ou consultor"
+            aria-label="Buscar solicitações"
+            className="w-56"
+          />
+          <Input
+            name="de"
+            type="date"
+            defaultValue={params.de as string}
+            aria-label="Data inicial"
+            className="w-40"
+          />
+          <Input
+            name="ate"
+            type="date"
+            defaultValue={params.ate as string}
+            aria-label="Data final"
+            className="w-40"
+          />
+          <Select
+            name="consultorId"
+            defaultValue={filtro.consultorId ?? ''}
+            aria-label="Filtrar por consultor"
+            className="w-auto min-w-48"
+          >
+            <option value="">Todos os consultores</option>
+            {consultores.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nome}
+              </option>
+            ))}
+          </Select>
+          <Select
+            name="status"
+            defaultValue={(params.status as string) ?? ''}
+            aria-label="Filtrar por status"
+            className="w-auto min-w-48"
+          >
+            <option value="">Todos os status</option>
+            {Object.entries(ROTULO_STATUS).map(([valor, rotulo]) => (
+              <option key={valor} value={valor}>
+                {rotulo}
+              </option>
+            ))}
+          </Select>
+          <Button type="submit" variant="secondary">
+            Filtrar
+          </Button>
+          {filtrando ? (
+            <Button variant="ghost" asChild>
+              <Link href="/admin/solicitacoes">Limpar</Link>
+            </Button>
+          ) : null}
+        </form>
+      </BarraDeFiltros>
+
+      {solicitacoes.length === 0 ? (
+        <EstadoVazio
+          titulo="Nenhuma solicitação encontrada"
+          descricao={
+            filtrando
+              ? 'Nenhuma solicitação bate com os filtros aplicados. Ajuste o período ou limpe os filtros.'
+              : 'Assim que os consultores começarem a solicitar presentes, eles aparecem aqui.'
+          }
+          acao={
+            filtrando ? (
+              <Button variant="outline" asChild>
+                <Link href="/admin/solicitacoes">Limpar filtros</Link>
+              </Button>
+            ) : null
+          }
+        />
+      ) : (
+        <Card className="overflow-hidden">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={7} className="text-muted-foreground py-10 text-center">
-                  Nenhuma solicitação encontrada.
-                </TableCell>
+                <TableHead>Código</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead>Consultor</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead className="text-right">Itens</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
-            ) : (
-              solicitacoes.map((s) => (
+            </TableHeader>
+            <TableBody>
+              {solicitacoes.map((s) => (
                 <TableRow key={s.id}>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium whitespace-nowrap tabular-nums">
                     <Link
                       href={`/admin/solicitacoes/${s.id}`}
-                      className="underline underline-offset-2"
+                      className="hover:text-primary-emphasis underline-offset-4 hover:underline"
                     >
                       {s.codigo}
                     </Link>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">
+                  <TableCell className="text-muted-foreground whitespace-nowrap tabular-nums">
                     {formatarData(s.dataSolicitacao)}
                   </TableCell>
                   <TableCell>{s.consultor.nome}</TableCell>
                   <TableCell>{s.cliente.nome}</TableCell>
-                  <TableCell className="text-right">{s._count.itens}</TableCell>
-                  <TableCell className="text-right whitespace-nowrap">
+                  <TableCell className="text-right tabular-nums">{s._count.itens}</TableCell>
+                  <TableCell className="text-right font-medium whitespace-nowrap tabular-nums">
                     {formatarBRL(s.valorTotal)}
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={s.status} />
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </Card>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
     </>
   )
 }

@@ -2,8 +2,9 @@ import { exigirPermissao } from '@/lib/auth-guards'
 import { filaDeCompras, totalDaFila, STATUS_DA_FILA_DE_COMPRAS } from '@/lib/compras'
 import { formatarBRL } from '@/lib/money'
 import { formatarData } from '@/lib/datas'
+import { ROTULO_STATUS } from '@/lib/status'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -13,7 +14,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { StatusBadge } from '@/components/status-badge'
-import { CabecalhoDaPagina } from '@/components/pagina'
+import { Stat } from '@/components/stat'
+import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
 
 /**
  * Fila de compras — tela do perfil Financeiro.
@@ -28,46 +30,38 @@ export default async function FilaDeComprasPage() {
 
   const itens = await filaDeCompras()
   const total = totalDaFila(itens)
-
   const aguardando = itens.filter((i) => i.status === 'aguardando_compra')
 
   return (
     <>
       <CabecalhoDaPagina
+        sobrancelha="Financeiro"
         titulo="Fila de compras"
-        descricao="Itens das solicitações enviadas para compra."
+        descricao="Itens das solicitações enviadas para compra, em ordem de chegada."
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardDescription>Aguardando compra</CardDescription>
-            <CardTitle className="text-2xl">{aguardando.length}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>Itens na fila</CardDescription>
-            <CardTitle className="text-2xl">{itens.length}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>Valor total</CardDescription>
-            <CardTitle className="text-2xl">{formatarBRL(total)}</CardTitle>
-          </CardHeader>
-        </Card>
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Stat
+          destaque
+          rotulo="Valor total da fila"
+          valor={formatarBRL(total)}
+          apoio={`${itens.length} ${itens.length === 1 ? 'item' : 'itens'} no total.`}
+        />
+        <Stat rotulo="Aguardando compra" valor={aguardando.length} apoio="Ainda não comprados." />
+        <Stat
+          rotulo="Já comprados"
+          valor={itens.length - aguardando.length}
+          apoio="Seguem visíveis até saírem para envio."
+        />
       </div>
 
       {itens.length === 0 ? (
-        <Card>
-          <CardContent className="text-muted-foreground py-10 text-center text-sm">
-            Nenhum item na fila. Solicitações aparecem aqui quando entram em{' '}
-            <strong>aguardando compra</strong>.
-          </CardContent>
-        </Card>
+        <EstadoVazio
+          titulo="Nada para comprar agora"
+          descricao="As solicitações aparecem aqui assim que o Admin as move para aguardando compra."
+        />
       ) : (
-        <Card>
+        <Card className="overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -83,11 +77,15 @@ export default async function FilaDeComprasPage() {
             <TableBody>
               {itens.map((item) => (
                 <TableRow key={item.itemId}>
-                  <TableCell className="whitespace-nowrap">{formatarData(item.data)}</TableCell>
-                  <TableCell className="font-medium whitespace-nowrap">{item.codigo}</TableCell>
-                  <TableCell>
-                    <div>{item.produto}</div>
-                    <div className="text-muted-foreground text-xs">
+                  <TableCell className="text-muted-foreground whitespace-nowrap tabular-nums">
+                    {formatarData(item.data)}
+                  </TableCell>
+                  <TableCell className="font-medium whitespace-nowrap tabular-nums">
+                    {item.codigo}
+                  </TableCell>
+                  <TableCell className="min-w-56">
+                    <div className="font-medium">{item.produto}</div>
+                    <div className="text-muted-foreground mt-0.5 text-xs">
                       {item.consultorNome} · para {item.clienteNome}
                     </div>
                   </TableCell>
@@ -97,18 +95,18 @@ export default async function FilaDeComprasPage() {
                         href={item.site}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block truncate underline underline-offset-2"
+                        className="text-primary-emphasis block truncate text-sm underline-offset-4 hover:underline"
                       >
-                        {item.site}
+                        {item.site.replace(/^https?:\/\//, '')}
                       </a>
                     ) : (
-                      // Item de catálogo não tem site: é comprado pelo canal
-                      // já estabelecido. Mostrar a categoria é mais útil que um traço.
+                      // Item de catálogo não tem site: é comprado pelo canal já
+                      // estabelecido. A categoria informa mais que um traço.
                       <Badge variant="outline">{item.categoria ?? 'catálogo'}</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">{item.quantidade}</TableCell>
-                  <TableCell className="text-right whitespace-nowrap">
+                  <TableCell className="text-right tabular-nums">{item.quantidade}</TableCell>
+                  <TableCell className="text-right font-medium whitespace-nowrap tabular-nums">
                     {formatarBRL(item.valor)}
                   </TableCell>
                   <TableCell>
@@ -122,8 +120,9 @@ export default async function FilaDeComprasPage() {
       )}
 
       <p className="text-muted-foreground mt-4 text-xs">
-        A fila mostra os status {STATUS_DA_FILA_DE_COMPRAS.join(' e ')}. A alteração de status é
-        feita no detalhe da solicitação.
+        A fila mostra as solicitações em{' '}
+        {STATUS_DA_FILA_DE_COMPRAS.map((s) => ROTULO_STATUS[s].toLowerCase()).join(' e ')}. A
+        alteração de status é feita no detalhe da solicitação.
       </p>
     </>
   )

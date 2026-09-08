@@ -11,7 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { CabecalhoDaPagina, AConstruir } from '@/components/pagina'
+import { Stat } from '@/components/stat'
+import { CabecalhoDaPagina, AConstruir, EstadoVazio } from '@/components/pagina'
 
 /**
  * CRUD do catálogo — operado pela própria área de Relacionamento.
@@ -30,67 +31,82 @@ export default async function AdminCatalogoPage() {
     db.categoria.findMany({ orderBy: { nome: 'asc' } }),
   ])
 
+  const ativos = produtos.filter((p) => p.ativo).length
+
   return (
     <>
       <CabecalhoDaPagina
+        sobrancelha="Administração"
         titulo="Gerenciar catálogo"
-        descricao={`${produtos.length} produtos · ${categorias.length} categorias`}
+        descricao="Cadastro, edição e ativação de produtos — feitos pela própria área, sem depender do time técnico."
       />
 
-      <AConstruir>
-        <p className="text-foreground font-medium">Formulários em construção.</p>
-        <p className="mt-2">
-          Faltam o cadastro e a edição de produto com upload de foto para o bucket, e o CRUD de
-          categorias. As regras de validação já estão em <code>src/lib/validators/produto.ts</code>.
-          Produto nunca é excluído: a ação é desativar, e o desativado some do catálogo do consultor
-          mas continua nas solicitações antigas.
-        </p>
-      </AConstruir>
+      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+        <Stat rotulo="Produtos ativos" valor={ativos} apoio="Visíveis para o consultor." />
+        <Stat
+          rotulo="Desativados"
+          valor={produtos.length - ativos}
+          apoio="Somem do catálogo, permanecem no histórico."
+        />
+        <Stat rotulo="Categorias" valor={categorias.length} />
+      </div>
 
-      <Card className="mt-6">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Produto</TableHead>
-              <TableHead>Categoria</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
-              <TableHead>Estoque</TableHead>
-              <TableHead className="text-right">Usos</TableHead>
-              <TableHead>Situação</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {produtos.length === 0 ? (
+      <div className="mb-6">
+        <AConstruir>
+          <p>
+            Faltam o cadastro e a edição de produto com upload de foto para o bucket, e o CRUD de
+            categorias. As regras de validação já estão em{' '}
+            <code>src/lib/validators/produto.ts</code>. Produto nunca é excluído: a ação é
+            desativar, e o desativado some do catálogo do consultor mas continua nas solicitações
+            antigas.
+          </p>
+        </AConstruir>
+      </div>
+
+      {produtos.length === 0 ? (
+        <EstadoVazio
+          titulo="Nenhum produto cadastrado"
+          descricao="Rode npm run db:seed para carregar exemplos, ou cadastre o primeiro produto quando o formulário estiver pronto."
+        />
+      ) : (
+        <Card className="overflow-hidden">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground py-10 text-center">
-                  Nenhum produto cadastrado. Rode <code>npm run db:seed</code> para carregar
-                  exemplos.
-                </TableCell>
+                <TableHead>Produto</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+                <TableHead className="text-right">Estoque</TableHead>
+                <TableHead className="text-right">Usos</TableHead>
+                <TableHead>Situação</TableHead>
               </TableRow>
-            ) : (
-              produtos.map((p) => (
-                <TableRow key={p.id}>
+            </TableHeader>
+            <TableBody>
+              {produtos.map((p) => (
+                <TableRow key={p.id} className={p.ativo ? undefined : 'text-muted-foreground'}>
                   <TableCell className="font-medium">{p.nome}</TableCell>
-                  <TableCell>{p.categoria.nome}</TableCell>
-                  <TableCell className="text-right whitespace-nowrap">
-                    {p.tipoValor === 'medio' ? 'a partir de ' : ''}
+                  <TableCell className="text-muted-foreground">{p.categoria.nome}</TableCell>
+                  <TableCell className="text-right whitespace-nowrap tabular-nums">
+                    {p.tipoValor === 'medio' ? (
+                      <span className="text-muted-foreground text-xs">a partir de </span>
+                    ) : null}
                     {formatarBRL(p.valor)}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-muted-foreground text-right tabular-nums">
                     {p.controlaEstoque ? (p.estoque ?? 0) : '—'}
                   </TableCell>
-                  <TableCell className="text-right">{p._count.itens}</TableCell>
+                  <TableCell className="text-right tabular-nums">{p._count.itens}</TableCell>
                   <TableCell>
-                    <Badge variant={p.ativo ? 'secondary' : 'outline'}>
+                    <Badge variant={p.ativo ? 'outline' : 'muted'}>
                       {p.ativo ? 'ativo' : 'desativado'}
                     </Badge>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </Card>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
     </>
   )
 }

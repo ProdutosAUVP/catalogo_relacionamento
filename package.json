@@ -25,7 +25,7 @@
     "db:reset": "prisma migrate reset --force",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test",
     "lint:fix": "eslint . --fix",
-    "demo:build": "tailwindcss -i demo/tailwind.css -o demo/estilo.css --minify",
+    "demo:build": "tsx scripts/gerar-assets-vitrine.ts && tailwindcss -i demo/tailwind.css -o demo/estilo.css --minify",
     "demo:dev": "tailwindcss -i demo/tailwind.css -o demo/estilo.css --watch"
   },
   "prisma": {

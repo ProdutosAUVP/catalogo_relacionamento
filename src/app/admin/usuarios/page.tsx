@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Stat } from '@/components/stat'
 import { CabecalhoDaPagina, AConstruir } from '@/components/pagina'
 
 /**
@@ -30,17 +31,35 @@ export default async function AdminUsuariosPage() {
 
   return (
     <>
-      <CabecalhoDaPagina titulo="Usuários" descricao={`${usuarios.length} cadastrados`} />
+      <CabecalhoDaPagina
+        sobrancelha="Administração"
+        titulo="Usuários"
+        descricao="Perfil e limite mensal são geridos aqui, dentro da ferramenta, sem passar por TI."
+      />
 
-      <AConstruir>
-        <p className="text-foreground font-medium">Edição em construção.</p>
-        <p className="mt-2">
-          Faltam a troca de perfil, a definição do limite mensal e a desativação. Usuários não são
-          criados aqui: entram sozinhos no primeiro login pelo SSO, como consultor.
-        </p>
-      </AConstruir>
+      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+        <Stat rotulo="Ativos" valor={usuarios.filter((u) => u.ativo).length} />
+        <Stat
+          rotulo="Consultores"
+          valor={usuarios.filter((u) => u.perfil === 'consultor').length}
+        />
+        <Stat
+          rotulo="Com limite definido"
+          valor={usuarios.filter((u) => u.limiteMensal).length}
+          apoio="Os demais não têm teto mensal."
+        />
+      </div>
 
-      <Card className="mt-6">
+      <div className="mb-6">
+        <AConstruir>
+          <p>
+            Faltam a troca de perfil, a definição do limite mensal e a desativação. Usuários não são
+            criados aqui: entram sozinhos no primeiro login pelo SSO, como consultor.
+          </p>
+        </AConstruir>
+      </div>
+
+      <Card className="overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -67,12 +86,12 @@ export default async function AdminUsuariosPage() {
                   <TableCell>
                     <Badge variant="secondary">{ROTULO_PERFIL[u.perfil]}</Badge>
                   </TableCell>
-                  <TableCell className="text-right whitespace-nowrap">
+                  <TableCell className="text-right whitespace-nowrap tabular-nums">
                     {u.limiteMensal ? formatarBRL(u.limiteMensal) : '—'}
                   </TableCell>
-                  <TableCell className="text-right">{u._count.solicitacoes}</TableCell>
+                  <TableCell className="text-right tabular-nums">{u._count.solicitacoes}</TableCell>
                   <TableCell>
-                    <Badge variant={u.ativo ? 'secondary' : 'outline'}>
+                    <Badge variant={u.ativo ? 'outline' : 'muted'}>
                       {u.ativo ? 'ativo' : 'desativado'}
                     </Badge>
                   </TableCell>
