@@ -18,6 +18,28 @@ Pendente
 Avança uma etapa por vez. Não é possível pular etapa nem voltar pelo caminho
 linear — voltar acontece por "Deu problema".
 
+### Atalho: estoque não passa pelo Financeiro
+
+Há uma exceção declarada em `ATALHOS`: de **Aguardando aprovação** a
+solicitação pode ir direto para **Organizando envio**, pulando o Financeiro.
+
+Regra da área: item que já está na prateleira não tem o que ser comprado, e
+hoje esses casos vão para a expedição por fora do sistema. Quem decide se o
+atalho é oferecido é `proximoDepoisDaAprovacao(itens)`, que olha os itens:
+
+| Item                                 | Precisa de compra |
+| ------------------------------------ | ----------------- |
+| Presente específico                  | sim               |
+| Produto que não controla estoque     | sim               |
+| Produto que controla e não tem saldo | sim               |
+| Produto que controla e tem saldo     | não               |
+
+Basta um item precisar de compra para a solicitação inteira ir ao Financeiro: o
+pedido é embalado junto, então ele espera o item que falta.
+
+A tela do detalhe **sugere** o próximo status e explica o porquê; a decisão
+continua sendo do Admin, e as duas transições são válidas.
+
 ## Saídas do fluxo
 
 - **Deu problema**: acionável a partir de qualquer status vivo. Dali a
@@ -52,5 +74,22 @@ solicitação passa a ser derivado dos itens.
 
 ## Efeito no saldo
 
-Canceladas e devolvidas não entram no gasto do mês. Todo o resto entra,
-inclusive "Deu problema" — o dinheiro pode já ter sido comprometido.
+**Todos os status entram no gasto do mês**, cancelados e devolvidos inclusive.
+
+A spec v1 dizia para excluir os dois, e o código chegou a fazer isso. A área
+corrigiu: uma devolução normalmente vira reenvio, então o dinheiro segue
+comprometido, e tirar esses casos da conta subestimaria o gasto do consultor.
+
+`STATUS_FORA_DO_SALDO` continua existindo, vazia. Ela é o lugar único da
+pergunta "isto conta no saldo?": se um dia algum status deixar de contar, ele
+entra ali e a mudança vale de uma vez para o saldo, o painel e a exportação.
+
+## Da expedição para a frente
+
+"Organizando envio" é o status em que a solicitação está com a expedição. A
+tela `/expedicao` monta a partir dele a lista que hoje é uma planilha feita à
+mão — ver [`src/lib/expedicao.ts`](../src/lib/expedicao.ts).
+
+A expedição não é um perfil novo: ela trabalha fora desta ferramenta, e quem
+abre a tela é Admin ou Financeiro (`expedicao.verFila`). A carta que acompanha
+o presente continua sendo escrita fora do sistema, por decisão da área.

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { StatusSolicitacao } from '@prisma/client'
 import { db } from '@/lib/db'
 import { exigirPermissao } from '@/lib/auth-guards'
 import { pode } from '@/lib/permissions'
@@ -7,7 +8,12 @@ import { formatarBRL, subtotal } from '@/lib/money'
 import { formatarData } from '@/lib/datas'
 import { formatarCpf, formatarTelefone } from '@/lib/cpf'
 import { formatarCep } from '@/lib/cep'
-import { ROTULO_STATUS, transicoesPermitidas, exigeMotivo } from '@/lib/status'
+import {
+  ROTULO_STATUS,
+  transicoesPermitidas,
+  proximoDepoisDaAprovacao,
+  precisaDeCompra,
+} from '@/lib/status'
 import { ROTULO_MOTIVO } from '@/lib/validators/solicitacao'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -20,7 +26,8 @@ import {
 } from '@/components/ui/table'
 import { StatusBadge } from '@/components/status-badge'
 import { LinhaDoTempo } from '@/components/linha-do-tempo'
-import { CabecalhoDaPagina, AConstruir } from '@/components/pagina'
+import { CabecalhoDaPagina } from '@/components/pagina'
+import { AlterarStatus } from './alterar-status'
 
 /** Detalhe da solicitação: itens, entrega, carta e histórico completo. */
 export default async function DetalheSolicitacaoPage({
@@ -36,7 +43,9 @@ export default async function DetalheSolicitacaoPage({
     include: {
       cliente: true,
       consultor: { select: { nome: true, email: true } },
-      itens: { include: { produto: { select: { nome: true } } } },
+      itens: {
+        include: { produto: { select: { nome: true, controlaEstoque: true, estoque: true } } },
+      },
       historico: {
         include: { usuario: { select: { nome: true } } },
         orderBy: { criadoEm: 'desc' },
@@ -48,6 +57,19 @@ export default async function DetalheSolicitacaoPage({
 
   const proximos = transicoesPermitidas(solicitacao.status)
   const podeAlterar = pode(usuario.perfil, 'solicitacao.alterarStatus')
+
+  // Solicitação com tudo em estoque não passa pelo Financeiro: da aprovação ela
+  // vai direto para a expedição. A tela só sugere; a decisão é do Admin.
+  const sugerido =
+    solicitacao.status === StatusSolicitacao.aguardando_aprovacao
+      ? proximoDepoisDaAprovacao(solicitacao.itens)
+      : undefined
+  const explicacaoDoAtalho =
+    sugerido === StatusSolicitacao.organizando_envio
+      ? 'Todos os itens estão em estoque, então não há o que o Financeiro compre: esta solicitação pode ir direto para a expedição.'
+      : sugerido === StatusSolicitacao.aguardando_compra && precisaDeCompra(solicitacao.itens)
+        ? 'Há item sem estoque ou presente específico, então a solicitação passa pelo Financeiro antes da expedição.'
+        : undefined
 
   return (
     <>
@@ -226,26 +248,12 @@ export default async function DetalheSolicitacaoPage({
                   {ROTULO_STATUS[solicitacao.status]} é um status final e não admite mudança.
                 </p>
               ) : (
-                <AConstruir>
-                  <p>A partir daqui a solicitação pode ir para:</p>
-                  <ul className="mt-2 space-y-1">
-                    {proximos.map((status) => (
-                      <li key={status} className="flex items-baseline gap-2">
-                        <span className="bg-muted-foreground/40 size-1 shrink-0 rounded-full" />
-                        <span className="text-foreground">
-                          {ROTULO_STATUS[status]}
-                          {exigeMotivo(status) ? (
-                            <span className="text-muted-foreground"> — exige motivo</span>
-                          ) : null}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-3">
-                    As transições vêm de <code>transicoesPermitidas</code>; a gravação precisa
-                    escrever a linha do histórico na mesma transação.
-                  </p>
-                </AConstruir>
+                <AlterarStatus
+                  solicitacaoId={solicitacao.id}
+                  opcoes={proximos}
+                  sugerido={sugerido}
+                  explicacaoDoAtalho={explicacaoDoAtalho}
+                />
               )}
             </CardContent>
           </Card>

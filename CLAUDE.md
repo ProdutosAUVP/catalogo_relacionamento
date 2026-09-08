@@ -21,6 +21,8 @@ duplique numa tela.
 | Transições de status e motivos  | `src/lib/status.ts`          |
 | Gasto do mês e limite           | `src/lib/saldo.ts`           |
 | Fila de compras do Financeiro   | `src/lib/compras.ts`         |
+| Fila da expedição               | `src/lib/expedicao.ts`       |
+| Fornecedor padrão por categoria | `src/lib/fornecedores.ts`    |
 | Aritmética de dinheiro          | `src/lib/money.ts`           |
 | Colunas e formato da exportação | `src/lib/export/`            |
 | Validação de formulário         | `src/lib/validators/`        |
@@ -41,6 +43,12 @@ Coisas que o código já garante e que não devem ser afrouxadas:
   não é controle de acesso.
 - **Consultor só enxerga as próprias solicitações.** Use
   `filtroDeSolicitacoes`, não um `where` escrito à mão.
+- **Preço de item vem do banco na hora de gravar.** `criarSolicitacao` relê o
+  produto; valor que chega do navegador não é usado.
+- **Tudo conta no saldo do mês**, cancelado e devolvido inclusive — a área
+  reenvia. `STATUS_FORA_DO_SALDO` está vazia de propósito.
+- **Estoque não passa pelo Financeiro.** Solicitação com tudo em estoque vai da
+  aprovação direto para a expedição (`proximoDepoisDaAprovacao`).
 - **Telas leem catálogo e clientes pelos providers**, não pelo Prisma direto.
 - **Movimento não pode gerar layout shift.** Anime só `opacity` e `transform`.
   Todo `loading.tsx` reserva as medidas exatas do conteúdo, e toda imagem tem
@@ -82,11 +90,11 @@ siga o mesmo padrão.
 ## O que está construído e o que não está
 
 Pronto: modelo de dados, permissões, fluxo de status, saldo, exportação, SSO,
-providers e as telas de leitura.
+providers, as telas de leitura, o formulário de nova solicitação, a mudança de
+status e a fila da expedição.
 
-A construir: formulário de nova solicitação, CRUD de produto com upload de
-foto, CRUD de cliente com importação CSV, edição de usuário e a ação de
-alterar status. Cada tela em construção lista o que falta nela.
+A construir: CRUD de produto com upload de foto, CRUD de cliente com importação
+CSV e edição de usuário. Cada tela em construção lista o que falta nela.
 
 ## Vitrine estática
 

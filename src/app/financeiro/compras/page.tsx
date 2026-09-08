@@ -1,5 +1,6 @@
 import { exigirPermissao } from '@/lib/auth-guards'
 import { filaDeCompras, totalDaFila, STATUS_DA_FILA_DE_COMPRAS } from '@/lib/compras'
+import { siteDeCompra } from '@/lib/fornecedores'
 import { formatarBRL } from '@/lib/money'
 import { formatarData } from '@/lib/datas'
 import { ROTULO_STATUS } from '@/lib/status'
@@ -90,20 +91,7 @@ export default async function FilaDeComprasPage() {
                     </div>
                   </TableCell>
                   <TableCell className="max-w-64">
-                    {item.site ? (
-                      <a
-                        href={item.site}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary-emphasis block truncate text-sm underline-offset-4 hover:underline"
-                      >
-                        {item.site.replace(/^https?:\/\//, '')}
-                      </a>
-                    ) : (
-                      // Item de catálogo não tem site: é comprado pelo canal já
-                      // estabelecido. A categoria informa mais que um traço.
-                      <Badge variant="outline">{item.categoria ?? 'catálogo'}</Badge>
-                    )}
+                    <SiteDeCompra site={item.site} categoria={item.categoria} />
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{item.quantidade}</TableCell>
                   <TableCell className="text-right font-medium whitespace-nowrap tabular-nums">
@@ -124,6 +112,35 @@ export default async function FilaDeComprasPage() {
         {STATUS_DA_FILA_DE_COMPRAS.map((s) => ROTULO_STATUS[s].toLowerCase()).join(' e ')}. A
         alteração de status é feita no detalhe da solicitação.
       </p>
+    </>
+  )
+}
+
+/**
+ * Onde comprar o item.
+ *
+ * O link do presente específico vence; sem ele, vale o fornecedor padrão da
+ * categoria (bebida é sempre Casa da Bebida, por regra da área). Sobrando as
+ * duas coisas, mostra-se a categoria — que informa mais que um traço.
+ */
+function SiteDeCompra({ site, categoria }: { site: string | null; categoria: string | null }) {
+  const destino = siteDeCompra(site, categoria)
+
+  if (!destino) return <Badge variant="outline">{categoria ?? 'catálogo'}</Badge>
+
+  return (
+    <>
+      <a
+        href={destino.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-primary-emphasis block truncate text-sm underline-offset-4 hover:underline"
+      >
+        {destino.url.replace(/^https?:\/\//, '')}
+      </a>
+      {destino.origem === 'categoria' ? (
+        <span className="text-muted-foreground text-xs">fornecedor padrão de {categoria}</span>
+      ) : null}
     </>
   )
 }

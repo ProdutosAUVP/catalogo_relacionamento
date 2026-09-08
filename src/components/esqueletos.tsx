@@ -86,3 +86,19 @@ export function EsqueletoDeCatalogo({ cards = 8 }: { cards?: number }) {
     </>
   )
 }
+
+/**
+ * Cartões de pedido da expedição.
+ *
+ * Altura fixa por cartão porque a coluna do endereço tem sempre as mesmas cinco
+ * linhas — é o dado de envio, não texto livre.
+ */
+export function EsqueletoDePedidos({ cards = 3 }: { cards?: number }) {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: cards }).map((_, i) => (
+        <Skeleton key={i} className="h-[248px] rounded-lg" />
+      ))}
+    </div>
+  )
+}

@@ -4,6 +4,8 @@ import {
   FLUXO_LINEAR,
   contaNoSaldo,
   ehTerminal,
+  precisaDeCompra,
+  proximoDepoisDaAprovacao,
   transicaoPermitida,
   transicoesPermitidas,
   validarMudancaDeStatus,
@@ -18,8 +20,11 @@ describe('fluxo linear', () => {
     }
   })
 
-  it('não deixa pular etapas', () => {
+  it('não deixa pular etapas, fora o atalho declarado para a expedição', () => {
     expect(transicaoPermitida(StatusSolicitacao.pendente, StatusSolicitacao.comprado)).toBe(false)
+    expect(
+      transicaoPermitida(StatusSolicitacao.aguardando_compra, StatusSolicitacao.entregue),
+    ).toBe(false)
   })
 
   it('não deixa voltar pelo fluxo linear', () => {
@@ -112,13 +117,83 @@ describe('mudança para o mesmo status', () => {
 })
 
 describe('saldo do mês', () => {
-  it('ignora canceladas e devolvidas e conta o resto', () => {
-    expect(contaNoSaldo(StatusSolicitacao.cancelado)).toBe(false)
-    expect(contaNoSaldo(StatusSolicitacao.devolvido)).toBe(false)
-
-    for (const status of FLUXO_LINEAR) {
+  // A spec mandava excluir cancelados e devolvidos. A área corrigiu: devolução
+  // normalmente vira reenvio, então o dinheiro segue comprometido.
+  it('conta todos os status, inclusive cancelado e devolvido', () => {
+    for (const status of Object.values(StatusSolicitacao)) {
       expect(contaNoSaldo(status)).toBe(true)
     }
-    expect(contaNoSaldo(StatusSolicitacao.deu_problema)).toBe(true)
+  })
+})
+
+describe('atalho para a expedição', () => {
+  it('permite ir da aprovação direto para organizando envio', () => {
+    expect(
+      transicaoPermitida(
+        StatusSolicitacao.aguardando_aprovacao,
+        StatusSolicitacao.organizando_envio,
+      ),
+    ).toBe(true)
+  })
+
+  it('mantém o caminho pelo Financeiro disponível', () => {
+    expect(
+      transicaoPermitida(
+        StatusSolicitacao.aguardando_aprovacao,
+        StatusSolicitacao.aguardando_compra,
+      ),
+    ).toBe(true)
+  })
+
+  it('não abre o atalho a partir de outros status', () => {
+    expect(
+      transicaoPermitida(StatusSolicitacao.pendente, StatusSolicitacao.organizando_envio),
+    ).toBe(false)
+  })
+})
+
+describe('precisa de compra', () => {
+  const emEstoque = { controlaEstoque: true, estoque: 10 }
+
+  it('não precisa quando tudo é de catálogo e há estoque', () => {
+    expect(precisaDeCompra([{ produtoId: 'p1', quantidade: 2, produto: emEstoque }])).toBe(false)
+  })
+
+  it('precisa quando o estoque não cobre a quantidade pedida', () => {
+    expect(
+      precisaDeCompra([
+        { produtoId: 'p1', quantidade: 20, produto: { controlaEstoque: true, estoque: 10 } },
+      ]),
+    ).toBe(true)
+  })
+
+  it('precisa quando o produto não controla estoque', () => {
+    expect(
+      precisaDeCompra([
+        { produtoId: 'p1', quantidade: 1, produto: { controlaEstoque: false, estoque: null } },
+      ]),
+    ).toBe(true)
+  })
+
+  it('precisa quando há presente específico', () => {
+    expect(precisaDeCompra([{ produtoId: null, quantidade: 1 }])).toBe(true)
+  })
+
+  it('um único item sem estoque leva a solicitação inteira ao Financeiro', () => {
+    expect(
+      precisaDeCompra([
+        { produtoId: 'p1', quantidade: 1, produto: emEstoque },
+        { produtoId: null, quantidade: 1 },
+      ]),
+    ).toBe(true)
+  })
+
+  it('sugere o próximo status conforme a necessidade de compra', () => {
+    expect(proximoDepoisDaAprovacao([{ produtoId: 'p1', quantidade: 1, produto: emEstoque }])).toBe(
+      StatusSolicitacao.organizando_envio,
+    )
+    expect(proximoDepoisDaAprovacao([{ produtoId: null, quantidade: 1 }])).toBe(
+      StatusSolicitacao.aguardando_compra,
+    )
   })
 })
