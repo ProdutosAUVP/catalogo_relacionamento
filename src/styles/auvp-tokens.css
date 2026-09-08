@@ -282,6 +282,35 @@
     animation: entrada-de-conteudo 0.28s var(--ease-apple) both;
   }
 
+  /*
+   * Entrada e saída do menu suspenso.
+   *
+   * Escrita à mão em vez de trazer `tailwindcss-animate` só por isto: são duas
+   * keyframes, e a dependência a mais teria de ser mantida por conta própria
+   * na migração do Tailwind 4.
+   */
+  @keyframes menu-entrando {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+
+  @keyframes menu-saindo {
+    to {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+
+  .animar-menu[data-state='open'] {
+    animation: menu-entrando 0.16s var(--ease-apple);
+  }
+
+  .animar-menu[data-state='closed'] {
+    animation: menu-saindo 0.12s var(--ease-apple);
+  }
+
   .bg-brand-gradient {
     background: linear-gradient(
       135deg,

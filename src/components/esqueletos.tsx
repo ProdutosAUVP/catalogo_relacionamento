@@ -5,7 +5,12 @@ import { Skeleton } from '@/components/ui/skeleton'
  *
  * A regra que vale para todos: **mesmas medidas do conteúdo real**. Um
  * esqueleto mais baixo que a tabela que ele antecede produz exatamente o salto
- * que ele deveria evitar.
+ * que ele deveria evitar — e um mais alto também, porque o rodapé sobe quando
+ * o conteúdo chega.
+ *
+ * A quantidade de linhas de tabela é a única medida que não dá para acertar
+ * sempre: ela depende de quantos registros a consulta devolve. Cinco é a
+ * aproximação escolhida; o resíduo de deslocamento que sobra vem daí.
  */
 
 export function EsqueletoDeCabecalho({ comAcoes = false }: { comAcoes?: boolean }) {

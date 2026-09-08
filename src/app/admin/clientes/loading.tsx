@@ -5,7 +5,7 @@ export default function Carregando() {
     <>
       <EsqueletoDeCabecalho />
       <EsqueletoDeStats />
-      <EsqueletoDeTabela linhas={8} />
+      <EsqueletoDeTabela linhas={5} />
     </>
   )
 }

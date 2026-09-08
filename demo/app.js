@@ -16,14 +16,34 @@ const PERMISSOES = {
 }
 
 const TELAS = [
-  { id: 'catalogo', rotulo: 'Catálogo' },
-  { id: 'nova', rotulo: 'Nova solicitação' },
-  { id: 'minhas', rotulo: 'Minhas solicitações' },
-  { id: 'compras', rotulo: 'Fila de compras' },
-  { id: 'gestao', rotulo: 'Gestão' },
-  { id: 'detalhe', rotulo: 'Detalhe' },
-  { id: 'produtos', rotulo: 'Gerenciar catálogo' },
-  { id: 'usuarios', rotulo: 'Usuários' },
+  {
+    id: 'catalogo',
+    rotulo: 'Catálogo',
+    descricao: 'Os presentes disponíveis, com valor e estoque',
+  },
+  {
+    id: 'nova',
+    rotulo: 'Nova solicitação',
+    descricao: 'As cinco etapas do pedido, do cliente à revisão',
+  },
+  {
+    id: 'minhas',
+    rotulo: 'Minhas solicitações',
+    descricao: 'O que o consultor pediu e o status de cada envio',
+  },
+  {
+    id: 'compras',
+    rotulo: 'Fila de compras',
+    descricao: 'Itens enviados para compra, com valor e site',
+  },
+  { id: 'gestao', rotulo: 'Gestão', descricao: 'Fluxo completo, mudança de status e exportação' },
+  {
+    id: 'detalhe',
+    rotulo: 'Detalhe',
+    descricao: 'Itens, entrega, carta e histórico da solicitação',
+  },
+  { id: 'produtos', rotulo: 'Produtos', descricao: 'Cadastro, edição e ativação do catálogo' },
+  { id: 'usuarios', rotulo: 'Usuários', descricao: 'Perfil de acesso e limite mensal' },
 ]
 
 let perfil = 'admin'
@@ -660,17 +680,37 @@ function render() {
   if (!permitidas.includes(tela)) tela = permitidas[0]
 
   document.getElementById('abas').innerHTML = TELAS.filter((t) => permitidas.includes(t.id))
-    .map(
-      (t) => `
-      <button data-tela="${t.id}"
-        class="rounded-md px-2.5 py-1 text-sm transition-colors ${
-          // A barra é sempre escura, então as cores aqui são literais: os
-          // tokens de texto do tema claro sumiriam sobre o verde da marca.
-          t.id === tela
-            ? 'bg-white/15 font-medium text-white'
-            : 'text-white/70 hover:bg-white/10 hover:text-white'
-        }">${esc(t.rotulo)}</button>`,
-    )
+    .map((t) => {
+      const ativo = t.id === tela
+      return `
+      <div class="group/item relative">
+        <button data-tela="${t.id}" aria-current="${ativo ? 'page' : 'false'}"
+          class="font-display relative whitespace-nowrap rounded-lg px-3 py-2 text-sm font-normal transition-colors duration-200 ${
+            ativo ? 'text-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          }">
+          ${esc(t.rotulo)}
+          ${ativo ? '<span class="bg-foreground/30 absolute bottom-1 left-3 right-3 h-px rounded-full"></span>' : ''}
+        </button>
+        <!-- O balão fica sempre no DOM e entra por opacidade e deslocamento:
+             montar e desmontar no hover recalcularia layout a cada passagem. -->
+        <div class="pointer-events-none absolute left-1/2 top-full z-50 mt-1.5 w-56 -translate-x-1/2 -translate-y-[5px] opacity-0 transition-[opacity,transform] duration-200 ease-apple group-hover/item:translate-y-0 group-hover/item:opacity-100">
+          <div class="bg-popover relative rounded-xl border p-3 shadow-lg">
+            <div class="bg-popover absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 rotate-45 rounded-sm border-l border-t"></div>
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+                ativo
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'bg-card text-foreground'
+              }">${iconeSvg('padrao', 'h-4 w-4')}</span>
+              <div class="min-w-0">
+                <p class="font-display text-foreground text-sm font-medium leading-tight">${esc(t.rotulo)}</p>
+                <p class="text-muted-foreground font-roboto mt-0.5 text-xs leading-snug">${esc(t.descricao)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`
+    })
     .join('')
 
   // Reinicia a animação de entrada a cada troca de tela: recriar o elemento é

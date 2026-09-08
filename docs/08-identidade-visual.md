@@ -69,9 +69,10 @@ arquivo original, que não servem a um ícone de aba.
 
 ## Movimento, sem layout shift
 
-A navegação tem movimento, e mede-se isso: **CLS 0,0000** em todas as telas,
-inclusive numa rede de 400 kbps com as fotos carregando. As quatro regras que
-sustentam esse número:
+A navegação tem movimento, e mede-se isso: **CLS ≤ 0,0003** em todas as telas,
+numa rede de 400 kbps com as fotos carregando — mais de 300 vezes abaixo do
+limite de 0,1 que o Core Web Vitals considera bom. As regras que sustentam esse
+número:
 
 1. **Anima-se só `opacity` e `transform`.** As duas rodam no compositor e não
    entram no cálculo de layout. Animar altura, margem ou largura reintroduz o
@@ -86,9 +87,18 @@ sustentam esse número:
    faz a barra sumir e tudo deslizar na horizontal — um shift em toda
    navegação, bem na hora em que a pessoa vai clicar.
 
+5. **As fontes usam `display: 'optional'`.** Com `swap`, a página pinta na
+   fonte de fallback e troca quando a definitiva chega; a troca muda a largura
+   do texto e empurra os itens do menu e as colunas da tabela. Com `optional`
+   não há troca no meio do carregamento.
+
 O `useLinkStatus` acende um ponto dentro do item de menu clicado enquanto a
 rota carrega. O ponto ocupa largura fixa em todo estado, para que acender e
 apagar não empurre os vizinhos.
+
+O resíduo que sobra vem da altura das tabelas: a quantidade de linhas do
+esqueleto é a única medida que não dá para acertar sempre, porque depende de
+quantos registros a consulta devolve.
 
 A curva de todas as transições é `ease-apple`, a mesma da Central.
 `prefers-reduced-motion` desliga o movimento, como lá.
@@ -121,6 +131,20 @@ de repouso do card, não um aviso de erro.
 
 A vitrine recebe uma cópia gerada no build (`scripts/gerar-ilustracoes.ts`), em
 vez de uma segunda lista mantida à mão.
+
+## Menu superior
+
+Mesmo desenho do `GlobalNav` da Central: barra clara com `backdrop-blur`, o
+olho solto sobre o fundo (sem caixa, acompanhando o tema por `currentColor`),
+selo de versão, itens em Anek Latin e o item ativo marcado por um sublinhado
+fino em vez de fundo cheio.
+
+Cada item tem um balão com ícone e descrição no hover. O balão fica **sempre no
+DOM**, entrando por opacidade e deslocamento — montá-lo e desmontá-lo a cada
+passagem do mouse recalcularia layout.
+
+No celular, o nome da seção atual vira o gatilho de um menu com as mesmas
+descrições, como na Central.
 
 ## Componentes
 

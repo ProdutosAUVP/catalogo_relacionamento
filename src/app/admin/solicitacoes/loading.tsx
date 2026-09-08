@@ -13,7 +13,7 @@ export default function Carregando() {
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-10 w-48" />
       </div>
-      <EsqueletoDeTabela linhas={8} />
+      <EsqueletoDeTabela linhas={5} />
     </>
   )
 }
