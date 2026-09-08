@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link, { useLinkStatus } from 'next/link'
 import type { Route } from 'next'
 import { usePathname } from 'next/navigation'
 import type { Perfil } from '@prisma/client'
@@ -14,7 +14,8 @@ import { cn } from '@/lib/utils'
  * O menu não é controle de acesso — cada rota tem a própria guarda de servidor.
  * Ele existe para não oferecer à pessoa um caminho que terminaria em redirect.
  *
- * É um Client Component só por causa do `usePathname`, que marca o item ativo.
+ * É um Client Component por causa do `usePathname`, que marca o item ativo, e
+ * do `useLinkStatus`, que acende o item enquanto a próxima tela carrega.
  * Perfil e nome chegam prontos do servidor; nada de sessão é resolvido aqui.
  */
 
@@ -29,6 +30,29 @@ const ITENS: readonly ItemDeMenu[] = [
   { href: '/admin/clientes', rotulo: 'Clientes', acao: 'cliente.gerenciar' },
   { href: '/admin/usuarios', rotulo: 'Usuários', acao: 'usuario.gerenciar' },
 ] as const
+
+/**
+ * Ponto que pulsa dentro do item clicado enquanto a rota carrega.
+ *
+ * Precisa ser um componente separado: `useLinkStatus` só lê o estado do `Link`
+ * que o contém. Ocupa espaço fixo (`w-3`) em todo estado, para que acender e
+ * apagar não mude a largura do item nem empurre os vizinhos.
+ */
+function Pendente() {
+  const { pending } = useLinkStatus()
+
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'ease-apple inline-block w-3 text-center transition-opacity duration-200',
+        pending ? 'opacity-100' : 'opacity-0',
+      )}
+    >
+      <span className="inline-block size-1.5 animate-pulse rounded-full bg-current align-middle" />
+    </span>
+  )
+}
 
 export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
   const caminho = usePathname()
@@ -46,7 +70,10 @@ export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
     // tokens de texto do tema claro sumiriam sobre o verde da marca.
     <header className="bg-brand-dark dark:bg-card sticky top-0 z-40 border-b border-white/10">
       <nav className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5 text-white">
+        <Link
+          href="/"
+          className="ease-apple flex shrink-0 items-center gap-2.5 text-white transition-opacity duration-200 hover:opacity-80"
+        >
           <Olho className="w-8" />
           <span className="font-display text-base leading-none font-semibold tracking-tight">
             Presentes
@@ -63,13 +90,14 @@ export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
                 href={item.href}
                 aria-current={ativo ? 'page' : undefined}
                 className={cn(
-                  'rounded-md px-3 py-1.5 text-sm whitespace-nowrap transition-colors',
+                  'ease-apple relative flex items-center gap-1 rounded-md px-3 py-1.5 text-sm whitespace-nowrap transition-colors duration-200',
                   ativo
                     ? 'bg-white/15 font-medium text-white'
                     : 'text-white/70 hover:bg-white/10 hover:text-white',
                 )}
               >
                 {item.rotulo}
+                <Pendente />
               </Link>
             )
           })}

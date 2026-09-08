@@ -126,6 +126,57 @@ export const ILUSTRACOES: Record<string, Ilustracao> = {
       <path d="M100 96v14" />
     `,
   },
+  // --- Categorias do catálogo real de brindes AUVP ---
+  // Só entram em cena quando o produto não tem foto cadastrada.
+  'canecas e garrafas': {
+    path: `
+      <path d="M72 68h44v40a10 10 0 0 1-10 10H82a10 10 0 0 1-10-10z" />
+      <path d="M116 78h6a12 12 0 0 1 0 24h-6" />
+      <path d="M72 82h44" />
+    `,
+  },
+  bebidas: {
+    path: `
+      <path d="M84 34h32v20c0 8 9 12 9 24v34a10 10 0 0 1-10 10H85a10 10 0 0 1-10-10V78c0-12 9-16 9-24z" />
+      <path d="M75 74h50" />
+      <path d="M84 88h32v22H84z" />
+    `,
+  },
+  papelaria: {
+    path: `
+      <rect x="70" y="34" width="60" height="82" rx="6" />
+      <path d="M84 52h32M84 68h32M84 84h20" />
+      <path d="M112 28v16" />
+    `,
+  },
+  'sacolas & caixas': {
+    path: `
+      <path d="M70 62h60l6 54a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8z" />
+      <path d="M84 62V48a16 16 0 0 1 32 0v14" />
+    `,
+  },
+  'casa & mesa': {
+    path: `
+      <path d="M80 74h40v34a10 10 0 0 1-10 10H90a10 10 0 0 1-10-10z" />
+      <path d="M80 74h40" />
+      <path d="M100 74V56" />
+      <path d="M100 56c-6-5-6-11 0-16 6 5 6 11 0 16z" />
+    `,
+  },
+  vestuário: {
+    path: `
+      <path d="M78 46l-14 10 10 16 8-6v50a6 6 0 0 0 6 6h28a6 6 0 0 0 6-6V66l8 6 10-16-14-10-14-6H92z" />
+      <path d="M92 40a8 8 0 0 0 16 0" />
+    `,
+  },
+  acessórios: {
+    path: `
+      <rect x="64" y="66" width="72" height="46" rx="8" />
+      <path d="M64 84h72" />
+      <path d="M112 92h12" />
+    `,
+  },
+
   padrao: { path: PRESENTE_GENERICO, padrao: true },
 }
 

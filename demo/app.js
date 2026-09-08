@@ -126,50 +126,122 @@ function ilustracao(nome, categoria) {
   return ILUSTRACOES[(categoria || '').toLowerCase()] || ILUSTRACOES.padrao
 }
 
-function imagemDoProduto(nome, categoria) {
-  return `
-    <div class="aspect-[4/3] w-full bg-gradient-to-br from-muted to-accent/8">
+function imagemDoProduto(p) {
+  const foto = p.semFoto ? null : `produtos/${p.slug}.webp`
+
+  // Moldura com proporção fixa e a imagem com width/height reais: o espaço é
+  // reservado antes de a foto chegar, então nada se move ao carregar.
+  const quadro = (conteudo) =>
+    `<div class="relative aspect-[3/4] overflow-hidden border-b bg-muted/50 [perspective:1200px]">${conteudo}</div>`
+
+  if (!foto) {
+    return quadro(`
       <svg viewBox="0 0 200 150" fill="none" stroke="currentColor" stroke-width="2.5"
         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
-        class="h-full w-full text-primary/45 transition-colors duration-300 group-hover:text-primary/70">
-        ${ilustracao(nome, categoria)}
-      </svg>
-    </div>`
+        class="h-full w-full text-primary/40 transition-transform duration-500 ease-apple group-hover:scale-105">
+        ${ilustracao(p.nome, p.categoria)}
+      </svg>`)
+  }
+
+  if (p.temVerso) {
+    // Produto com os dois lados desenhados: a foto gira em 3D no hover.
+    return quadro(`
+      <div class="absolute inset-0 transition-transform duration-700 ease-apple [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] motion-reduce:transition-none">
+        <img src="${foto}" alt="${esc(p.nome)}" width="900" height="1200" loading="lazy"
+          class="absolute inset-0 h-full w-full object-cover [backface-visibility:hidden]" />
+        <img src="produtos/${p.slug}-verso.webp" alt="${esc(p.nome)} — verso" width="900" height="1200" loading="lazy"
+          class="absolute inset-0 h-full w-full object-cover [backface-visibility:hidden] [transform:rotateY(180deg)]" />
+      </div>
+      <span class="selo-lado pointer-events-none absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-background/85 px-2 py-1 font-roboto text-[10px] font-bold uppercase tracking-wider text-foreground shadow-sm backdrop-blur-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="h-3 w-3 shrink-0">${ICONES.girar}</svg>
+        <span class="group-hover:hidden">Frente</span><span class="hidden group-hover:inline">Verso</span>
+      </span>`)
+  }
+
+  return quadro(`
+    <img src="${foto}" alt="${esc(p.nome)}" width="900" height="1200" loading="lazy"
+      class="h-full w-full object-cover transition-transform duration-500 ease-apple group-hover:scale-105" />`)
+}
+
+/** Selo de categoria — ícone e nome, como na Central. */
+const TOM_DA_CATEGORIA = {
+  'canecas e garrafas': 'bg-[hsl(var(--chart-1)/0.14)] text-[hsl(var(--chart-1))]',
+  vestuário: 'bg-[hsl(var(--chart-5)/0.14)] text-[hsl(var(--chart-5))]',
+  papelaria: 'bg-[hsl(var(--chart-4)/0.14)] text-[hsl(var(--chart-4))]',
+  acessórios: 'bg-[hsl(var(--chart-2)/0.14)] text-[hsl(var(--chart-2))]',
+  bebidas: 'bg-[hsl(var(--chart-3)/0.16)] text-[hsl(var(--chart-3))]',
+  'casa & mesa': 'bg-[hsl(var(--chart-7)/0.16)] text-[hsl(var(--chart-7))]',
+  'sacolas & caixas': 'bg-[hsl(var(--chart-8)/0.14)] text-[hsl(var(--chart-8))]',
+}
+
+function iconeSvg(chave, classe) {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="${classe}">${ICONES[chave] || ICONES.padrao}</svg>`
+}
+
+function categoriaBadge(categoria) {
+  const chave = categoria.toLowerCase()
+  const tom = TOM_DA_CATEGORIA[chave] || 'bg-muted text-muted-foreground'
+  return `<span class="inline-flex items-center gap-1.5 rounded-full px-2 py-1 font-roboto text-[10px] font-bold uppercase tracking-wider ${tom}">
+    ${iconeSvg(chave, 'h-3 w-3 shrink-0')}${esc(categoria)}
+  </span>`
 }
 
 // --- telas ------------------------------------------------------------------
 
 function telaCatalogo() {
   const termo = busca.trim().toLowerCase()
-  const visiveis = PRODUTOS.filter(
+  const ativos = PRODUTOS.filter((p) => p.ativo)
+  const visiveis = ativos.filter(
     (p) =>
-      p.ativo &&
       (!filtroCategoria || p.categoria === filtroCategoria) &&
       (!termo || p.nome.toLowerCase().includes(termo) || p.descricao.toLowerCase().includes(termo)),
   )
 
-  const opcoes = CATEGORIAS.map(
-    (c) =>
-      `<option value="${esc(c)}" ${c === filtroCategoria ? 'selected' : ''}>${esc(c)}</option>`,
-  ).join('')
+  const contagem = (cat) => ativos.filter((p) => p.categoria === cat).length
+
+  const opcao = (rotulo, chaveIcone, valor, ativo, total) => `
+    <button data-categoria="${valor}" aria-pressed="${ativo}"
+      class="group flex shrink-0 items-center gap-2.5 rounded-xl border bg-card py-2 pl-2 pr-3.5 text-left transition-[border-color,box-shadow,background-color] duration-300 ease-apple ${
+        ativo
+          ? 'border-primary bg-primary/5 ring-2 ring-primary/25'
+          : 'hover:border-primary/40 hover:shadow-sm'
+      }">
+      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+        valor === ''
+          ? 'bg-primary/10 text-primary'
+          : TOM_DA_CATEGORIA[valor.toLowerCase()] || 'bg-muted text-muted-foreground'
+      }">${iconeSvg(valor === '' ? 'todos' : valor.toLowerCase(), 'h-4 w-4')}</span>
+      <span class="min-w-0">
+        <span class="block font-display text-xs font-bold leading-tight text-foreground whitespace-nowrap">${esc(rotulo)}</span>
+        <span class="mt-0.5 block font-roboto text-[10px] leading-tight text-muted-foreground">${total} ${total === 1 ? 'item' : 'itens'}</span>
+      </span>
+    </button>`
+
+  const filtros = [
+    opcao('Todos', 'todos', '', !filtroCategoria, ativos.length),
+    ...CATEGORIAS.filter((c) => contagem(c) > 0).map((c) =>
+      opcao(c, c.toLowerCase(), c, filtroCategoria === c, contagem(c)),
+    ),
+  ].join('')
 
   const cards = visiveis
     .map(
       (p) => `
-      <article class="group flex flex-col overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(11,41,5,0.04)] transition-shadow duration-200 hover:shadow-[0_8px_24px_-12px_rgba(11,41,5,0.28)]">
-        ${imagemDoProduto(p.nome, p.categoria)}
-        <div class="flex flex-1 flex-col p-5">
-          <p class="font-ui text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">${esc(p.categoria)}</p>
-          <h2 class="font-display mt-1.5 font-semibold leading-snug">${esc(p.nome)}</h2>
-          <p class="mt-1.5 line-clamp-2 text-sm text-muted-foreground">${esc(p.descricao)}</p>
-          <div class="mt-auto flex items-end justify-between gap-3 pt-4">
+      <article class="group flex flex-col overflow-hidden rounded-2xl border bg-card transition-[transform,box-shadow,border-color] duration-300 ease-apple hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl">
+        ${imagemDoProduto(p)}
+        <div class="flex flex-1 flex-col items-start gap-1.5 p-4">
+          ${categoriaBadge(p.categoria)}
+          <h2 class="font-display font-semibold leading-snug">${esc(p.nome)}</h2>
+          <p class="line-clamp-2 font-roboto text-xs leading-relaxed text-muted-foreground">${esc(p.descricao)}</p>
+          <div class="mt-auto flex w-full items-end justify-between gap-3 pt-3">
             <p class="flex items-baseline gap-1.5 leading-tight">
               ${p.tipoValor === 'medio' ? '<span class="text-xs text-muted-foreground">a partir de</span>' : ''}
               <span class="text-lg font-semibold">${brl(p.valor)}</span>
             </p>
             ${
               p.estoque !== null && p.estoque !== undefined
-                ? `<span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">${p.estoque} em estoque</span>`
+                ? `<span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">${p.estoque} un.</span>`
                 : ''
             }
           </div>
@@ -180,25 +252,23 @@ function telaCatalogo() {
 
   return `
     ${cabecalho('Catálogo', 'Escolha o presente e siga para a solicitação. Produtos desativados não aparecem aqui.', 'Presentes')}
-    ${barraDeFiltros(`
+    <div class="mb-4 flex flex-wrap items-center gap-2 rounded-lg border bg-card p-3">
       <input id="busca" value="${esc(busca)}" placeholder="Buscar por nome ou descrição"
         class="h-10 w-64 rounded-md border border-input bg-background px-3 text-sm" />
-      <select id="categoria" class="h-10 rounded-md border border-input bg-background px-3 text-sm">
-        <option value="">Todas as categorias</option>${opcoes}
-      </select>
       <p class="ml-auto pr-1 text-sm text-muted-foreground">${visiveis.length} ${visiveis.length === 1 ? 'presente' : 'presentes'}</p>
-    `)}
+    </div>
+    <div role="group" aria-label="Filtrar por categoria" class="-mx-1 mb-6 flex gap-2 overflow-x-auto px-1 pb-1">${filtros}</div>
     ${
       visiveis.length === 0
         ? estadoVazio(
             'Nenhum presente encontrado',
-            'Nenhum produto ativo bate com esses filtros. Tente outra busca ou limpe a categoria.',
+            'Nenhum produto ativo bate com esses filtros. Tente outra busca ou volte para “Todos”.',
           )
         : `<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">${cards}</div>`
     }
     <p class="mt-6 text-xs text-muted-foreground">
-      O produto desativado (“Caneca personalizada”) não aparece aqui, mas continua visível nas
-      solicitações antigas — regra do modelo de dados.
+      O produto desativado (“Caneca AUVP modelo descontinuado”) não aparece aqui, mas continua
+      visível nas solicitações antigas — regra do modelo de dados.
     </p>`
 }
 
@@ -603,10 +673,21 @@ function render() {
     )
     .join('')
 
-  document.getElementById('conteudo').innerHTML = RENDER[tela]()
+  // Reinicia a animação de entrada a cada troca de tela: recriar o elemento é
+  // o que faz o navegador rodar a animação de novo. Só opacity e transform,
+  // que não participam do cálculo de layout — movimento sem layout shift.
+  const conteudo = document.getElementById('conteudo')
+  conteudo.innerHTML = `<div class="animar-entrada">${RENDER[tela]()}</div>`
 }
 
 document.addEventListener('click', (e) => {
+  const cat = e.target.closest('[data-categoria]')
+  if (cat) {
+    filtroCategoria = cat.dataset.categoria
+    render()
+    return
+  }
+
   const aba = e.target.closest('[data-tela]')
   if (aba) {
     tela = aba.dataset.tela
@@ -625,10 +706,6 @@ document.addEventListener('click', (e) => {
 document.addEventListener('change', (e) => {
   if (e.target.id === 'perfil') {
     perfil = e.target.value
-    render()
-  }
-  if (e.target.id === 'categoria') {
-    filtroCategoria = e.target.value
     render()
   }
   if (e.target.id === 'trocaDetalhe') {

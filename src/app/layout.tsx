@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Anek_Latin, Roboto, Sora } from 'next/font/google'
 import { usuarioAtual } from '@/lib/auth-guards'
 import { Nav } from '@/components/nav'
+import { Transicao } from '@/components/transicao'
 import './globals.css'
 
 /*
@@ -49,7 +50,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           leiam como superfície elevada, e não como recortes do próprio fundo. */}
       <body className="bg-muted/40 min-h-screen antialiased">
         {usuario ? <Nav perfil={usuario.perfil} nome={usuario.nome} /> : null}
-        <main className="mx-auto max-w-7xl px-4 py-10">{children}</main>
+        <main className="mx-auto max-w-7xl px-4 py-10">
+          <Transicao>{children}</Transicao>
+        </main>
       </body>
     </html>
   )

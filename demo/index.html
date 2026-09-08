@@ -57,7 +57,98 @@
       </div>
     </header>
 
-    <main id="conteudo" class="mx-auto max-w-7xl px-4 py-10"></main>
+    <!--
+      Esqueleto estático da primeira tela.
+
+      Mesma ideia dos `loading.tsx` da aplicação: reservar o espaço exato antes
+      de o conteúdo existir. Sem ele, o <main> nasce vazio, o rodapé fica logo
+      abaixo e desce de uma vez quando o JavaScript renderiza o catálogo — o
+      único layout shift que a vitrine tinha. O JavaScript substitui tudo isto
+      na primeira renderização.
+    -->
+    <main id="conteudo" class="mx-auto max-w-7xl px-4 py-10">
+      <div class="mb-8">
+        <div class="bg-muted mb-2 h-3 w-24 animate-pulse rounded-md"></div>
+        <div class="bg-muted h-9 w-56 animate-pulse rounded-md"></div>
+        <div class="bg-muted mt-2 h-4 w-96 max-w-full animate-pulse rounded-md"></div>
+      </div>
+      <div class="bg-muted mb-4 h-16 animate-pulse rounded-lg"></div>
+      <div class="bg-muted mb-6 h-[52px] animate-pulse rounded-xl"></div>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div class="bg-card overflow-hidden rounded-2xl border">
+          <div class="bg-muted aspect-[3/4] animate-pulse"></div>
+          <div class="space-y-2 p-4">
+            <div class="bg-muted h-5 w-28 animate-pulse rounded-full"></div>
+            <div class="bg-muted h-5 w-full animate-pulse rounded-md"></div>
+            <div class="bg-muted h-3 w-4/5 animate-pulse rounded-md"></div>
+            <div class="bg-muted mt-3 h-6 w-24 animate-pulse rounded-md"></div>
+          </div>
+        </div>
+        <div class="bg-card overflow-hidden rounded-2xl border">
+          <div class="bg-muted aspect-[3/4] animate-pulse"></div>
+          <div class="space-y-2 p-4">
+            <div class="bg-muted h-5 w-28 animate-pulse rounded-full"></div>
+            <div class="bg-muted h-5 w-full animate-pulse rounded-md"></div>
+            <div class="bg-muted h-3 w-4/5 animate-pulse rounded-md"></div>
+            <div class="bg-muted mt-3 h-6 w-24 animate-pulse rounded-md"></div>
+          </div>
+        </div>
+        <div class="bg-card overflow-hidden rounded-2xl border">
+          <div class="bg-muted aspect-[3/4] animate-pulse"></div>
+          <div class="space-y-2 p-4">
+            <div class="bg-muted h-5 w-28 animate-pulse rounded-full"></div>
+            <div class="bg-muted h-5 w-full animate-pulse rounded-md"></div>
+            <div class="bg-muted h-3 w-4/5 animate-pulse rounded-md"></div>
+            <div class="bg-muted mt-3 h-6 w-24 animate-pulse rounded-md"></div>
+          </div>
+        </div>
+        <div class="bg-card overflow-hidden rounded-2xl border">
+          <div class="bg-muted aspect-[3/4] animate-pulse"></div>
+          <div class="space-y-2 p-4">
+            <div class="bg-muted h-5 w-28 animate-pulse rounded-full"></div>
+            <div class="bg-muted h-5 w-full animate-pulse rounded-md"></div>
+            <div class="bg-muted h-3 w-4/5 animate-pulse rounded-md"></div>
+            <div class="bg-muted mt-3 h-6 w-24 animate-pulse rounded-md"></div>
+          </div>
+        </div>
+        <div class="bg-card overflow-hidden rounded-2xl border">
+          <div class="bg-muted aspect-[3/4] animate-pulse"></div>
+          <div class="space-y-2 p-4">
+            <div class="bg-muted h-5 w-28 animate-pulse rounded-full"></div>
+            <div class="bg-muted h-5 w-full animate-pulse rounded-md"></div>
+            <div class="bg-muted h-3 w-4/5 animate-pulse rounded-md"></div>
+            <div class="bg-muted mt-3 h-6 w-24 animate-pulse rounded-md"></div>
+          </div>
+        </div>
+        <div class="bg-card overflow-hidden rounded-2xl border">
+          <div class="bg-muted aspect-[3/4] animate-pulse"></div>
+          <div class="space-y-2 p-4">
+            <div class="bg-muted h-5 w-28 animate-pulse rounded-full"></div>
+            <div class="bg-muted h-5 w-full animate-pulse rounded-md"></div>
+            <div class="bg-muted h-3 w-4/5 animate-pulse rounded-md"></div>
+            <div class="bg-muted mt-3 h-6 w-24 animate-pulse rounded-md"></div>
+          </div>
+        </div>
+        <div class="bg-card overflow-hidden rounded-2xl border">
+          <div class="bg-muted aspect-[3/4] animate-pulse"></div>
+          <div class="space-y-2 p-4">
+            <div class="bg-muted h-5 w-28 animate-pulse rounded-full"></div>
+            <div class="bg-muted h-5 w-full animate-pulse rounded-md"></div>
+            <div class="bg-muted h-3 w-4/5 animate-pulse rounded-md"></div>
+            <div class="bg-muted mt-3 h-6 w-24 animate-pulse rounded-md"></div>
+          </div>
+        </div>
+        <div class="bg-card overflow-hidden rounded-2xl border">
+          <div class="bg-muted aspect-[3/4] animate-pulse"></div>
+          <div class="space-y-2 p-4">
+            <div class="bg-muted h-5 w-28 animate-pulse rounded-full"></div>
+            <div class="bg-muted h-5 w-full animate-pulse rounded-md"></div>
+            <div class="bg-muted h-3 w-4/5 animate-pulse rounded-md"></div>
+            <div class="bg-muted mt-3 h-6 w-24 animate-pulse rounded-md"></div>
+          </div>
+        </div>
+      </div>
+    </main>
 
     <footer class="text-muted-foreground mx-auto max-w-7xl px-4 pb-12 text-xs">
       Catálogo e Solicitação de Presentes — V1. As telas de escrita (formulário de solicitação,
@@ -66,6 +157,7 @@
     </footer>
 
     <script src="ilustracoes.js"></script>
+    <script src="icones.js"></script>
     <script src="dados.js"></script>
     <script src="app.js"></script>
   </body>

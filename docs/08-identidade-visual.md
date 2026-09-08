@@ -67,11 +67,48 @@ Aparece na navegação, na tela de login e nos estados vazios. O favicon usa o
 mesmo traçado sobre o verde da marca — sem os ~15 KB de metadados C2PA do
 arquivo original, que não servem a um ícone de aba.
 
+## Movimento, sem layout shift
+
+A navegação tem movimento, e mede-se isso: **CLS 0,0000** em todas as telas,
+inclusive numa rede de 400 kbps com as fotos carregando. As quatro regras que
+sustentam esse número:
+
+1. **Anima-se só `opacity` e `transform`.** As duas rodam no compositor e não
+   entram no cálculo de layout. Animar altura, margem ou largura reintroduz o
+   salto na hora. A entrada de cada tela é `animar-entrada`, em
+   `src/styles/auvp-tokens.css`.
+2. **Todo `loading.tsx` tem as medidas do conteúdo real.** Um esqueleto mais
+   baixo que a tabela que ele antecede produz exatamente o salto que deveria
+   evitar. Ver `src/components/esqueletos.tsx`.
+3. **Toda imagem tem moldura com proporção fixa e dimensões declaradas.** O
+   espaço fica reservado antes de o primeiro byte chegar.
+4. **`scrollbar-gutter: stable`.** Sem isso, ir de uma tela alta para uma curta
+   faz a barra sumir e tudo deslizar na horizontal — um shift em toda
+   navegação, bem na hora em que a pessoa vai clicar.
+
+O `useLinkStatus` acende um ponto dentro do item de menu clicado enquanto a
+rota carrega. O ponto ocupa largura fixa em todo estado, para que acender e
+apagar não empurre os vizinhos.
+
+A curva de todas as transições é `ease-apple`, a mesma da Central.
+`prefers-reduced-motion` desliga o movimento, como lá.
+
+## Fotos de produto
+
+O catálogo usa as fotos de estúdio dos brindes reais da AUVP, trazidas de
+`src/assets/produtos-fisicos/` da Central para `public/produtos/`. São 900×1200
+em WebP, e o card usa a proporção nativa 3:4 — a foto preenche o quadro inteiro,
+sem faixa de fundo sobrando.
+
+A caneca AUPO11 tem os dois lados desenhados e gira em 3D no hover, como na
+Central. A convenção é a mesma: nenhum campo novo no banco, basta existir
+`<slug>-verso.webp` ao lado da foto da frente (`src/lib/fotos.ts`).
+
 ## Ilustrações de produto
 
-O V1 não tem upload de foto. Um catálogo cheio de retângulos cinza escrito "sem
-foto" parece um sistema quebrado, não um sistema em construção — e a vitrine
-existe justamente para ser aprovada por quem não vai ler o roadmap.
+Os produtos do seed têm foto. As ilustrações são o que aparece quando um
+produto **não** tem: um catálogo com retângulos cinza escrito "sem foto" parece
+um sistema quebrado, não um sistema em construção.
 
 `src/lib/ilustracoes.ts` guarda um traço por categoria e alguns por produto,
 todos no mesmo peso de linha, sobre um degradê da marca. A escolha é por

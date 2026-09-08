@@ -73,6 +73,10 @@
   --font-body: var(--font-roboto-src, 'Roboto'), sans-serif;
   --font-ui: var(--font-sora-src, 'Sora'), sans-serif;
 
+  /* Curva de saída da Central: acelera rápido e desacelera longo. É o que dá
+     a sensação de peso físico nas transições, em vez de linearidade de tela. */
+  --ease-apple: cubic-bezier(0.22, 1, 0.36, 1);
+
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
@@ -133,6 +137,18 @@
     --brand-hover: 155 80% 15%;
     --brand-gradient-from: 155 93% 11%;
     --brand-gradient-to: 140 70% 20%;
+
+    /* Paleta categórica da Central. Aqui ela colore os selos de categoria do
+       catálogo; na Central serve também a gráficos. Os tons são usados sempre
+       a 14–16% de opacidade como fundo, com o texto na cor cheia. */
+    --chart-1: 152 80% 30%;
+    --chart-2: 270 60% 55%;
+    --chart-3: 38 92% 55%;
+    --chart-4: 199 89% 48%;
+    --chart-5: 340 75% 55%;
+    --chart-6: 15 80% 50%;
+    --chart-7: 90 55% 40%;
+    --chart-8: 220 30% 35%;
   }
 
   .dark {
@@ -186,10 +202,31 @@
     --brand-hover: 145 20% 54%;
     --brand-gradient-from: 145 25% 54%;
     --brand-gradient-to: 145 30% 38%;
+
+    --chart-1: 135 50% 55%;
+    --chart-2: 270 65% 70%;
+    --chart-3: 38 90% 65%;
+    --chart-4: 199 85% 65%;
+    --chart-5: 340 75% 70%;
+    --chart-6: 15 80% 65%;
+    --chart-7: 90 55% 60%;
+    --chart-8: 220 30% 70%;
   }
 
   * {
     border-color: hsl(var(--border));
+  }
+
+  html {
+    /*
+     * Reserva a canaleta da barra de rolagem sempre.
+     *
+     * Sem isso, ir de uma tela alta para uma curta faz a barra sumir, a área
+     * de conteúdo alargar alguns pixels e tudo deslizar na horizontal — um
+     * layout shift em toda navegação, e dos mais irritantes porque acontece
+     * justamente quando a pessoa vai clicar.
+     */
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -222,11 +259,48 @@
 }
 
 @layer utilities {
+  /*
+   * Entrada de conteúdo a cada navegação.
+   *
+   * Anima só `opacity` e `transform`. Os dois rodam no compositor e não
+   * participam do cálculo de layout, então a transição não desloca nada —
+   * é o que permite ter movimento sem layout shift. Qualquer animação de
+   * altura, margem ou largura aqui reintroduziria o salto.
+   */
+  @keyframes entrada-de-conteudo {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .animar-entrada {
+    animation: entrada-de-conteudo 0.28s var(--ease-apple) both;
+  }
+
   .bg-brand-gradient {
     background: linear-gradient(
       135deg,
       hsl(var(--brand-gradient-from)),
       hsl(var(--brand-gradient-to))
     );
+  }
+}
+
+/* === Acessibilidade — menos movimento ===
+   Neutraliza animações e transições quando o sistema pede menos movimento.
+   Mesma regra da Central. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

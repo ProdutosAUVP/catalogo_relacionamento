@@ -1,55 +1,131 @@
+'use client'
+
+import { useState } from 'react'
+import Image from 'next/image'
+import { RotateCw } from 'lucide-react'
 import { ilustracaoDoProduto } from '@/lib/ilustracoes'
 import { cn } from '@/lib/utils'
 
 /**
- * Imagem do card de produto.
+ * Foto do produto no card do catálogo.
  *
- * Com foto cadastrada, mostra a foto. Sem foto, mostra a ilustração da
- * categoria sobre um fundo em degradê da marca — estado de repouso, não aviso
- * de erro. É o que impede a grade do catálogo de parecer um sistema com
- * conteúdo faltando enquanto o upload de foto não existe.
+ * Proporção 3:4, a nativa dos mockups tratados da Central — a foto preenche o
+ * quadro inteiro, sem faixa de fundo sobrando.
+ *
+ * Sobre layout shift: a moldura tem `aspect-[3/4]` e a `Image` recebe as
+ * dimensões reais (900×1200). O espaço é reservado antes de qualquer byte da
+ * imagem chegar, então nada se move quando ela carrega — nem na primeira
+ * visita, nem com a rede lenta.
+ *
+ * Sem foto cadastrada, entra a ilustração da categoria: estado de repouso, não
+ * aviso de erro.
  */
+
+const LARGURA = 900
+const ALTURA = 1200
+
 export function ProdutoImagem({
   fotoUrl,
+  fotoVersoUrl,
   nome,
   categoria,
+  prioridade = false,
   className,
 }: {
   fotoUrl?: string | null
+  /** Quando existe, o card vira a foto: frente em repouso, verso no hover. */
+  fotoVersoUrl?: string | null
   nome: string
   categoria?: string | null
+  /** Primeira dobra: carrega sem lazy, para a foto não pintar depois. */
+  prioridade?: boolean
   className?: string
 }) {
-  if (fotoUrl) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={fotoUrl}
-        alt={nome}
-        loading="lazy"
-        className={cn('bg-muted aspect-4/3 w-full object-cover', className)}
-      />
-    )
+  const temVerso = Boolean(fotoUrl && fotoVersoUrl)
+  const [virado, setVirado] = useState(false)
+
+  // Só o mouse vira a foto ao passar por cima: no toque o `pointerenter`
+  // dispara junto do toque e brigaria com o clique, que também vira.
+  const viraNoMouse = (proximo: boolean) => (e: React.PointerEvent) => {
+    if (temVerso && e.pointerType === 'mouse') setVirado(proximo)
   }
 
   return (
     <div
+      onPointerEnter={viraNoMouse(true)}
+      onPointerLeave={viraNoMouse(false)}
       className={cn(
-        'from-muted to-accent/8 relative aspect-4/3 w-full bg-gradient-to-br',
+        'bg-muted/50 relative aspect-3/4 overflow-hidden border-b [perspective:1200px]',
         className,
       )}
     >
-      <svg
-        viewBox="0 0 200 150"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-        className="text-primary/45 group-hover:text-primary/70 h-full w-full transition-colors duration-300"
-        dangerouslySetInnerHTML={{ __html: ilustracaoDoProduto(nome, categoria) }}
-      />
+      {!fotoUrl ? (
+        <svg
+          viewBox="0 0 200 150"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className="text-primary/40 ease-apple h-full w-full transition-transform duration-500 group-hover:scale-105"
+          dangerouslySetInnerHTML={{ __html: ilustracaoDoProduto(nome, categoria) }}
+        />
+      ) : temVerso ? (
+        <>
+          {/* Produto com os dois lados desenhados (a caneca AUPO11): a foto
+              gira em 3D. No toque e no teclado quem vira é o botão que a cobre. */}
+          <div
+            className={cn(
+              'ease-apple absolute inset-0 transition-transform duration-700 [transform-style:preserve-3d] motion-reduce:transition-none',
+              virado && '[transform:rotateY(180deg)]',
+            )}
+          >
+            <Image
+              src={fotoUrl}
+              alt={nome}
+              width={LARGURA}
+              height={ALTURA}
+              priority={prioridade}
+              sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 90vw"
+              className="absolute inset-0 h-full w-full object-cover [backface-visibility:hidden]"
+            />
+            <Image
+              src={fotoVersoUrl!}
+              alt={`${nome} — verso`}
+              width={LARGURA}
+              height={ALTURA}
+              sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 90vw"
+              className="absolute inset-0 h-full w-full [transform:rotateY(180deg)] object-cover [backface-visibility:hidden]"
+            />
+          </div>
+
+          <button
+            type="button"
+            aria-pressed={virado}
+            aria-label={virado ? `Ver a frente de ${nome}` : `Ver o verso de ${nome}`}
+            onClick={() => setVirado((v) => !v)}
+            onFocus={() => setVirado(true)}
+            onBlur={() => setVirado(false)}
+            className="focus-visible:ring-primary absolute inset-0 z-10 cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
+          >
+            <span className="bg-background/85 text-foreground font-roboto absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold tracking-wider uppercase shadow-sm backdrop-blur-sm">
+              <RotateCw className="h-3 w-3 shrink-0" strokeWidth={2.5} aria-hidden="true" />
+              {virado ? 'Verso' : 'Frente'}
+            </span>
+          </button>
+        </>
+      ) : (
+        <Image
+          src={fotoUrl}
+          alt={nome}
+          width={LARGURA}
+          height={ALTURA}
+          priority={prioridade}
+          sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 90vw"
+          className="ease-apple h-full w-full object-cover transition-transform duration-500 sm:group-hover:scale-105"
+        />
+      )}
     </div>
   )
 }
