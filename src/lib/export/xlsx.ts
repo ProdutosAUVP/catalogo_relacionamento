@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs'
-import { COLUNAS, type LinhaExport } from './linhas'
+import { COLUNAS, type ColunaExport, type LinhaExport } from './linhas'
 
 /**
  * Geração de XLSX.
@@ -11,16 +11,20 @@ import { COLUNAS, type LinhaExport } from './linhas'
 
 const FORMATO_MOEDA = 'R$ #,##0.00'
 
-export async function gerarXlsx(linhas: readonly LinhaExport[]): Promise<Buffer> {
+export async function gerarXlsx(
+  linhas: readonly LinhaExport[],
+  opcoes: { colunas?: readonly ColunaExport[]; aba?: string } = {},
+): Promise<Buffer> {
+  const COLUNAS_DA_ABA = opcoes.colunas ?? COLUNAS
   const workbook = new ExcelJS.Workbook()
   workbook.creator = 'Catálogo de Presentes'
   workbook.created = new Date()
 
-  const aba = workbook.addWorksheet('Solicitações', {
+  const aba = workbook.addWorksheet(opcoes.aba ?? 'Solicitações', {
     views: [{ state: 'frozen', ySplit: 1 }],
   })
 
-  aba.columns = COLUNAS.map((c) => ({
+  aba.columns = COLUNAS_DA_ABA.map((c) => ({
     header: c.titulo,
     key: c.chave,
     width: c.largura,
@@ -34,7 +38,7 @@ export async function gerarXlsx(linhas: readonly LinhaExport[]): Promise<Buffer>
     aba.addRow(linha)
   }
 
-  for (const [indice, coluna] of COLUNAS.entries()) {
+  for (const [indice, coluna] of COLUNAS_DA_ABA.entries()) {
     if (coluna.chave.startsWith('valor')) {
       aba.getColumn(indice + 1).numFmt = FORMATO_MOEDA
     }
@@ -42,7 +46,7 @@ export async function gerarXlsx(linhas: readonly LinhaExport[]): Promise<Buffer>
 
   // Autofiltro no cabeçalho: quem recebe o arquivo continua filtrando.
   if (linhas.length > 0) {
-    aba.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: COLUNAS.length } }
+    aba.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: COLUNAS_DA_ABA.length } }
   }
 
   const arrayBuffer = await workbook.xlsx.writeBuffer()

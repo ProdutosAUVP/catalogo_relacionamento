@@ -78,6 +78,12 @@ export default async function Home() {
       acao: 'compras.verFila',
     },
     {
+      href: '/expedicao',
+      titulo: 'Expedição',
+      texto: 'Pedidos prontos para separar, com o endereço de envio.',
+      acao: 'expedicao.verFila',
+    },
+    {
       href: '/admin/solicitacoes',
       titulo: 'Gestão',
       texto: 'Acompanhar o fluxo, alterar status e exportar.',

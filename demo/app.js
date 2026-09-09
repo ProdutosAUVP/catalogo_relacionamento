@@ -11,12 +11,23 @@
 
 const PERMISSOES = {
   consultor: ['catalogo', 'nova', 'minhas'],
-  admin: ['catalogo', 'nova', 'minhas', 'gestao', 'detalhe', 'compras', 'produtos', 'usuarios'],
-  financeiro: ['catalogo', 'gestao', 'detalhe', 'compras'],
+  admin: [
+    'catalogo',
+    'nova',
+    'minhas',
+    'gestao',
+    'detalhe',
+    'compras',
+    'expedicao',
+    'produtos',
+    'clientes',
+    'usuarios',
+  ],
+  financeiro: ['catalogo', 'gestao', 'detalhe', 'compras', 'expedicao'],
 }
 
 /** Telas que ficam sob o item "Administração", para a barra não crescer. */
-const SOB_ADMINISTRACAO = ['produtos', 'usuarios']
+const SOB_ADMINISTRACAO = ['produtos', 'clientes', 'usuarios']
 
 const TELAS = [
   {
@@ -39,8 +50,14 @@ const TELAS = [
     rotulo: 'Fila de compras',
     descricao: 'Itens enviados para compra, com valor e site',
   },
+  {
+    id: 'expedicao',
+    rotulo: 'Expedição',
+    descricao: 'Pedidos prontos para separar, com endereço de envio',
+  },
   { id: 'gestao', rotulo: 'Gestão', descricao: 'Fluxo completo, mudança de status e exportação' },
   { id: 'produtos', rotulo: 'Produtos', descricao: 'Cadastro, edição e ativação do catálogo' },
+  { id: 'clientes', rotulo: 'Clientes', descricao: 'Cadastro manual e importação por CSV' },
   { id: 'usuarios', rotulo: 'Usuários', descricao: 'Perfil de acesso e limite mensal' },
 ]
 
@@ -290,49 +307,121 @@ function telaCatalogo() {
     </p>`
 }
 
+/**
+ * Nova solicitação.
+ *
+ * A vitrine mostra a etapa 2 (itens), que é a mais visual das cinco, com a
+ * trilha de progresso e o resumo lateral — os mesmos de
+ * `src/app/solicitacoes/nova/formulario.tsx`. O formulário é interativo no
+ * sistema real; aqui ele está congelado, para caber numa página estática.
+ */
 function telaNova() {
-  const etapas = [
-    [
-      'Cliente',
-      'Busca por CPF. Se o CPF já existir, a tela oferece o cliente encontrado em vez de criar uma duplicata.',
-    ],
-    [
-      'Itens',
-      'Produto do catálogo ou presente específico, com descrição e o link onde comprar. O valor congela na criação.',
-    ],
-    [
-      'Entrega',
-      'O CEP preenche logradouro, bairro, cidade e UF. O endereço é gravado como cópia na solicitação.',
-    ],
-    [
-      'Carta e motivo',
-      'A mensagem que acompanha o presente e o motivo do envio, com descrição obrigatória quando for “outro”.',
-    ],
-    ['Revisão', 'Confere itens e valores, gera o código SOL-AAAA-NNNN e abre o histórico.'],
-  ]
+  const ETAPAS = ['Cliente', 'Itens', 'Entrega', 'Carta', 'Revisão']
+  const ATUAL = 1
 
-  const itens = etapas
+  const trilha = ETAPAS.map((nome, i) => {
+    const concluida = i < ATUAL
+    const atual = i === ATUAL
+    const marca = concluida
+      ? '<span class="grid size-5 place-items-center rounded-full bg-success text-[10px] font-bold text-success-foreground">✓</span>'
+      : `<span class="grid size-5 place-items-center rounded-full ${
+          atual ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+        } text-[10px] font-bold">${i + 1}</span>`
+
+    return `
+      <li class="flex items-center gap-1">
+        <span class="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm ${
+          atual
+            ? 'bg-primary/10 font-medium text-primary-emphasis'
+            : concluida
+              ? 'text-muted-foreground'
+              : 'text-muted-foreground/60'
+        }">${marca}${esc(nome)}</span>
+        ${i < ETAPAS.length - 1 ? '<span class="h-px w-5 bg-border"></span>' : ''}
+      </li>`
+  }).join('')
+
+  const escolhidos = [
+    { nome: 'Agenda AUVP', quantidade: 1, valor: 98.0 },
+    { nome: 'Caneca AUPO11', quantidade: 2, valor: 72.0 },
+  ]
+  const total = escolhidos.reduce((acc, i) => acc + i.valor * i.quantidade, 0)
+
+  const cards = PRODUTOS.filter((p) => p.ativo)
+    .slice(0, 6)
     .map(
-      ([nome, texto], i) => `
-      <li class="relative flex gap-5 pb-8 last:pb-0">
-        ${i < etapas.length - 1 ? '<span class="absolute left-[19px] top-10 h-[calc(100%-2.5rem)] w-px bg-border"></span>' : ''}
-        <span class="font-ui relative grid size-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">${i + 1}</span>
-        <div class="pt-1.5">
-          <p class="font-display font-semibold">${esc(nome)}</p>
-          <p class="mt-1 max-w-prose text-sm text-muted-foreground">${esc(texto)}</p>
+      (p) => `
+      <div class="group flex flex-col overflow-hidden rounded-xl border text-left">
+        ${imagemDoProduto(p)}
+        <div class="flex flex-1 flex-col gap-1 p-3">
+          ${categoriaBadge(p.categoria)}
+          <p class="font-display text-sm font-semibold leading-snug">${esc(p.nome)}</p>
+          <p class="mt-auto pt-1 text-sm font-medium">
+            ${p.tipoValor === 'medio' ? '<span class="text-xs text-muted-foreground">a partir de </span>' : ''}${brl(p.valor)}
+          </p>
         </div>
-      </li>`,
+      </div>`,
+    )
+    .join('')
+
+  const resumo = escolhidos
+    .map(
+      (i) => `
+      <div class="flex items-start justify-between gap-3 py-2.5">
+        <div class="min-w-0">
+          <p class="text-sm font-medium">${esc(i.nome)}</p>
+          <p class="text-xs text-muted-foreground">${i.quantidade} × ${brl(i.valor)}</p>
+        </div>
+        <span class="rounded-md border px-2 py-0.5 text-xs tabular-nums">${i.quantidade}</span>
+      </div>`,
     )
     .join('')
 
   return `
-    ${cabecalho('Como funciona o pedido', 'Cinco etapas, do cliente à revisão. Nada é enviado antes da última.', 'Nova solicitação')}
-    <div class="rounded-lg border bg-card p-6 shadow-[0_1px_2px_rgba(11,41,5,0.04)] sm:p-8">
-      <ol class="relative">${itens}</ol>
+    ${cabecalho('Enviar um presente', 'Cinco etapas, do cliente à revisão. Nada é enviado antes da última.', 'Nova solicitação')}
+
+    <div class="grid gap-6 lg:grid-cols-[1fr_20rem]">
+      <div class="min-w-0">
+        <ol class="mb-6 flex flex-wrap items-center gap-x-1 gap-y-2">${trilha}</ol>
+
+        <div class="rounded-lg border bg-card p-6 shadow-[0_1px_2px_rgba(11,41,5,0.04)]">
+          <p class="font-display text-lg font-semibold">O que vai no envio?</p>
+          <p class="mt-1 text-sm text-muted-foreground">
+            Escolha do catálogo ou descreva um presente específico com o link onde comprar.
+          </p>
+
+          <div class="mt-5 h-10 w-full rounded-md border px-3 py-2 text-sm text-muted-foreground">
+            Buscar no catálogo
+          </div>
+
+          <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${cards}</div>
+
+          <div class="mt-6 rounded-lg border border-dashed p-4">
+            <p class="text-sm font-medium">Presente específico</p>
+            <p class="mt-1 text-xs text-muted-foreground">
+              Fora do catálogo. O link é obrigatório: é por ele que o Financeiro compra.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="h-fit rounded-lg border bg-card p-5">
+        <p class="font-ui mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Resumo</p>
+        <p class="text-sm font-medium">Marina Alves Pereira</p>
+        <p class="text-xs text-muted-foreground">***.982.247-**</p>
+        <div class="mt-3 divide-y border-t">${resumo}</div>
+        <div class="mt-3 flex items-baseline justify-between border-t pt-3">
+          <span class="text-sm text-muted-foreground">Total</span>
+          <span class="text-lg font-semibold">${brl(total)}</span>
+        </div>
+      </aside>
     </div>
-    <div class="mt-6">
-      ${emConstrucao('<p>O formulário está em construção no sistema real. As regras que ele aplica já existem e estão cobertas por testes: item é de catálogo <em>ou</em> específico com link, o valor congela na criação e o motivo “outro” exige descrição.</p>')}
-    </div>`
+
+    <p class="mt-6 text-xs text-muted-foreground">
+      O CPF deduplica o cliente na etapa 1; o CEP preenche o endereço na etapa 3; o valor de cada
+      item é relido do banco e congelado na hora de gravar, para que reajuste de preço não mexa em
+      solicitação já feita.
+    </p>`
 }
 
 function linhasDeSolicitacao(lista, comConsultor) {
@@ -537,6 +626,27 @@ function telaDetalhe() {
     </div>`
 }
 
+/**
+ * Fornecedor padrão por categoria — espelha `src/lib/fornecedores.ts`.
+ *
+ * Bebida é sempre comprada na Casa da Bebida, por regra da área. O link do
+ * presente específico vence o padrão: ele foi escolhido para aquele item.
+ */
+const FORNECEDOR_DA_CATEGORIA = { bebidas: 'https://casadabebida.com.br' }
+
+function site(item) {
+  const padrao = FORNECEDOR_DA_CATEGORIA[(item.categoria || '').toLowerCase()]
+  const url = item.site || padrao
+
+  if (!url) {
+    return '<span class="rounded-md border px-2 py-0.5 text-xs text-muted-foreground">catálogo</span>'
+  }
+
+  return `
+    <a href="${esc(url)}" target="_blank" rel="noopener" class="block truncate underline underline-offset-2">${esc(url.replace(/^https?:\/\//, ''))}</a>
+    ${item.site ? '' : `<span class="text-xs text-muted-foreground">fornecedor padrão de ${esc(item.categoria)}</span>`}`
+}
+
 function telaCompras() {
   const naFila = []
   for (const s of SOLICITACOES) {
@@ -563,13 +673,7 @@ function telaCompras() {
         ${esc(i.produto)}
         <div class="text-xs text-muted-foreground">${esc(i.consultor)} · para ${esc(i.cliente)}</div>
       </td>
-      <td class="max-w-xs p-3">
-        ${
-          i.site
-            ? `<a href="${esc(i.site)}" target="_blank" rel="noopener" class="block truncate underline underline-offset-2">${esc(i.site)}</a>`
-            : '<span class="rounded-md border px-2 py-0.5 text-xs text-muted-foreground">catálogo</span>'
-        }
-      </td>
+      <td class="max-w-xs p-3">${site(i)}</td>
       <td class="p-3 text-right">${i.quantidade}</td>
       <td class="whitespace-nowrap p-3 text-right">${brl(i.valorUnitario * i.quantidade)}</td>
       <td class="p-3">${selo(i.status)}</td>
@@ -603,6 +707,138 @@ function telaCompras() {
     </p>`
 }
 
+/**
+ * Fila da expedição — a planilha que a área monta à mão hoje.
+ *
+ * Espelha `src/app/expedicao/page.tsx`: uma solicitação chega aqui pelo caminho
+ * normal (depois da compra) ou pelo atalho (tudo em estoque, sem passar pelo
+ * Financeiro). Por isso cada item diz de onde vem.
+ */
+function telaExpedicao() {
+  const fila = SOLICITACOES.filter((s) => s.status === 'organizando_envio')
+  const pecas = fila.reduce((acc, s) => acc + s.itens.reduce((n, i) => n + i.quantidade, 0), 0)
+  const doEstoque = fila.reduce(
+    (acc, s) => acc + s.itens.filter((i) => i.emEstoque).reduce((n, i) => n + i.quantidade, 0),
+    0,
+  )
+
+  const cartoes = fila
+    .map(
+      (s) => `
+    <div class="rounded-lg border bg-card shadow-[0_1px_2px_rgba(11,41,5,0.04)]">
+      <div class="flex flex-wrap items-start justify-between gap-3 border-b p-5">
+        <div>
+          <p class="font-display text-base font-semibold">${esc(s.codigo)}</p>
+          <p class="mt-1 text-sm text-muted-foreground">${esc(s.data)} · ${esc(s.consultor)} · ${esc(s.motivo)}</p>
+        </div>
+        ${selo(s.status)}
+      </div>
+      <div class="grid gap-6 p-5 md:grid-cols-2">
+        <div>
+          <p class="font-ui mb-2 text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Separar</p>
+          <ul class="space-y-1.5 text-sm">
+            ${s.itens
+              .map(
+                (i) => `
+              <li class="flex items-baseline justify-between gap-3">
+                <span>${i.quantidade}× ${esc(i.produto)}</span>
+                <span class="rounded-full px-2 py-0.5 text-xs ${
+                  i.emEstoque ? 'bg-muted text-muted-foreground' : 'border text-muted-foreground'
+                }">${i.emEstoque ? 'estoque' : 'compra'}</span>
+              </li>`,
+              )
+              .join('')}
+          </ul>
+          <p class="mt-3 border-t pt-3 text-xs text-muted-foreground">
+            Valor da solicitação: ${brl(totalDaSolicitacao(s))}
+          </p>
+        </div>
+        <div>
+          <p class="font-ui mb-2 text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Enviar para</p>
+          <address class="text-sm not-italic leading-relaxed">
+            <span class="font-medium">${esc(s.destinatario)}</span><br />
+            ${esc(s.entrega)}
+            ${s.telefone ? `<br />${esc(s.telefone)}` : ''}
+          </address>
+        </div>
+      </div>
+    </div>`,
+    )
+    .join('')
+
+  return `
+    ${cabecalho(
+      'Pedidos para separar',
+      'Tudo o que a expedição precisa para embalar e postar, em ordem de chegada. A carta continua sendo escrita fora daqui.',
+      'Expedição',
+      '<span class="rounded-[5px] border px-5 py-2 font-ui text-sm font-semibold uppercase">Baixar CSV</span><span class="rounded-[5px] border px-5 py-2 font-ui text-sm font-semibold uppercase">Baixar planilha</span>',
+    )}
+    <div class="mb-8 grid gap-4 sm:grid-cols-3">
+      ${cartao('Peças a separar', String(pecas), `Em ${fila.length} ${fila.length === 1 ? 'pedido' : 'pedidos'}.`, true)}
+      ${cartao('Direto do estoque', String(doEstoque), 'Não passaram pelo Financeiro.')}
+      ${cartao('Compradas', String(pecas - doEstoque), 'Chegaram por uma compra do Financeiro.')}
+    </div>
+    ${cartoes || estadoVazio('Nada para separar agora', 'Os pedidos aparecem quando o Admin move a solicitação para organizando envio.')}
+    <p class="mt-6 text-xs text-muted-foreground">
+      Substitui a planilha montada à mão. Duas portas trazem uma solicitação até aqui: o caminho
+      normal, depois que o Financeiro compra, e o atalho — itens já em estoque vão da aprovação
+      direto para a expedição.
+    </p>`
+}
+
+/** Clientes: cadastro manual e importação por CSV. */
+function telaClientes() {
+  const porCliente = new Map()
+  for (const s of SOLICITACOES) {
+    porCliente.set(s.cliente, {
+      nome: s.cliente,
+      cpf: s.cpf,
+      telefone: s.telefone || null,
+      total: (porCliente.get(s.cliente)?.total ?? 0) + 1,
+    })
+  }
+
+  const linhas = [...porCliente.values()]
+    .map(
+      (c) => `
+    <tr class="border-b last:border-0 hover:bg-muted/40">
+      <td class="p-3 font-medium">${esc(c.nome)}</td>
+      <td class="p-3 text-muted-foreground">${esc(c.cpf)}</td>
+      <td class="p-3 text-muted-foreground">${esc(c.telefone || '—')}</td>
+      <td class="p-3 text-right">${c.total}</td>
+      <td class="p-3 text-right"><span class="text-xs text-muted-foreground">Editar</span></td>
+    </tr>`,
+    )
+    .join('')
+
+  return `
+    ${cabecalho(
+      'Clientes',
+      'Cadastro manual ou importação por CSV. O CPF é a chave que evita duplicatas.',
+      'Administração',
+      '<span class="rounded-[5px] border px-5 py-2 font-ui text-sm font-semibold uppercase">Importar CSV</span><span class="rounded-[5px] border border-primary bg-primary px-5 py-2 font-ui text-sm font-semibold uppercase text-primary-foreground">Novo cliente</span>',
+    )}
+    <div class="overflow-hidden rounded-lg border bg-card">
+      <table class="w-full text-sm">
+        <thead class="border-b bg-muted/40 text-left text-muted-foreground">
+          <tr>
+            <th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Nome</th>
+            <th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">CPF</th>
+            <th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Telefone</th>
+            <th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Solicitações</th>
+            <th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Ações</th>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>
+    <p class="mt-4 text-xs text-muted-foreground">
+      Na importação, linha com CPF que já existe atualiza o cadastro em vez de criar outro, e as
+      linhas inválidas voltam numeradas com o motivo — sem derrubar o arquivo inteiro. Os CPFs desta
+      vitrine são fictícios e aparecem mascarados.
+    </p>`
+}
+
 function telaProdutos() {
   const linhas = PRODUTOS.map(
     (p) => `
@@ -614,24 +850,34 @@ function telaProdutos() {
       <td class="p-3">
         <span class="rounded-md border px-2 py-0.5 text-xs">${p.ativo ? 'ativo' : 'desativado'}</span>
       </td>
+      <td class="p-3 text-right text-xs text-muted-foreground">
+        Editar · ${p.ativo ? 'Desativar' : 'Reativar'}
+      </td>
     </tr>`,
   ).join('')
 
   return `
-    ${cabecalho('Gerenciar catálogo', 'Cadastro, edição e ativação de produtos — feitos pela própria área.', 'Administração')}
-    ${emConstrucao(
-      'Cadastro e edição de produto com upload de foto estão em construção. Produto nunca é excluído: a ação é desativar, e o desativado some do catálogo do consultor mas permanece nas solicitações antigas.',
+    ${cabecalho(
+      'Gerenciar catálogo',
+      'Cadastro, edição e ativação de produtos — feitos pela própria área.',
+      'Administração',
+      '<span class="rounded-[5px] border px-5 py-2 font-ui text-sm font-semibold uppercase">Categorias</span><span class="rounded-[5px] border border-primary bg-primary px-5 py-2 font-ui text-sm font-semibold uppercase text-primary-foreground">Novo produto</span>',
     )}
-    <div class="mt-6 overflow-hidden rounded-lg border bg-card">
+    <div class="overflow-hidden rounded-lg border bg-card">
       <table class="w-full text-sm">
         <thead class="border-b bg-muted/40 text-left text-muted-foreground">
           <tr><th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Produto</th><th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Categoria</th>
           <th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Valor</th><th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Estoque</th>
-          <th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Situação</th></tr>
+          <th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Situação</th>
+          <th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Ações</th></tr>
         </thead>
         <tbody>${linhas}</tbody>
       </table>
-    </div>`
+    </div>
+    <p class="mt-4 text-xs text-muted-foreground">
+      Produto nunca é excluído: a ação é desativar. O desativado some do catálogo do consultor e
+      permanece nas solicitações antigas, que precisam continuar legíveis como foram criadas.
+    </p>`
 }
 
 function telaUsuarios() {
@@ -641,19 +887,22 @@ function telaUsuarios() {
       <td class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">${esc(u.nome)}</td>
       <td class="p-3"><span class="rounded-md bg-muted px-2 py-0.5 text-xs">${esc(u.perfil)}</span></td>
       <td class="whitespace-nowrap p-3 text-right">${u.limite ? brl(u.limite) : '—'}</td>
+      <td class="p-3 text-right text-xs text-muted-foreground">Editar</td>
     </tr>`,
   ).join('')
 
   return `
     ${cabecalho('Usuários', 'Perfil e limite mensal são geridos aqui, dentro da ferramenta, sem passar por TI.', 'Administração')}
-    ${emConstrucao(
-      'Usuários não são criados aqui: entram sozinhos no primeiro login pelo SSO, com perfil consultor. Esta tela é onde o Admin promove e define limite, sem passar por TI.',
-    )}
-    <div class="mt-6 overflow-hidden rounded-lg border bg-card">
+    <p class="mb-6 text-sm text-muted-foreground">
+      Usuários não são criados aqui: entram sozinhos no primeiro login pelo SSO, como consultor.
+      Esta tela promove, define o teto mensal e desativa quem saiu do time.
+    </p>
+    <div class="overflow-hidden rounded-lg border bg-card">
       <table class="w-full text-sm">
         <thead class="border-b bg-muted/40 text-left text-muted-foreground">
           <tr><th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Nome</th><th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Perfil</th>
-          <th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Limite mensal</th></tr>
+          <th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Limite mensal</th>
+          <th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Ações</th></tr>
         </thead>
         <tbody>${linhas}</tbody>
       </table>
@@ -667,7 +916,9 @@ const RENDER = {
   gestao: telaGestao,
   detalhe: telaDetalhe,
   compras: telaCompras,
+  expedicao: telaExpedicao,
   produtos: telaProdutos,
+  clientes: telaClientes,
   usuarios: telaUsuarios,
 }
 

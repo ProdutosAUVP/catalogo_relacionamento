@@ -1,4 +1,4 @@
-import { COLUNAS, type LinhaExport } from './linhas'
+import { COLUNAS, type ColunaExport, type LinhaExport } from './linhas'
 
 /**
  * Geração de CSV.
@@ -8,6 +8,9 @@ import { COLUNAS, type LinhaExport } from './linhas'
  * - separador `;`, porque o Excel pt-BR usa vírgula como decimal e quebraria
  *   as colunas num CSV separado por vírgula;
  * - BOM UTF-8 no início, sem o qual o Excel exibe "José" como "JosÃ©".
+ *
+ * As colunas são parâmetro porque existe mais de uma planilha: a exportação de
+ * solicitações e a da expedição têm colunas diferentes e o mesmo escape.
  */
 
 const SEPARADOR = ';'
@@ -29,11 +32,14 @@ export function escaparCampo(valor: string | number | null | undefined): string 
   return precisaAspas ? `"${texto.replace(/"/g, '""')}"` : texto
 }
 
-export function gerarCsv(linhas: readonly LinhaExport[]): string {
-  const cabecalho = COLUNAS.map((c) => escaparCampo(c.titulo)).join(SEPARADOR)
+export function gerarCsv(
+  linhas: readonly LinhaExport[],
+  colunas: readonly ColunaExport[] = COLUNAS,
+): string {
+  const cabecalho = colunas.map((c) => escaparCampo(c.titulo)).join(SEPARADOR)
 
   const corpo = linhas.map((linha) =>
-    COLUNAS.map((c) => escaparCampo(linha[c.chave])).join(SEPARADOR),
+    colunas.map((c) => escaparCampo(linha[c.chave])).join(SEPARADOR),
   )
 
   return BOM + [cabecalho, ...corpo].join('\r\n')

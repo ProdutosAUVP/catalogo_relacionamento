@@ -86,20 +86,3 @@ export function EstadoVazio({
     </div>
   )
 }
-
-/**
- * Aviso de tela ainda não implementada, com o que falta explicitado.
- *
- * Fica deliberadamente discreto: é uma nota de rodapé sobre o que vem depois,
- * não o assunto principal da tela.
- */
-export function AConstruir({ children }: { children: ReactNode }) {
-  return (
-    <div className="bg-muted/40 text-muted-foreground rounded-lg border border-dashed p-5 text-sm">
-      <p className="text-foreground font-ui mb-2 text-xs font-semibold tracking-[0.14em] uppercase">
-        Em construção
-      </p>
-      {children}
-    </div>
-  )
-}

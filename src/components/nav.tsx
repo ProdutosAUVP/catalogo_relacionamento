@@ -12,6 +12,7 @@ import {
   Package,
   Settings2,
   ShoppingCart,
+  Truck,
   Users,
   UserSquare,
   Table2,
@@ -35,7 +36,7 @@ import { cn } from '@/lib/utils'
  * A barra **não rola**. Duas decisões sustentam isso:
  *
  * - os três CRUDs de administração ficam sob um único item "Administração",
- *   o que mantém a barra em cinco itens, como a da Central;
+ *   o que mantém a barra enxuta, como a da Central;
  * - não existe `overflow-x-auto` aqui. Além de a barra de rolagem horizontal
  *   ficar feia, `overflow-x: auto` obriga o `overflow-y` a virar `auto`
  *   também — o que criava uma segunda barra, vertical, e ainda cortava os
@@ -79,6 +80,14 @@ const PRINCIPAIS: readonly ItemDeMenu[] = [
     descricao: 'Itens enviados para compra, com valor e site',
     icone: ShoppingCart,
     acao: 'compras.verFila',
+  },
+  {
+    id: 'expedicao',
+    href: '/expedicao',
+    rotulo: 'Expedição',
+    descricao: 'Pedidos prontos para separar, com endereço de envio',
+    icone: Truck,
+    acao: 'expedicao.verFila',
   },
   {
     id: 'gestao',

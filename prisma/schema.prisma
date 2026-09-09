@@ -271,3 +271,31 @@ model ContadorCodigo {
 
   @@map("contador_codigo")
 }
+
+// ---------------------------------------------------------------------------
+// Arquivos
+// ---------------------------------------------------------------------------
+
+/// Foto de produto guardada no próprio banco.
+///
+/// A spec previa um bucket S3-compatível, e o `env` já reserva as variáveis.
+/// No V1 o arquivo fica aqui por uma razão prática: são algumas dezenas de
+/// fotos de catálogo, e depender de bucket provisionado atrasaria a única
+/// coisa que a área precisa fazer sozinha — cadastrar produto com foto.
+///
+/// A troca por bucket mexe em um lugar só: `src/lib/arquivos.ts`. `fotoUrl`
+/// continua sendo uma URL, e as telas não sabem de onde ela vem.
+model Arquivo {
+  id        String   @id @default(cuid())
+  nome      String
+  /// MIME type. Validado na aplicação contra a lista de imagens aceitas.
+  tipo      String
+  /// Em bytes. Redundante com `length(dados)`, mas evita ler o binário só
+  /// para listar tamanho.
+  tamanho   Int
+  dados     Bytes
+  criadoPor String?  @map("criado_por")
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  @@map("arquivos")
+}

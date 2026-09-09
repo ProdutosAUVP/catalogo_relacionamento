@@ -56,6 +56,12 @@ describe('financeiro — definição da área', () => {
     expect(pode(Perfil.financeiro, 'compras.verFila')).toBe(true)
   })
 
+  it('enxerga a fila de expedição, para exportar o pedido', () => {
+    expect(pode(Perfil.financeiro, 'expedicao.verFila')).toBe(true)
+    expect(pode(Perfil.admin, 'expedicao.verFila')).toBe(true)
+    expect(pode(Perfil.consultor, 'expedicao.verFila')).toBe(false)
+  })
+
   it('altera o status do pedido', () => {
     expect(pode(Perfil.financeiro, 'solicitacao.alterarStatus')).toBe(true)
   })

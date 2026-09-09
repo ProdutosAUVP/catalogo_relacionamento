@@ -15,6 +15,37 @@ assumido para não travar a construção.
 Implementado: tela `/financeiro/compras` e permissão de alterar status. Ver
 [perfis e permissões](02-perfis-e-permissoes.md).
 
+### Canceladas e devolvidas contam no saldo do mês ✅
+
+> Devolvidos e cancelados podem entrar na conta sim, porque normalmente
+> reenviamos.
+
+Implementado: `STATUS_FORA_DO_SALDO` ficou vazia em `src/lib/status.ts`. A
+spec v1 pedia o contrário; a regra da área prevalece. Ver
+[fluxo de status](03-fluxo-de-status.md#efeito-no-saldo).
+
+### O que já está em estoque não passa pelo Financeiro ✅
+
+> Os itens que já temos em estoque não passam pelo financeiro, então é preciso
+> que haja uma forma deles passarem direto pra expedição — hoje todos esses
+> dados vão pra expedição via planilha.
+
+Implementado em duas partes: o atalho de status
+(`proximoDepoisDaAprovacao`, de "Aguardando aprovação" direto para
+"Organizando envio") e a tela `/expedicao`, que substitui a planilha e exporta
+em CSV e XLSX. Ver [fluxo de status](03-fluxo-de-status.md).
+
+### As bebidas vêm sempre do mesmo site ✅
+
+> As bebidas que pedimos são sempre de um site específico:
+> `casadabebida.com.br/u`.
+
+Implementado em `src/lib/fornecedores.ts`, como fornecedor padrão da categoria
+"Bebidas" — o Financeiro passa a ver o site também em item de catálogo, não só
+em presente específico. O `/u` do endereço parece truncado; ficou o domínio.
+**Confirmar com a área** se o caminho completo importa, e quais outras
+categorias têm fornecedor fixo.
+
 ## Para a área de Relacionamento
 
 ### O Financeiro pode ver CPF, telefone e endereço do cliente?
@@ -72,6 +103,23 @@ Se houver, é preciso saber o formato e o volume. O modelo aceita carga
 histórica: `origem` distingue o cliente importado, e o código sequencial pode
 partir de um número inicial ajustando `contador_codigo`.
 
+### O pedido de expedição deve nascer dentro do sistema deles?
+
+> O pedido que o consultor fizesse no catálogo já geraria o pedido pra
+> expedição dentro do sistema que eles usam, com todas as informações pro
+> envio, com exceção da carta.
+
+**Assumido para o V1:** a ferramenta produz a lista pronta em `/expedicao`,
+com exportação em CSV e XLSX nas mesmas colunas da planilha atual — o dado
+deixa de ser redigitado, mas ainda é levado à mão para o outro sistema.
+
+**Para fechar o ciclo** é preciso saber qual é o sistema da expedição e se ele
+tem API. Se for o Tiny, o caminho já está previsto na fase 2: os campos
+`tiny_pedido_id`, `rastreio` e `transportadora` existem no modelo esperando
+isso. Ver [integrações da fase 2](04-integracoes-fase-2.md).
+**Onde mudar:** `src/lib/expedicao.ts` ganha um provider de escrita, no mesmo
+desenho de `src/lib/providers/`.
+
 ### O status ser único por solicitação atende?
 
 Uma solicitação com três itens tem um status só. Se um item der problema, o
@@ -105,9 +153,16 @@ Admin promove. `BOOTSTRAP_ADMIN_EMAILS` resolve o problema do primeiro Admin.
 
 ### Onde ficam as fotos de produto?
 
-O bucket S3-compatível está previsto em variáveis de ambiente, mas o upload
-ainda não foi construído. Falta saber qual bucket usar (Railway, Cloudflare R2,
-S3) e quem cria as credenciais.
+**Assumido:** no próprio Postgres, tabela `arquivos`, servidas por
+`/api/arquivos/[id]` atrás da sessão. Ver
+[ADR 0007](adr/0007-fotos-no-banco.md).
+
+Foi o que destravou o CRUD de produto sem depender de bucket provisionado. As
+variáveis `STORAGE_*` continuam reservadas: quando o bucket existir, muda
+`salvarFoto` em `src/lib/arquivos.ts` e nada mais — `fotoUrl` já é uma URL.
+
+**Ainda em aberto:** qual bucket (Railway, Cloudflare R2, S3) e quem cria as
+credenciais. Vira urgente se o catálogo passar de algumas dezenas de fotos.
 
 ## Técnicas, para a fase 2
 

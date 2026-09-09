@@ -46,6 +46,7 @@ const ICONES: Record<string, string> = {
   'square-pen': 'tela:nova',
   'list-checks': 'tela:minhas',
   'shopping-cart': 'tela:compras',
+  truck: 'tela:expedicao',
   'table-2': 'tela:gestao',
   'user-square': 'tela:clientes',
   users: 'tela:usuarios',

@@ -156,6 +156,7 @@ const SOLICITACOES = [
     consultor: 'Carlos Consultor',
     cliente: 'Marina Alves Pereira',
     cpf: '***.982.247-**',
+    telefone: '(11) 98888-7777',
     motivo: 'Aniversário',
     status: 'aguardando_compra',
     carta:
@@ -163,8 +164,14 @@ const SOLICITACOES = [
     entrega: 'Avenida Paulista, 1000 — Apto 152, Bela Vista, São Paulo/SP · 01310-100',
     destinatario: 'Marina Alves Pereira',
     itens: [
-      { produto: 'Garrafa térmica AUVP', quantidade: 1, valorUnitario: 139.0, site: null },
-      { produto: 'Caneca AUPO11', quantidade: 1, valorUnitario: 72.0, site: null },
+      {
+        produto: 'Garrafa térmica AUVP',
+        quantidade: 1,
+        valorUnitario: 139.0,
+        site: null,
+        emEstoque: false,
+      },
+      { produto: 'Caneca AUPO11', quantidade: 1, valorUnitario: 72.0, site: null, emEstoque: true },
     ],
     historico: [
       {
@@ -198,6 +205,7 @@ const SOLICITACOES = [
         produto: 'Licor AUVP “Punch Me Up”',
         quantidade: 1,
         valorUnitario: 189.0,
+        categoria: 'Bebidas',
         site: null,
       },
       { produto: 'Porta-cartão AUVP preto', quantidade: 1, valorUnitario: 165.0, site: null },
@@ -230,12 +238,29 @@ const SOLICITACOES = [
     entrega: 'Avenida Afonso Pena, 500 — Sala 12, Centro, Belo Horizonte/MG · 30130-010',
     destinatario: 'Juliana Moreira Dias',
     itens: [
-      { produto: 'Vela aromática AUVP', quantidade: 1, valorUnitario: 112.0, site: null },
+      {
+        produto: 'Vela aromática AUVP',
+        quantidade: 1,
+        valorUnitario: 112.0,
+        site: null,
+        categoria: 'Casa & mesa',
+        emEstoque: false,
+      },
+      {
+        produto: 'Licor AUVP “Punch Me Up”',
+        quantidade: 1,
+        valorUnitario: 189.0,
+        site: null,
+        // Sem link próprio: o site vem do fornecedor padrão da categoria.
+        categoria: 'Bebidas',
+        emEstoque: false,
+      },
       {
         produto: 'Enxoval de berço bordado com o nome do bebê',
         quantidade: 1,
         valorUnitario: 450.0,
         site: 'https://www.exemplo-loja.com.br/enxoval-bordado',
+        emEstoque: false,
       },
     ],
     historico: [
@@ -269,6 +294,53 @@ const SOLICITACOES = [
         motivo: 'Fornecedor cancelou o pedido por falta de itens da cesta.',
       },
       { de: null, para: 'Pendente', quando: '26/02/2026 09:10', quem: 'Fernanda Consultora' },
+    ],
+  },
+  {
+    codigo: 'SOL-2026-0005',
+    data: '02/03/2026',
+    consultor: 'Carlos Consultor',
+    cliente: 'Juliana Moreira Dias',
+    cpf: '***.509.460-**',
+    telefone: '(31) 98888-1234',
+    motivo: 'Casamento',
+    status: 'organizando_envio',
+    carta: 'Juliana, felicidades nesta nova etapa! Um brinde a vocês dois. Equipe AUVP.',
+    entrega: 'Avenida Afonso Pena, 867, Centro, Belo Horizonte/MG · 30130-002',
+    destinatario: 'Juliana Moreira Dias',
+    // Tudo em estoque: esta solicitação pulou o Financeiro e foi da aprovação
+    // direto para a expedição.
+    itens: [
+      {
+        produto: 'Caneca AUVP II — grafismo dourado',
+        quantidade: 2,
+        valorUnitario: 68.0,
+        site: null,
+        emEstoque: true,
+      },
+      {
+        produto: 'Agenda AUVP',
+        quantidade: 1,
+        valorUnitario: 98.0,
+        site: null,
+        emEstoque: true,
+      },
+    ],
+    historico: [
+      {
+        de: 'Aguardando aprovação',
+        para: 'Organizando envio',
+        quando: '03/03/2026 09:30',
+        quem: 'Bia Relacionamento',
+        motivo: null,
+      },
+      {
+        de: 'Pendente',
+        para: 'Aguardando aprovação',
+        quando: '02/03/2026 14:20',
+        quem: 'Bia Relacionamento',
+      },
+      { de: null, para: 'Pendente', quando: '02/03/2026 11:05', quem: 'Carlos Consultor' },
     ],
   },
 ]

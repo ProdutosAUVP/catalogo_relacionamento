@@ -3,9 +3,10 @@ import { EsqueletoDeCabecalho, EsqueletoDeStats, EsqueletoDeTabela } from '@/com
 export default function Carregando() {
   return (
     <>
-      <EsqueletoDeCabecalho />
+      <EsqueletoDeCabecalho comAcoes acoes={2} />
       <EsqueletoDeStats />
-      <EsqueletoDeTabela linhas={5} />
+      {/* O catálogo tem dezenas de produtos e cresce devagar. */}
+      <EsqueletoDeTabela linhas={13} />
     </>
   )
 }

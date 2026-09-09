@@ -11,6 +11,10 @@ import { Perfil } from '@prisma/client'
  * site — e altera o status do pedido. É o que está implementado abaixo:
  * `compras.verFila` e `solicitacao.alterarStatus`.
  *
+ * `expedicao.verFila` não pertence a um perfil novo: a expedição trabalha fora
+ * desta ferramenta, e quem exporta o pedido para ela é quem já enxerga tudo —
+ * Admin e Financeiro.
+ *
  * O acesso a dados sensíveis do cliente segue liberado para o Financeiro por
  * coerência com a permissão de exportar, já que a exportação da spec carrega
  * CPF, telefone e endereço. Único ponto ainda não confirmado do perfil, e por
@@ -22,6 +26,7 @@ export const ACOES = [
   'catalogo.ver',
   'catalogo.gerenciar',
   'compras.verFila',
+  'expedicao.verFila',
   'solicitacao.criar',
   'solicitacao.verProprias',
   'solicitacao.verTodas',
@@ -63,6 +68,7 @@ const MATRIZ: Record<Perfil, Record<Acao, boolean>> = {
     'catalogo.ver': true,
     'catalogo.gerenciar': false,
     'compras.verFila': false,
+    'expedicao.verFila': false,
     'solicitacao.criar': true,
     'solicitacao.verProprias': true,
     'solicitacao.verTodas': false,
@@ -79,6 +85,7 @@ const MATRIZ: Record<Perfil, Record<Acao, boolean>> = {
     'catalogo.ver': true,
     'catalogo.gerenciar': true,
     'compras.verFila': true,
+    'expedicao.verFila': true,
     'solicitacao.criar': true,
     'solicitacao.verProprias': true,
     'solicitacao.verTodas': true,
@@ -95,6 +102,7 @@ const MATRIZ: Record<Perfil, Record<Acao, boolean>> = {
     'catalogo.ver': true,
     'catalogo.gerenciar': false,
     'compras.verFila': true,
+    'expedicao.verFila': true,
     'solicitacao.criar': false,
     'solicitacao.verProprias': true,
     'solicitacao.verTodas': true,

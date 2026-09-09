@@ -5,7 +5,8 @@ export default function Carregando() {
     <>
       <EsqueletoDeCabecalho />
       <EsqueletoDeStats />
-      <EsqueletoDeTabela linhas={5} />
+      {/* O time de Relacionamento cabe numa tela. */}
+      <EsqueletoDeTabela linhas={6} />
     </>
   )
 }

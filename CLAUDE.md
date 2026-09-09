@@ -15,17 +15,21 @@ resposta que já foi assumida em algum lugar.
 Cada regra de negócio tem **um** lugar. Ao mexer numa delas, mexa lá — nunca
 duplique numa tela.
 
-| Regra                           | Arquivo                      |
-| ------------------------------- | ---------------------------- |
-| Quem pode o quê                 | `src/lib/permissions.ts`     |
-| Transições de status e motivos  | `src/lib/status.ts`          |
-| Gasto do mês e limite           | `src/lib/saldo.ts`           |
-| Fila de compras do Financeiro   | `src/lib/compras.ts`         |
-| Aritmética de dinheiro          | `src/lib/money.ts`           |
-| Colunas e formato da exportação | `src/lib/export/`            |
-| Validação de formulário         | `src/lib/validators/`        |
-| Leitura de catálogo e clientes  | `src/lib/providers/`         |
-| Cores, tipografia e raio        | `src/styles/auvp-tokens.css` |
+| Regra                           | Arquivo                          |
+| ------------------------------- | -------------------------------- |
+| Quem pode o quê                 | `src/lib/permissions.ts`         |
+| Transições de status e motivos  | `src/lib/status.ts`              |
+| Gasto do mês e limite           | `src/lib/saldo.ts`               |
+| Fila de compras do Financeiro   | `src/lib/compras.ts`             |
+| Fila da expedição               | `src/lib/expedicao.ts`           |
+| Fornecedor padrão por categoria | `src/lib/fornecedores.ts`        |
+| Upload e leitura de foto        | `src/lib/arquivos.ts`            |
+| Leitura do CSV de clientes      | `src/lib/importacao-clientes.ts` |
+| Aritmética de dinheiro          | `src/lib/money.ts`               |
+| Colunas e formato da exportação | `src/lib/export/`                |
+| Validação de formulário         | `src/lib/validators/`            |
+| Leitura de catálogo e clientes  | `src/lib/providers/`             |
+| Cores, tipografia e raio        | `src/styles/auvp-tokens.css`     |
 
 ## Invariantes
 
@@ -41,6 +45,12 @@ Coisas que o código já garante e que não devem ser afrouxadas:
   não é controle de acesso.
 - **Consultor só enxerga as próprias solicitações.** Use
   `filtroDeSolicitacoes`, não um `where` escrito à mão.
+- **Preço de item vem do banco na hora de gravar.** `criarSolicitacao` relê o
+  produto; valor que chega do navegador não é usado.
+- **Tudo conta no saldo do mês**, cancelado e devolvido inclusive — a área
+  reenvia. `STATUS_FORA_DO_SALDO` está vazia de propósito.
+- **Estoque não passa pelo Financeiro.** Solicitação com tudo em estoque vai da
+  aprovação direto para a expedição (`proximoDepoisDaAprovacao`).
 - **Telas leem catálogo e clientes pelos providers**, não pelo Prisma direto.
 - **Movimento não pode gerar layout shift.** Anime só `opacity` e `transform`.
   Todo `loading.tsx` reserva as medidas exatas do conteúdo, e toda imagem tem
@@ -81,12 +91,15 @@ siga o mesmo padrão.
 
 ## O que está construído e o que não está
 
-Pronto: modelo de dados, permissões, fluxo de status, saldo, exportação, SSO,
-providers e as telas de leitura.
+O caminho principal está construído de ponta a ponta: catálogo, nova
+solicitação, mudança de status, fila de compras, fila da expedição com
+exportação, CRUD de produto e categoria com upload de foto, CRUD de cliente
+com importação CSV e edição de usuário.
 
-A construir: formulário de nova solicitação, CRUD de produto com upload de
-foto, CRUD de cliente com importação CSV, edição de usuário e a ação de
-alterar status. Cada tela em construção lista o que falta nela.
+O que continua fora do V1, por decisão registrada em
+`docs/05-perguntas-em-aberto.md`: geração da carta em formato de impressão,
+integração de escrita com o sistema da expedição e as integrações da fase 2
+(Tiny e Salesforce, que já têm provider e campos reservados).
 
 ## Vitrine estática
 
