@@ -110,14 +110,43 @@ export function EsqueletoDeCatalogo({ cards = 8 }: { cards?: number }) {
  * Altura fixa por cartão porque a coluna do endereço tem sempre as mesmas cinco
  * linhas — é o dado de envio, não texto livre.
  */
-export function EsqueletoDePedidos({ cards = 2 }: { cards?: number }) {
+export function EsqueletoDePedidos({ cards = 1 }: { cards?: number }) {
   return (
     <div className="space-y-4">
       {Array.from({ length: cards }).map((_, i) => (
-        // h-[305px] = cabeçalho do cartão + duas linhas de item + o endereço,
-        // que tem sempre as mesmas cinco linhas por ser dado de envio.
-        <Skeleton key={i} className="h-[305px] rounded-lg" />
+        // h-[421px] = cabeçalho do cartão + itens + o endereço (sempre as
+        // mesmas cinco linhas, por ser dado de envio) + o campo de rastreio.
+        <Skeleton key={i} className="h-[421px] rounded-lg" />
       ))}
+    </div>
+  )
+}
+
+/**
+ * Detalhe de uma solicitação.
+ *
+ * As alturas são as do conteúdo real medido: itens, carta e histórico à
+ * esquerda; rastreio, cliente e entrega à direita, mais o que a tela do Admin
+ * acrescenta. Variam com o número de itens e o tamanho da carta — é o resíduo
+ * conhecido desta tela, e ele é pequeno porque as três medidas maiores
+ * (endereço, cliente, rastreio) são campos fixos.
+ */
+export function EsqueletoDeDetalhe({ acoes = false }: { acoes?: boolean }) {
+  const esquerda = [212, 173, 252]
+  const direita = acoes ? [187, 154, 223, 227] : [187, 154, 223]
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-3">
+      <div className="space-y-6 lg:col-span-2">
+        {esquerda.map((altura) => (
+          <Skeleton key={altura} className="rounded-lg" style={{ height: altura }} />
+        ))}
+      </div>
+      <div className="space-y-6">
+        {direita.map((altura) => (
+          <Skeleton key={altura} className="rounded-lg" style={{ height: altura }} />
+        ))}
+      </div>
     </div>
   )
 }

@@ -124,7 +124,7 @@ export default async function Home() {
                   </p>
                 </div>
               ) : (
-                'Canceladas e devolvidas ficam fora da conta.'
+                'Tudo o que foi solicitado no mês entra na conta.'
               )
             }
           />
@@ -170,16 +170,18 @@ export default async function Home() {
                   {recentes.map((s) => (
                     <TableRow key={s.id}>
                       <TableCell className="font-medium whitespace-nowrap tabular-nums">
-                        {pode(usuario.perfil, 'solicitacao.verTodas') ? (
-                          <Link
-                            href={`/admin/solicitacoes/${s.id}`}
-                            className="hover:text-primary-emphasis underline-offset-4 hover:underline"
-                          >
-                            {s.codigo}
-                          </Link>
-                        ) : (
-                          s.codigo
-                        )}
+                        {/* Cada perfil vai para o detalhe que enxerga: o Admin
+                            para a gestão, o consultor para a própria. */}
+                        <Link
+                          href={
+                            pode(usuario.perfil, 'solicitacao.verTodas')
+                              ? `/admin/solicitacoes/${s.id}`
+                              : `/solicitacoes/${s.id}`
+                          }
+                          className="hover:text-primary-emphasis underline-offset-4 hover:underline"
+                        >
+                          {s.codigo}
+                        </Link>
                       </TableCell>
                       <TableCell className="text-muted-foreground whitespace-nowrap tabular-nums">
                         {formatarData(s.dataSolicitacao)}

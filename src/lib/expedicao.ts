@@ -18,8 +18,8 @@ import type { ColunaExport } from './export/linhas'
  * Duas coisas mandam uma solicitação para cá:
  *
  * - o caminho normal, depois que o Financeiro compra;
- * - o atalho: itens que já estão em estoque não passam pelo Financeiro e vão
- *   da aprovação direto para a expedição.
+ * - o atalho: itens que já estão em estoque não passam pelo Financeiro, e a
+ *   aprovação já os libera para envio.
  */
 
 export type ItemDoPedido = {

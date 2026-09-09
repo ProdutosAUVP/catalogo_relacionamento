@@ -197,6 +197,8 @@ const SOLICITACOES = [
     cpf: '***.444.777-**',
     motivo: 'Primeiro milhão',
     status: 'entregue',
+    rastreio: 'AA123456789BR',
+    transportadora: 'Correios',
     carta: 'Roberto, o primeiro milhão é resultado de disciplina. Parabéns por essa marca!',
     entrega: 'Avenida Atlântica, 2000, Copacabana, Rio de Janeiro/RJ · 22071-900',
     destinatario: 'Roberto Cardoso Lima',
@@ -341,6 +343,58 @@ const SOLICITACOES = [
         quem: 'Bia Relacionamento',
       },
       { de: null, para: 'Pendente', quando: '02/03/2026 11:05', quem: 'Carlos Consultor' },
+    ],
+  },
+  {
+    codigo: 'SOL-2026-0006',
+    data: '04/03/2026',
+    consultor: 'Carlos Consultor',
+    cliente: 'Marina Alves Pereira',
+    cpf: '***.982.247-**',
+    telefone: '(11) 98888-7777',
+    motivo: 'Reforço de relacionamento',
+    status: 'pendente',
+    carta: 'Marina, obrigado por seguir com a gente mais um ano.',
+    entrega: 'Avenida Paulista, 1000 — Apto 152, Bela Vista, São Paulo/SP · 01310-100',
+    destinatario: 'Marina Alves Pereira',
+    // Tudo em estoque: ao aprovar, o Admin já libera para envio.
+    itens: [
+      {
+        produto: 'Ecobag “Bolsa? Só a de valores”',
+        quantidade: 2,
+        valorUnitario: 42.0,
+        site: null,
+        emEstoque: true,
+      },
+    ],
+    historico: [
+      { de: null, para: 'Pendente', quando: '04/03/2026 10:12', quem: 'Carlos Consultor' },
+    ],
+  },
+  {
+    codigo: 'SOL-2026-0007',
+    data: '04/03/2026',
+    consultor: 'Fernanda Consultora',
+    cliente: 'Roberto Cardoso Lima',
+    cpf: '***.444.777-**',
+    motivo: 'Casamento',
+    status: 'pendente',
+    carta: 'Roberto, felicidades nesta nova etapa!',
+    entrega: 'Avenida Atlântica, 2000, Copacabana, Rio de Janeiro/RJ · 22071-900',
+    destinatario: 'Roberto Cardoso Lima',
+    // Bebida não controla estoque: esta passa pelo Financeiro.
+    itens: [
+      {
+        produto: 'Licor AUVP “Punch Me Up”',
+        quantidade: 1,
+        valorUnitario: 189.0,
+        site: null,
+        categoria: 'Bebidas',
+        emEstoque: false,
+      },
+    ],
+    historico: [
+      { de: null, para: 'Pendente', quando: '04/03/2026 11:40', quem: 'Fernanda Consultora' },
     ],
   },
 ]

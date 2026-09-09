@@ -7,8 +7,10 @@ import { ZERO, dinheiro, type Dinheiro } from './money'
 /**
  * Saldo gasto no mês (seção 8 da spec).
  *
- * Soma do `valor_total` das solicitações do consultor no mês corrente,
- * ignorando canceladas e devolvidas.
+ * Soma do `valor_total` de **todas** as solicitações do consultor no mês
+ * corrente, canceladas e devolvidas inclusive: a área reenvia, então o dinheiro
+ * continua comprometido. Quem decide o que fica de fora é `STATUS_FORA_DO_SALDO`,
+ * hoje vazia de propósito — ver `src/lib/status.ts`.
  *
  * Estourar o limite apenas sinaliza no V1. O bloqueio depende de decisão da
  * área, e por isso `estourou` é devolvido como informação, não como veto.

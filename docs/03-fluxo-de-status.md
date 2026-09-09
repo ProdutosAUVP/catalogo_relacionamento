@@ -23,6 +23,10 @@ linear — voltar acontece por "Deu problema".
 Há uma exceção declarada em `ATALHOS`: de **Aguardando aprovação** a
 solicitação pode ir direto para **Organizando envio**, pulando o Financeiro.
 
+O atalho **parte da aprovação**, e é isso que importa: ele pula o Financeiro,
+nunca a aprovação. Nada sai do pedido do consultor direto para a expedição —
+alguém precisa dar o OK antes, e é esse OK que libera o envio.
+
 Regra da área: item que já está na prateleira não tem o que ser comprado, e
 hoje esses casos vão para a expedição por fora do sistema. Quem decide se o
 atalho é oferecido é `proximoDepoisDaAprovacao(itens)`, que olha os itens:
@@ -39,6 +43,26 @@ pedido é embalado junto, então ele espera o item que falta.
 
 A tela do detalhe **sugere** o próximo status e explica o porquê; a decisão
 continua sendo do Admin, e as duas transições são válidas.
+
+### Encaminhamento em lote
+
+O Admin trabalha por pilha: chegam vinte pedidos e ele decide de uma vez quais
+vão comprar e quais já podem ser separados. A tela de gestão tem seleção por
+linha e três ações — "Aprovar e encaminhar" (roteia pelo estoque), "Mandar
+comprar" e "Liberar para envio".
+
+Quem monta o caminho é `caminhoDeEncaminhamento`, e ela não afrouxa nada:
+
+- quando a solicitação ainda está **pendente**, o passo da aprovação entra
+  antes do destino, e vira uma linha própria do histórico. Não existe salto de
+  "pedido" para "liberado" sem o OK registrado;
+- cada salto passa por `transicaoPermitida`, a mesma função da tela de
+  detalhe;
+- o que não pode andar não anda em silêncio: volta na lista de ignoradas, com
+  o motivo.
+
+A coluna "rota" da tabela diz, antes do clique, se aquela solicitação tem o que
+comprar — é o que evita abrir vinte telas para decidir.
 
 ## Saídas do fluxo
 
@@ -83,6 +107,20 @@ comprometido, e tirar esses casos da conta subestimaria o gasto do consultor.
 `STATUS_FORA_DO_SALDO` continua existindo, vazia. Ela é o lugar único da
 pergunta "isto conta no saldo?": se um dia algum status deixar de contar, ele
 entra ali e a mudança vale de uma vez para o saldo, o painel e a exportação.
+
+## Rastreio
+
+`Solicitacao.rastreio` e `Solicitacao.transportadora` são preenchidos na tela
+da expedição (`expedicao.registrarRastreio`) e lidos pelo consultor na lista e
+no detalhe da própria solicitação.
+
+Gravar o rastreio **não muda o status**: pôr o código é dizer que saiu, e
+"entregue" é outra coisa, decidida por quem acompanha. São dois botões, e o de
+entregue só aparece depois que há código.
+
+Os campos já existiam reservados para a fase 2. Quando a integração com o Tiny
+ou com o sistema da expedição existir, ela escreve nos mesmos campos e o
+formulário vira o caminho manual de exceção — nada muda nas telas de leitura.
 
 ## Da expedição para a frente
 

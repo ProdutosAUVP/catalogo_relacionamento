@@ -1,4 +1,5 @@
 import { exigirPermissao } from '@/lib/auth-guards'
+import { pode } from '@/lib/permissions'
 import { filaDeExpedicao, pecasASeparar, STATUS_DA_EXPEDICAO } from '@/lib/expedicao'
 import { formatarBRL } from '@/lib/money'
 import { formatarData } from '@/lib/datas'
@@ -9,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatusBadge } from '@/components/status-badge'
 import { Stat } from '@/components/stat'
 import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
+import { Rastreio } from './rastreio'
 
 /**
  * Fila de expedição — a planilha que a área monta à mão hoje.
@@ -26,7 +28,8 @@ export default async function ExpedicaoPage({
 }: {
   searchParams: Promise<{ enviadas?: string }>
 }) {
-  await exigirPermissao('expedicao.verFila')
+  const usuario = await exigirPermissao('expedicao.verFila')
+  const podeRegistrarRastreio = pode(usuario.perfil, 'expedicao.registrarRastreio')
   const { enviadas } = await searchParams
   const incluirEnviadas = enviadas === '1'
 
@@ -159,6 +162,17 @@ export default async function ExpedicaoPage({
                     </p>
                   ) : null}
                 </div>
+
+                {podeRegistrarRastreio ? (
+                  <div className="md:col-span-2">
+                    <Rastreio
+                      solicitacaoId={pedido.id}
+                      status={pedido.status}
+                      rastreio={pedido.rastreio}
+                      transportadora={pedido.transportadora}
+                    />
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
           ))}

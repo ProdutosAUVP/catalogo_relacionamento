@@ -103,6 +103,20 @@ Se houver, é preciso saber o formato e o volume. O modelo aceita carga
 histórica: `origem` distingue o cliente importado, e o código sequencial pode
 partir de um número inicial ajustando `contador_codigo`.
 
+### O consultor precisa acompanhar o envio ✅
+
+> É importante ter um local pra ser preenchido o código de rastreio pro
+> consultor conseguir acompanhar se o presente que ele pediu já foi ou não
+> entregue, ou via integração já puxar essa info.
+
+Implementado pelo caminho manual: a expedição preenche rastreio e
+transportadora em `/expedicao`, e o consultor lê na lista e no detalhe da
+própria solicitação (`/solicitacoes/[id]`, criada para isso). Ver
+[fluxo de status](03-fluxo-de-status.md#rastreio).
+
+A integração continua em aberto junto com a pergunta abaixo — e ela escreve
+nos mesmos dois campos, então ligar uma não mexe em nenhuma tela.
+
 ### O pedido de expedição deve nascer dentro do sistema deles?
 
 > O pedido que o consultor fizesse no catálogo já geraria o pedido pra
@@ -113,8 +127,8 @@ partir de um número inicial ajustando `contador_codigo`.
 com exportação em CSV e XLSX nas mesmas colunas da planilha atual — o dado
 deixa de ser redigitado, mas ainda é levado à mão para o outro sistema.
 
-**Para fechar o ciclo** é preciso saber qual é o sistema da expedição e se ele
-tem API. Se for o Tiny, o caminho já está previsto na fase 2: os campos
+**Para fechar o ciclo** — inclusive puxar o rastreio sozinho, em vez de alguém
+digitá-lo — é preciso saber qual é o sistema da expedição e se ele tem API. Se for o Tiny, o caminho já está previsto na fase 2: os campos
 `tiny_pedido_id`, `rastreio` e `transportadora` existem no modelo esperando
 isso. Ver [integrações da fase 2](04-integracoes-fase-2.md).
 **Onde mudar:** `src/lib/expedicao.ts` ganha um provider de escrita, no mesmo
