@@ -10,9 +10,11 @@ import { subtotal, totalDosItens, type Dinheiro } from './money'
  * solicitação — quem compra compra item a item, e um item de catálogo e um
  * presente específico têm origens diferentes.
  *
- * O "site" é o `url_externa` do item específico. Item de catálogo não tem site
- * porque o produto é comprado pelo canal já estabelecido; nesses casos o campo
- * vem nulo e a tela mostra a categoria no lugar.
+ * O "site" sai de três lugares, nesta ordem: o link que o consultor digitou no
+ * presente específico, o link do cadastro do produto (a coluna "Link" da
+ * planilha do catálogo) e, por último, o fornecedor padrão da categoria em
+ * `src/lib/fornecedores.ts`. Quando nenhum existe, sobra a nota de compra —
+ * "Pedido direto ao fornecedor" — ou a própria categoria.
  */
 
 export type ItemParaCompra = {
@@ -25,8 +27,13 @@ export type ItemParaCompra = {
   clienteNome: string
   /** Nome do produto do catálogo, ou a descrição do presente específico. */
   produto: string
-  /** Preenchido só em presente específico; nulo em item de catálogo. */
+  /**
+   * Onde comprar: o link do presente específico ou o do produto de catálogo.
+   * Nulo quando não há link — aí vale a nota, ou o padrão da categoria.
+   */
   site: string | null
+  /** Instrução que não é link, do cadastro do produto. */
+  notaDeCompra: string | null
   categoria: string | null
   deCatalogo: boolean
   valorUnitario: Dinheiro
@@ -74,7 +81,16 @@ export async function filaDeCompras(filtro: FiltroDaFila = {}): Promise<ItemPara
       consultor: { select: { nome: true } },
       cliente: { select: { nome: true } },
       itens: {
-        include: { produto: { select: { nome: true, categoria: { select: { nome: true } } } } },
+        include: {
+          produto: {
+            select: {
+              nome: true,
+              urlCompra: true,
+              notaDeCompra: true,
+              categoria: { select: { nome: true } },
+            },
+          },
+        },
       },
     },
     // Mais antigas primeiro: a fila de compra é ordem de chegada.
@@ -90,7 +106,10 @@ export async function filaDeCompras(filtro: FiltroDaFila = {}): Promise<ItemPara
       consultorNome: s.consultor.nome,
       clienteNome: s.cliente.nome,
       produto: item.produto?.nome ?? item.descricaoLivre ?? '—',
-      site: item.urlExterna,
+      // O link do presente específico foi escolhido pelo consultor para aquele
+      // item; o do produto de catálogo é onde a área sempre compra aquilo.
+      site: item.urlExterna ?? item.produto?.urlCompra ?? null,
+      notaDeCompra: item.produto?.notaDeCompra ?? null,
       categoria: item.produto?.categoria.nome ?? null,
       deCatalogo: item.produtoId !== null,
       valorUnitario: item.valorUnitario,

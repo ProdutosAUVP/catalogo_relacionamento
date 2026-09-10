@@ -57,8 +57,11 @@ function comoProduto(dados: FormData, fotoUrl: string | null) {
     fotoUrl,
     valor: String(dados.get('valor') ?? ''),
     tipoValor: String(dados.get('tipoValor') ?? 'exato'),
+    origem: String(dados.get('origem') ?? 'mediante_pedido'),
     controlaEstoque: dados.get('controlaEstoque') === 'on',
     estoque: dados.get('estoque'),
+    urlCompra: dados.get('urlCompra'),
+    notaDeCompra: dados.get('notaDeCompra'),
     ativo: dados.get('ativo') !== 'off',
     skuTiny: dados.get('skuTiny'),
   }
@@ -81,7 +84,8 @@ export async function salvarProduto(dados: FormData): Promise<ResultadoDaAction<
     const valores = {
       ...validado.data,
       fotoUrl: urlRelativa ?? validado.data.fotoUrl,
-      valor: new Prisma.Decimal(validado.data.valor),
+      // Nulo é "a área ainda não informou", e segue nulo até ela informar.
+      valor: validado.data.valor === null ? null : new Prisma.Decimal(validado.data.valor),
       // Produto que não controla estoque não guarda quantidade: um número
       // parado ali seria lido como disponibilidade real.
       estoque: validado.data.controlaEstoque ? validado.data.estoque : null,

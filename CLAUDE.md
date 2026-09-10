@@ -25,6 +25,7 @@ duplique numa tela.
 | Fornecedor padrão por categoria | `src/lib/fornecedores.ts`        |
 | Upload e leitura de foto        | `src/lib/arquivos.ts`            |
 | Leitura do CSV de clientes      | `src/lib/importacao-clientes.ts` |
+| Catálogo de presentes da área   | `prisma/catalogo-auvp.ts`        |
 | Aritmética de dinheiro          | `src/lib/money.ts`               |
 | Colunas e formato da exportação | `src/lib/export/`                |
 | Validação de formulário         | `src/lib/validators/`            |
@@ -49,10 +50,17 @@ Coisas que o código já garante e que não devem ser afrouxadas:
   produto; valor que chega do navegador não é usado.
 - **Tudo conta no saldo do mês**, cancelado e devolvido inclusive — a área
   reenvia. `STATUS_FORA_DO_SALDO` está vazia de propósito.
+- **Quem decide a rota é `Produto.origem`**, não a quantidade em estoque. É a
+  coluna "Estoque" da planilha da área: `estoque_interno` não passa pelo
+  Financeiro, `mediante_pedido` passa. A contagem de peças é refinamento
+  opcional, e a área não a mantém hoje.
 - **Estoque não passa pelo Financeiro.** Solicitação com tudo em estoque é
   liberada para envio na própria aprovação (`proximoDepoisDaAprovacao`). O
   atalho pula o Financeiro, nunca a aprovação — nada vai do pedido do consultor
   para a expedição sem o OK do Admin.
+- **`Produto.valor` nulo não é zero.** Seis produtos vieram sem preço; a tela
+  diz "valor a definir". `SolicitacaoItem.valorUnitario` continua obrigatório e
+  congela como zero nesses casos.
 - **O lote não afrouxa a máquina de estados.** `caminhoDeEncaminhamento` insere
   o passo da aprovação quando ele falta, e cada passo vira uma linha do
   histórico. O que não pode andar volta como ignorado, com o motivo.
@@ -113,6 +121,17 @@ O que continua fora do V1, por decisão registrada em
 integração com o sistema da expedição (que escreveria rastreio e status sem
 digitação) e as integrações da fase 2 (Tiny e Salesforce, que já têm provider e
 campos reservados).
+
+## Catálogo e fotos
+
+O catálogo é o de verdade: 49 presentes transcritos da planilha da área em
+`prisma/catalogo-auvp.ts`, conferidos campo a campo. Depois de a ferramenta
+subir, quem manda é o CRUD — este arquivo é o ponto de partida.
+
+As fotos originais que a área mandou ficam em `imgs produtos/`.
+`npm run fotos:preparar` converte para `public/produtos/<slug>.webp`, na
+moldura 3:4 que o catálogo serve. Rode de novo quando ela trocar ou
+acrescentar foto.
 
 ## Vitrine estática
 

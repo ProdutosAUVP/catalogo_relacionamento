@@ -5,12 +5,12 @@ import { exigirPermissao } from '@/lib/auth-guards'
 import { pode } from '@/lib/permissions'
 import { catalogoProvider } from '@/lib/providers'
 import { versoDaFoto } from '@/lib/fotos'
-import { formatarBRL } from '@/lib/money'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ProdutoImagem } from '@/components/produto-imagem'
 import { CategoriaBadge } from '@/components/categoria-badge'
+import { ValorDoProduto } from '@/components/valor-do-produto'
 import { FiltroCategorias } from '@/components/filtro-categorias'
 import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
 
@@ -30,7 +30,10 @@ export default async function CatalogoPage({
   const { busca, categoria } = await searchParams
 
   const [pagina, categorias, contagem] = await Promise.all([
-    catalogoProvider.listar({ busca, categoriaId: categoria, apenasAtivos: true, porPagina: 48 }),
+    // O catálogo tem dezenas de itens e cresce devagar: cabe numa página, e
+    // uma paginação de duas páginas atrapalha mais do que ajuda a escolher.
+    // O provider limita em 100 — se um dia passar disso, entra paginação.
+    catalogoProvider.listar({ busca, categoriaId: categoria, apenasAtivos: true, porPagina: 100 }),
     db.categoria.findMany({ where: { ativo: true }, orderBy: { nome: 'asc' } }),
     db.produto.groupBy({ by: ['categoriaId'], where: { ativo: true }, _count: { _all: true } }),
   ])
@@ -149,20 +152,29 @@ export default async function CatalogoPage({
                   ) : null}
 
                   <div className="mt-auto flex w-full items-end justify-between gap-3 pt-3">
-                    <p className="flex items-baseline gap-1.5 leading-tight">
-                      {produto.tipoValor === 'medio' ? (
-                        <span className="text-muted-foreground text-xs">a partir de</span>
-                      ) : null}
-                      <span className="text-lg font-semibold">{formatarBRL(produto.valor)}</span>
-                    </p>
+                    <ValorDoProduto
+                      valor={produto.valor}
+                      tipoValor={produto.tipoValor}
+                      className="leading-tight"
+                      classeDoValor="text-lg font-semibold"
+                    />
 
-                    {/* Produto que não controla estoque não exibe
-                        disponibilidade, em vez de exibir zero. */}
-                    {produto.controlaEstoque ? (
-                      <Badge variant={semEstoque ? 'muted' : 'outline'}>
-                        {semEstoque ? 'sem estoque' : `${produto.estoque} un.`}
+                    {/*
+                      O que o consultor quer saber aqui é quanto tempo demora,
+                      e não quantas peças existem: "pronta entrega" sai assim
+                      que o Admin aprovar; "sob encomenda" espera a compra.
+                      A contagem, quando a área a mantém, entra junto.
+                    */}
+                    {produto.controlaEstoque && semEstoque ? (
+                      <Badge variant="muted">sem estoque</Badge>
+                    ) : produto.origem === 'estoque_interno' ? (
+                      <Badge variant="outline">
+                        pronta entrega
+                        {produto.controlaEstoque ? ` · ${produto.estoque} un.` : ''}
                       </Badge>
-                    ) : null}
+                    ) : (
+                      <Badge variant="muted">sob encomenda</Badge>
+                    )}
                   </div>
                 </div>
               </article>

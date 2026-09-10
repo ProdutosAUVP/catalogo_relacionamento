@@ -44,11 +44,36 @@ A regra existe em dois lugares:
 - CHECK constraint `item_catalogo_ou_especifico`, para que nenhum script,
   seed ou correção manual consiga gravar um item inválido.
 
-## Estoque opcional
+## Origem do produto, e não quantidade em estoque
 
-`controla_estoque = false` cobre produtos externos e itens montados sob
-encomenda, que não têm essa informação. A tela omite a disponibilidade em vez
-de exibir zero — zero significaria "acabou", que é outra coisa.
+`Produto.origem` responde de onde o presente sai: `estoque_interno` está na
+prateleira, `mediante_pedido` é comprado quando alguém pede. É a coluna
+"Estoque" da planilha do catálogo, e é ela que decide se a solicitação passa
+pelo Financeiro — ver `precisaDeCompra` em `src/lib/status.ts`.
+
+`controla_estoque` é o refinamento opcional: a área não conta peça a peça hoje,
+mas se um dia contar, um pedido maior que o saldo vai ao Financeiro mesmo sendo
+item de prateleira. Com `false`, a tela omite a disponibilidade em vez de
+exibir zero — zero significaria "acabou", que é outra coisa.
+
+## Onde comprar mora no produto
+
+`url_compra` é o link da coluna "Link" da planilha; `nota_de_compra` guarda a
+instrução que não é link ("Pedido direto ao fornecedor"). Os dois convivem:
+há kit em que parte vem de cada lugar.
+
+Na fila do Financeiro a ordem é: link do presente específico → `url_compra` do
+produto → fornecedor padrão da categoria (`src/lib/fornecedores.ts`) → nota.
+
+## Valor nulo não é zero
+
+`Produto.valor` aceita nulo, e seis produtos do catálogo estão assim: são
+brindes personalizados comprados em lote, e a planilha veio sem o custo
+unitário. O catálogo mostra "valor a definir" — R$ 0,00 se leria como grátis, e
+a soma do mês passaria a mentir sem ninguém perceber.
+
+O item da solicitação **não** aceita nulo: `valor_unitario` congela na criação,
+e produto sem preço congela como zero.
 
 ## Histórico é imutável
 

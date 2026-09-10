@@ -47,7 +47,7 @@ export default async function AdminSolicitacoesPage({
           select: {
             produtoId: true,
             quantidade: true,
-            produto: { select: { controlaEstoque: true, estoque: true } },
+            produto: { select: { origem: true, controlaEstoque: true, estoque: true } },
           },
         },
       },

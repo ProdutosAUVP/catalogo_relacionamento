@@ -1,6 +1,5 @@
 import { db } from '@/lib/db'
 import { exigirPermissao } from '@/lib/auth-guards'
-import { formatarBRL } from '@/lib/money'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import {
@@ -12,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Stat } from '@/components/stat'
+import { ValorDoProduto } from '@/components/valor-do-produto'
 import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
 import { EditorDeProduto, BotaoAtivar } from './editor-de-produto'
 import { EditorDeCategorias } from './editor-de-categorias'
@@ -77,7 +77,7 @@ export default async function AdminCatalogoPage() {
                 <TableHead>Produto</TableHead>
                 <TableHead>Categoria</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
-                <TableHead className="text-right">Estoque</TableHead>
+                <TableHead>De onde sai</TableHead>
                 <TableHead className="text-right">Usos</TableHead>
                 <TableHead>Situação</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
@@ -89,13 +89,17 @@ export default async function AdminCatalogoPage() {
                   <TableCell className="font-medium">{p.nome}</TableCell>
                   <TableCell className="text-muted-foreground">{p.categoria.nome}</TableCell>
                   <TableCell className="text-right whitespace-nowrap tabular-nums">
-                    {p.tipoValor === 'medio' ? (
-                      <span className="text-muted-foreground text-xs">a partir de </span>
-                    ) : null}
-                    {formatarBRL(p.valor)}
+                    <ValorDoProduto valor={p.valor} tipoValor={p.tipoValor} />
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-right tabular-nums">
-                    {p.controlaEstoque ? (p.estoque ?? 0) : '—'}
+                  <TableCell className="whitespace-nowrap">
+                    <Badge variant={p.origem === 'estoque_interno' ? 'muted' : 'outline'}>
+                      {p.origem === 'estoque_interno' ? 'estoque' : 'sob pedido'}
+                    </Badge>
+                    {p.controlaEstoque ? (
+                      <span className="text-muted-foreground ml-2 text-xs tabular-nums">
+                        {p.estoque ?? 0} un.
+                      </span>
+                    ) : null}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{p._count.itens}</TableCell>
                   <TableCell>
@@ -112,10 +116,13 @@ export default async function AdminCatalogoPage() {
                         descricao: p.descricao,
                         categoriaId: p.categoriaId,
                         fotoUrl: p.fotoUrl,
-                        valor: p.valor.toFixed(2).replace('.', ','),
+                        valor: p.valor ? p.valor.toFixed(2).replace('.', ',') : '',
                         tipoValor: p.tipoValor,
+                        origem: p.origem,
                         controlaEstoque: p.controlaEstoque,
                         estoque: p.estoque,
+                        urlCompra: p.urlCompra,
+                        notaDeCompra: p.notaDeCompra,
                         ativo: p.ativo,
                         skuTiny: p.skuTiny,
                       }}

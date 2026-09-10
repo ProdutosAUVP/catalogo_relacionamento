@@ -91,7 +91,11 @@ export default async function FilaDeComprasPage() {
                     </div>
                   </TableCell>
                   <TableCell className="max-w-64">
-                    <SiteDeCompra site={item.site} categoria={item.categoria} />
+                    <SiteDeCompra
+                      site={item.site}
+                      nota={item.notaDeCompra}
+                      categoria={item.categoria}
+                    />
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{item.quantidade}</TableCell>
                   <TableCell className="text-right font-medium whitespace-nowrap tabular-nums">
@@ -119,14 +123,30 @@ export default async function FilaDeComprasPage() {
 /**
  * Onde comprar o item.
  *
- * O link do presente específico vence; sem ele, vale o fornecedor padrão da
- * categoria (bebida é sempre Casa da Bebida, por regra da área). Sobrando as
- * duas coisas, mostra-se a categoria — que informa mais que um traço.
+ * Três fontes, nesta ordem: o link do item (do presente específico ou do
+ * cadastro do produto), o fornecedor padrão da categoria e, por fim, a nota de
+ * compra — "Pedido direto ao fornecedor", que não é link mas é instrução.
+ *
+ * Sobrando tudo, mostra-se a categoria: informa mais que um traço.
  */
-function SiteDeCompra({ site, categoria }: { site: string | null; categoria: string | null }) {
+function SiteDeCompra({
+  site,
+  nota,
+  categoria,
+}: {
+  site: string | null
+  nota: string | null
+  categoria: string | null
+}) {
   const destino = siteDeCompra(site, categoria)
 
-  if (!destino) return <Badge variant="outline">{categoria ?? 'catálogo'}</Badge>
+  if (!destino) {
+    return nota ? (
+      <span className="text-sm">{nota}</span>
+    ) : (
+      <Badge variant="outline">{categoria ?? 'catálogo'}</Badge>
+    )
+  }
 
   return (
     <>
@@ -138,6 +158,8 @@ function SiteDeCompra({ site, categoria }: { site: string | null; categoria: str
       >
         {destino.url.replace(/^https?:\/\//, '')}
       </a>
+      {/* A nota convive com o link: há kit em que parte vem de cada lugar. */}
+      {nota ? <span className="text-muted-foreground block text-xs">{nota}</span> : null}
       {destino.origem === 'categoria' ? (
         <span className="text-muted-foreground text-xs">fornecedor padrão de {categoria}</span>
       ) : null}

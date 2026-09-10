@@ -41,7 +41,8 @@ export type ProdutoDoCatalogo = {
   descricao: string | null
   categoriaNome: string
   fotoUrl: string | null
-  valor: number
+  /** Nulo quando a área ainda não informou o preço. Nulo não é zero. */
+  valor: number | null
   tipoValor: 'exato' | 'medio'
   controlaEstoque: boolean
   estoque: number | null
@@ -73,6 +74,15 @@ const ETAPAS = ['Cliente', 'Itens', 'Entrega', 'Carta', 'Revisão'] as const
 type Etapa = 0 | 1 | 2 | 3 | 4
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+
+/**
+ * Produto sem preço informado entra no total como zero, e o resumo diz isso.
+ *
+ * O alternativo seria impedir a escolha, o que travaria o consultor por um dado
+ * que só a área preenche — e o brinde personalizado sem preço é justamente o
+ * mais pedido.
+ */
+const valorOuZero = (v: number | null) => v ?? 0
 
 export function FormularioDeSolicitacao({ produtos }: { produtos: ProdutoDoCatalogo[] }) {
   const router = useRouter()
@@ -115,7 +125,8 @@ export function FormularioDeSolicitacao({ produtos }: { produtos: ProdutoDoCatal
   })
 
   const total = itens.reduce((acc, i) => {
-    const valor = i.tipo === 'catalogo' ? i.produto.valor : Number(i.valor.replace(',', '.')) || 0
+    const valor =
+      i.tipo === 'catalogo' ? valorOuZero(i.produto.valor) : Number(i.valor.replace(',', '.')) || 0
     return acc + valor * i.quantidade
   }, 0)
 
@@ -231,7 +242,13 @@ export function FormularioDeSolicitacao({ produtos }: { produtos: ProdutoDoCatal
         entregaDestinatario: entrega.destinatario,
         itens: itens.map((i) =>
           i.tipo === 'catalogo'
-            ? { produtoId: i.produto.id, valorUnitario: i.produto.valor, quantidade: i.quantidade }
+            ? // O valor que vale é o relido do banco em `criarSolicitacao`;
+              // este vai junto só para o schema aceitar a forma do item.
+              {
+                produtoId: i.produto.id,
+                valorUnitario: valorOuZero(i.produto.valor),
+                quantidade: i.quantidade,
+              }
             : {
                 descricaoLivre: i.descricao,
                 urlExterna: i.url,
@@ -584,10 +601,16 @@ function EtapaItens({
               <CategoriaBadge categoria={p.categoriaNome} />
               <span className="font-display text-sm leading-snug font-semibold">{p.nome}</span>
               <span className="mt-auto pt-1 text-sm font-medium">
-                {p.tipoValor === 'medio' ? (
-                  <span className="text-muted-foreground text-xs">a partir de </span>
-                ) : null}
-                {brl(p.valor)}
+                {p.valor === null ? (
+                  <span className="text-muted-foreground font-normal">valor a definir</span>
+                ) : (
+                  <>
+                    {p.tipoValor === 'medio' ? (
+                      <span className="text-muted-foreground text-xs">a partir de </span>
+                    ) : null}
+                    {brl(p.valor)}
+                  </>
+                )}
               </span>
             </span>
           </button>
@@ -938,9 +961,10 @@ function Resumo({
             ) : (
               itens.map((item, i) => {
                 const nome = item.tipo === 'catalogo' ? item.produto.nome : item.descricao
+                const semPreco = item.tipo === 'catalogo' && item.produto.valor === null
                 const valor =
                   item.tipo === 'catalogo'
-                    ? item.produto.valor
+                    ? valorOuZero(item.produto.valor)
                     : Number(item.valor.replace(',', '.')) || 0
 
                 return (
@@ -948,7 +972,7 @@ function Resumo({
                     <div className="min-w-0 flex-1">
                       <p className="leading-snug font-medium">{nome}</p>
                       <p className="text-muted-foreground tabular-nums">
-                        {item.quantidade} × {brl(valor)}
+                        {item.quantidade} × {semPreco ? 'valor a definir' : brl(valor)}
                       </p>
                     </div>
                     <input

@@ -67,6 +67,16 @@ export const valorSchema = z
   })
   .refine((v) => Number.isFinite(v) && v >= 0, { message: 'Valor inválido.' })
 
+/**
+ * Valor monetário opcional. Vazio vira `null`, e nulo não é zero: parte do
+ * catálogo chegou da área sem preço, e "R$ 0,00" se leria como grátis.
+ */
+export const valorOpcional = z.preprocess((v) => {
+  if (v === null || v === undefined) return null
+  if (typeof v === 'string' && v.trim() === '') return null
+  return v
+}, valorSchema.nullable())
+
 /** Inteiro não negativo opcional — usado no estoque. */
 export const inteiroOpcional = z.preprocess((v) => {
   if (v === null || v === undefined || v === '') return null

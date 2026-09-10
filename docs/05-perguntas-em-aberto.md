@@ -46,7 +46,49 @@ em presente específico. O `/u` do endereço parece truncado; ficou o domínio.
 **Confirmar com a área** se o caminho completo importa, e quais outras
 categorias têm fornecedor fixo.
 
+### O catálogo real entrou ✅
+
+> A planilha "Lista de Produtos", com 49 presentes, e as fotos em
+> `imgs produtos/`.
+
+Transcrita em `prisma/catalogo-auvp.ts` e conferida campo a campo contra a
+planilha: nome, valor, origem, link, nota de compra e foto. A coluna "Estoque"
+virou `Produto.origem`, que é o que decide se a solicitação passa pelo
+Financeiro.
+
+Duas coisas ficaram pendentes da área, abaixo.
+
 ## Para a área de Relacionamento
+
+### Seis produtos estão sem preço
+
+Vieram sem valor na planilha, todos brindes personalizados ou o kit de caixa
+MDF:
+
+- Agenda e Caneta AUVP
+- Caneca AUVP
+- Caneta e Moleskine AUVP
+- Garrafa AUVP
+- Kit Canga AUVP
+- Caixa MDF para vinho com Acessórios
+
+**Assumido:** `valor` fica nulo, o catálogo mostra "valor a definir" e o item
+congela como zero quando alguém o pede — ou seja, **não entra no gasto do mês
+de quem pediu**. Faz sentido para brinde comprado em lote, cujo custo já foi
+pago antes; deixa de fazer se a área quiser ratear.
+
+**Onde mudar:** basta preencher o valor no cadastro de produto. Nenhuma linha
+de código muda.
+
+### A foto do Kit Caneca de Chopp está corrompida
+
+`imgs produtos/Kit Caneca de Chopp + Cerveja Artesanal.HEIC` não abre: a
+extensão do item aponta para além do fim do arquivo, e nenhum decodificador
+consegue lê-la. Os outros 48 converteram sem problema.
+
+O produto aparece no catálogo com a ilustração de caneca, que é um estado
+previsto — não um quadro quebrado. **Para resolver:** mandar o arquivo de novo,
+de preferência em JPG ou PNG, e rodar `npm run fotos:preparar`.
 
 ### O Financeiro pode ver CPF, telefone e endereço do cliente?
 

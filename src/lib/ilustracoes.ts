@@ -70,6 +70,44 @@ export const ILUSTRACOES: Record<string, Ilustracao> = {
     `,
   },
 
+  // --- Categorias da planilha de catálogo da área -----------------------------
+  // Os nomes vieram da coluna "Categoria". Bebida, Livro e Beleza reaproveitam
+  // desenhos que já existiam; as duas de baixo não tinham equivalente.
+  'personalizado auvp': {
+    path: `
+      <path d="M58 62h84v56a8 8 0 0 1-8 8H66a8 8 0 0 1-8-8z" />
+      <path d="M54 46h92v16H54z" />
+      <ellipse cx="100" cy="92" rx="22" ry="14" />
+      <circle cx="100" cy="92" r="6" />
+    `,
+  },
+  'bebês e crianças': {
+    path: `
+      <circle cx="100" cy="62" r="22" />
+      <path d="M92 58h.01M108 58h.01" />
+      <path d="M93 70c4 4 10 4 14 0" />
+      <path d="M100 84v18" />
+      <path d="M74 102h52l-8 24H82z" />
+      <path d="M84 126l-6 12M116 126l6 12" />
+    `,
+  },
+  cafe: {
+    path: `
+      <path d="M70 74h48v34a12 12 0 0 1-12 12H82a12 12 0 0 1-12-12z" />
+      <path d="M118 84h6a12 12 0 0 1 0 24h-6" />
+      <path d="M62 130h64" />
+      <path d="M86 60c-5-5 5-9 0-14M100 60c-5-5 5-9 0-14M114 60c-5-5 5-9 0-14" />
+    `,
+  },
+  churrasco: {
+    path: `
+      <path d="M56 80h88" />
+      <path d="M64 80c0 20 16 34 36 34s36-14 36-34" />
+      <path d="M78 114l-8 22M122 114l8 22" />
+      <path d="M84 62c-4-5 4-9 0-14M100 62c-4-5 4-9 0-14M116 62c-4-5 4-9 0-14" />
+    `,
+  },
+
   // --- Por produto -----------------------------------------------------------
   // Categoria sozinha repete: dois itens de "Gourmet" ganhariam a mesma cesta.
   // Estas entradas são escolhidas por palavra no nome do produto e têm
@@ -192,20 +230,41 @@ const POR_PALAVRA: readonly (readonly [RegExp, string])[] = [
   [/ta[çc]a/, 'taca'],
   [/difusor/, 'difusor'],
   [/caneca|x[íi]cara/, 'caneca'],
-  [/cesta/, 'gourmet'],
+  [/cesta|queijo/, 'gourmet'],
+  [/caf[ée]/, 'cafe'],
+  [/churrasco/, 'churrasco'],
+  [/beb[êe]|cadeira de balan[çc]o|tapete musical/, 'bebês e crianças'],
   [/ch[áa]\b/, 'bem-estar'],
   [/livro/, 'livros'],
   [/placa|trof[ée]u/, 'placas e troféus'],
-  [/vinho|whisky|gin\b/, 'vinhos e destilados'],
+  [/vinho|whisky|gin\b|cerveja|aperol/, 'vinhos e destilados'],
 ] as const
 
 function normalizar(texto: string | null | undefined): string {
   return (texto ?? '').trim().toLowerCase().normalize('NFC')
 }
 
+/**
+ * Nomes diferentes para o mesmo desenho.
+ *
+ * A planilha da área chegou com "Bebida" e "Livro" no singular, e com "Beleza e
+ * Bem estar" onde o desenho se chamava "bem-estar". Apelidar é mais barato que
+ * duplicar traçado — e mais seguro que renomear a chave, porque a Central usa
+ * os nomes antigos.
+ */
+const APELIDOS: Record<string, string> = {
+  bebida: 'vinhos e destilados',
+  bebidas: 'vinhos e destilados',
+  livro: 'livros',
+  'beleza e bem estar': 'bem-estar',
+  'beleza e bem-estar': 'bem-estar',
+}
+
 /** Ilustração da categoria, quando o produto não pede uma específica. */
 export function ilustracaoDaCategoria(categoria: string | null | undefined): string {
-  return (ILUSTRACOES[normalizar(categoria)] ?? ILUSTRACOES.padrao!).path
+  const chave = normalizar(categoria)
+  const alvo = ILUSTRACOES[chave] ?? ILUSTRACOES[APELIDOS[chave] ?? '']
+  return (alvo ?? ILUSTRACOES.padrao!).path
 }
 
 /**

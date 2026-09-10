@@ -73,6 +73,21 @@ const esc = (s) =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
   )
 
+/**
+ * Preço de um produto — espelha `src/components/valor-do-produto.tsx`.
+ *
+ * Nulo não é zero: parte dos brindes personalizados veio da área sem preço, e
+ * "R$ 0,00" se leria como grátis.
+ */
+function preco(p, classe = '') {
+  if (p.valor === null || p.valor === undefined) {
+    return '<span class="text-sm text-muted-foreground">valor a definir</span>'
+  }
+  const prefixo =
+    p.tipoValor === 'medio' ? '<span class="text-xs text-muted-foreground">a partir de</span> ' : ''
+  return `${prefixo}<span class="${classe}">${brl(p.valor)}</span>`
+}
+
 const totalDaSolicitacao = (s) =>
   s.itens.reduce((acc, i) => acc + i.valorUnitario * i.quantidade, 0)
 
@@ -200,6 +215,11 @@ function imagemDoProduto(p) {
 
 /** Selo de categoria — ícone e nome, como na Central. */
 const TOM_DA_CATEGORIA = {
+  'personalizado auvp': 'bg-[hsl(var(--chart-1)/0.14)] text-[hsl(var(--chart-1))]',
+  'bebês e crianças': 'bg-[hsl(var(--chart-4)/0.14)] text-[hsl(var(--chart-4))]',
+  bebida: 'bg-[hsl(var(--chart-3)/0.16)] text-[hsl(var(--chart-3))]',
+  'beleza e bem estar': 'bg-[hsl(var(--chart-5)/0.14)] text-[hsl(var(--chart-5))]',
+  livro: 'bg-[hsl(var(--chart-7)/0.16)] text-[hsl(var(--chart-7))]',
   'canecas e garrafas': 'bg-[hsl(var(--chart-1)/0.14)] text-[hsl(var(--chart-1))]',
   vestuário: 'bg-[hsl(var(--chart-5)/0.14)] text-[hsl(var(--chart-5))]',
   papelaria: 'bg-[hsl(var(--chart-4)/0.14)] text-[hsl(var(--chart-4))]',
@@ -230,7 +250,7 @@ function telaCatalogo() {
   const visiveis = ativos.filter(
     (p) =>
       (!filtroCategoria || p.categoria === filtroCategoria) &&
-      (!termo || p.nome.toLowerCase().includes(termo) || p.descricao.toLowerCase().includes(termo)),
+      (!termo || p.nome.toLowerCase().includes(termo)),
   )
 
   const contagem = (cat) => ativos.filter((p) => p.categoria === cat).length
@@ -268,16 +288,12 @@ function telaCatalogo() {
         <div class="flex flex-1 flex-col items-start gap-1.5 p-4">
           ${categoriaBadge(p.categoria)}
           <h2 class="font-display font-semibold leading-snug">${esc(p.nome)}</h2>
-          <p class="line-clamp-2 font-roboto text-xs leading-relaxed text-muted-foreground">${esc(p.descricao)}</p>
           <div class="mt-auto flex w-full items-end justify-between gap-3 pt-3">
-            <p class="flex items-baseline gap-1.5 leading-tight">
-              ${p.tipoValor === 'medio' ? '<span class="text-xs text-muted-foreground">a partir de</span>' : ''}
-              <span class="text-lg font-semibold">${brl(p.valor)}</span>
-            </p>
+            <p class="flex items-baseline gap-1.5 leading-tight">${preco(p, 'text-lg font-semibold')}</p>
             ${
-              p.estoque !== null && p.estoque !== undefined
-                ? `<span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">${p.estoque} un.</span>`
-                : ''
+              p.origem === 'estoque_interno'
+                ? '<span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">pronta entrega</span>'
+                : '<span class="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">sob encomenda</span>'
             }
           </div>
         </div>
@@ -302,8 +318,9 @@ function telaCatalogo() {
         : `<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">${cards}</div>`
     }
     <p class="mt-6 text-xs text-muted-foreground">
-      O produto desativado (“Caneca AUVP modelo descontinuado”) não aparece aqui, mas continua
-      visível nas solicitações antigas — regra do modelo de dados.
+      Os ${PRODUTOS.length} presentes são os do catálogo real da área. “Pronta entrega” sai do
+      estoque interno assim que o Admin aprovar; “sob encomenda” passa pelo Financeiro antes.
+      Produto desativado no cadastro some daqui e continua visível nas solicitações antigas.
     </p>`
 }
 
@@ -357,7 +374,7 @@ function telaNova() {
           ${categoriaBadge(p.categoria)}
           <p class="font-display text-sm font-semibold leading-snug">${esc(p.nome)}</p>
           <p class="mt-auto pt-1 text-sm font-medium">
-            ${p.tipoValor === 'medio' ? '<span class="text-xs text-muted-foreground">a partir de </span>' : ''}${brl(p.valor)}
+            ${preco(p)}
           </p>
         </div>
       </div>`,
@@ -891,8 +908,12 @@ function telaProdutos() {
     <tr class="border-b last:border-0 ${p.ativo ? '' : 'text-muted-foreground'}">
       <td class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">${esc(p.nome)}</td>
       <td class="p-3">${esc(p.categoria)}</td>
-      <td class="whitespace-nowrap p-3 text-right">${p.tipoValor === 'medio' ? 'a partir de ' : ''}${brl(p.valor)}</td>
-      <td class="p-3">${p.estoque ?? '—'}</td>
+      <td class="whitespace-nowrap p-3 text-right">${preco(p)}</td>
+      <td class="p-3">
+        <span class="rounded-full px-2 py-0.5 text-xs ${p.origem === 'estoque_interno' ? 'bg-muted text-muted-foreground' : 'border'}">
+          ${p.origem === 'estoque_interno' ? 'estoque' : 'sob pedido'}
+        </span>
+      </td>
       <td class="p-3">
         <span class="rounded-md border px-2 py-0.5 text-xs">${p.ativo ? 'ativo' : 'desativado'}</span>
       </td>
@@ -913,7 +934,7 @@ function telaProdutos() {
       <table class="w-full text-sm">
         <thead class="border-b bg-muted/40 text-left text-muted-foreground">
           <tr><th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Produto</th><th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Categoria</th>
-          <th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Valor</th><th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Estoque</th>
+          <th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Valor</th><th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">De onde sai</th>
           <th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Situação</th>
           <th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Ações</th></tr>
         </thead>

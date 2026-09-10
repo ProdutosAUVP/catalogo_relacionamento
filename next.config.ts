@@ -6,8 +6,12 @@ const nextConfig: NextConfig = {
   // .next/standalone, com só as dependências que a aplicação usa de fato.
   output: 'standalone',
   images: {
-    // Fotos de produto vivem em bucket S3-compatível. O host entra por env
-    // para que dev, staging e produção não exijam mudança de código.
+    // As fotos do catálogo são servidas do próprio domínio: as do seed de
+    // `public/produtos/`, as enviadas pelo cadastro de `/api/arquivos/[id]`
+    // (ver ADR 0007). Nenhuma das duas precisa de padrão remoto.
+    //
+    // `NEXT_PUBLIC_STORAGE_HOSTNAME` segue reservado para o dia em que as
+    // fotos forem para um bucket.
     remotePatterns: process.env.NEXT_PUBLIC_STORAGE_HOSTNAME
       ? [{ protocol: 'https', hostname: process.env.NEXT_PUBLIC_STORAGE_HOSTNAME }]
       : [],

@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { TipoValor } from '@prisma/client'
-import { inteiroOpcional, textoOpcional, urlOpcional, valorSchema } from './comuns'
+import { OrigemProduto, TipoValor } from '@prisma/client'
+import { inteiroOpcional, textoOpcional, urlOpcional, valorOpcional } from './comuns'
 
 /**
  * O CRUD de catálogo é operado pela própria área de Relacionamento, sem apoio
@@ -13,10 +13,14 @@ export const produtoSchema = z
     descricao: textoOpcional,
     categoriaId: z.string().min(1, 'Escolha uma categoria.'),
     fotoUrl: urlOpcional,
-    valor: valorSchema,
+    /** Vazio é permitido: parte do catálogo veio da área sem preço. */
+    valor: valorOpcional,
     tipoValor: z.nativeEnum(TipoValor).default(TipoValor.exato),
+    origem: z.nativeEnum(OrigemProduto).default(OrigemProduto.mediante_pedido),
     controlaEstoque: z.boolean().default(false),
     estoque: inteiroOpcional,
+    urlCompra: urlOpcional,
+    notaDeCompra: textoOpcional,
     ativo: z.boolean().default(true),
     skuTiny: textoOpcional,
   })

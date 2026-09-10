@@ -35,3 +35,10 @@ describe('site de compra do item', () => {
     expect(siteDeCompra(null, 'Papelaria')).toBeNull()
   })
 })
+
+describe('a categoria é o último recurso', () => {
+  it('aceita "Bebida" e "Bebidas" — a planilha mudou o plural no caminho', () => {
+    expect(fornecedorDaCategoria('Bebida')).toBe('https://casadabebida.com.br')
+    expect(fornecedorDaCategoria('Bebidas')).toBe('https://casadabebida.com.br')
+  })
+})
