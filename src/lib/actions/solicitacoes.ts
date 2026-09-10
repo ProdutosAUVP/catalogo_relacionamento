@@ -7,8 +7,17 @@ import { autorizarAction } from '@/lib/auth-guards'
 import { proximoCodigo } from '@/lib/codigo'
 import { totalDosItens } from '@/lib/money'
 import { normalizarCpf } from '@/lib/cpf'
-import { validarMudancaDeStatus } from '@/lib/status'
-import { solicitacaoSchema, mudancaDeStatusSchema } from '@/lib/validators/solicitacao'
+import {
+  ROTULO_STATUS,
+  caminhoDeEncaminhamento,
+  validarMudancaDeStatus,
+  type Encaminhamento,
+} from '@/lib/status'
+import {
+  solicitacaoSchema,
+  mudancaDeStatusSchema,
+  rastreioSchema,
+} from '@/lib/validators/solicitacao'
 import { clienteSchema } from '@/lib/validators/cliente'
 import { comoErro, primeiroErro, type ResultadoDaAction } from './comuns'
 
@@ -224,6 +233,132 @@ export async function alterarStatus(entrada: unknown): Promise<ResultadoDaAction
     revalidatePath('/financeiro/compras')
     revalidatePath('/expedicao')
     revalidatePath('/solicitacoes')
+    return { ok: true, dados: undefined }
+  } catch (e) {
+    return comoErro(e)
+  }
+}
+
+/** O que aconteceu com um lote — a tela precisa disso para dizer o que sobrou. */
+export type ResumoDoLote = {
+  movidas: { codigo: string; para: string }[]
+  ignoradas: { codigo: string; motivo: string }[]
+}
+
+/**
+ * Encaminha várias solicitações de uma vez.
+ *
+ * O Admin trabalha por pilha: chegam vinte pedidos e ele decide de uma vez
+ * quais vão para a compra e quais já podem ser separados. Abrir vinte telas
+ * para isso é o que a planilha fazia melhor que um sistema.
+ *
+ * Duas coisas que o lote **não** afrouxa:
+ *
+ * - a aprovação continua acontecendo. Quando a solicitação ainda está pendente,
+ *   `caminhoDeEncaminhamento` insere o passo da aprovação antes do destino, e
+ *   ele vira uma linha própria do histórico;
+ * - o que não pode andar não anda em silêncio. A solicitação é ignorada com o
+ *   motivo, e a tela mostra a lista.
+ */
+export async function encaminharEmLote(
+  ids: string[],
+  destino: Encaminhamento,
+): Promise<ResultadoDaAction<ResumoDoLote>> {
+  try {
+    const usuario = await autorizarAction('solicitacao.alterarStatus')
+
+    if (ids.length === 0) {
+      return { ok: false, erro: 'Selecione pelo menos uma solicitação.' }
+    }
+
+    const solicitacoes = await db.solicitacao.findMany({
+      where: { id: { in: ids } },
+      select: {
+        id: true,
+        codigo: true,
+        status: true,
+        itens: {
+          select: {
+            produtoId: true,
+            quantidade: true,
+            produto: { select: { controlaEstoque: true, estoque: true } },
+          },
+        },
+      },
+      orderBy: { codigo: 'asc' },
+    })
+
+    const resumo: ResumoDoLote = { movidas: [], ignoradas: [] }
+
+    for (const solicitacao of solicitacoes) {
+      const caminho = caminhoDeEncaminhamento(solicitacao.status, destino, solicitacao.itens)
+
+      if (!caminho.ok) {
+        resumo.ignoradas.push({ codigo: solicitacao.codigo, motivo: caminho.erro })
+        continue
+      }
+
+      // Uma transação por solicitação: um pedido que não pode andar não desfaz
+      // o encaminhamento dos outros dezenove.
+      await db.$transaction(async (tx) => {
+        let anterior = solicitacao.status
+
+        for (const passo of caminho.passos) {
+          await tx.solicitacao.update({ where: { id: solicitacao.id }, data: { status: passo } })
+          await tx.solicitacaoHistorico.create({
+            data: {
+              solicitacaoId: solicitacao.id,
+              statusAnterior: anterior,
+              statusNovo: passo,
+              usuarioId: usuario.id,
+            },
+          })
+          anterior = passo
+        }
+      })
+
+      const ultimo = caminho.passos[caminho.passos.length - 1]!
+      resumo.movidas.push({ codigo: solicitacao.codigo, para: ROTULO_STATUS[ultimo] })
+    }
+
+    revalidatePath('/admin/solicitacoes')
+    revalidatePath('/financeiro/compras')
+    revalidatePath('/expedicao')
+    revalidatePath('/solicitacoes')
+    return { ok: true, dados: resumo }
+  } catch (e) {
+    return comoErro(e)
+  }
+}
+
+/**
+ * Grava o código de rastreio.
+ *
+ * É o que o consultor pergunta: "já foi?". Sem isso ele volta a perguntar por
+ * mensagem, que é o que a ferramenta deveria ter tirado do caminho.
+ *
+ * Não mexe no status: pôr o rastreio é dizer que saiu, e "entregue" é outra
+ * coisa, decidida por quem acompanha. Quando a integração com o sistema da
+ * expedição existir, ela escreve nestes mesmos campos.
+ */
+export async function registrarRastreio(entrada: unknown): Promise<ResultadoDaAction> {
+  try {
+    await autorizarAction('expedicao.registrarRastreio')
+
+    const validado = rastreioSchema.safeParse(entrada)
+    if (!validado.success) return primeiroErro(validado.error)
+
+    const { solicitacaoId, rastreio, transportadora } = validado.data
+
+    await db.solicitacao.update({
+      where: { id: solicitacaoId },
+      data: { rastreio, transportadora },
+    })
+
+    revalidatePath('/expedicao')
+    revalidatePath('/solicitacoes')
+    revalidatePath(`/solicitacoes/${solicitacaoId}`)
+    revalidatePath(`/admin/solicitacoes/${solicitacaoId}`)
     return { ok: true, dados: undefined }
   } catch (e) {
     return comoErro(e)

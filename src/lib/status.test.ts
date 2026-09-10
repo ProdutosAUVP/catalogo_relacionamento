@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { StatusSolicitacao } from '@prisma/client'
 import {
   FLUXO_LINEAR,
+  caminhoDeEncaminhamento,
   contaNoSaldo,
   ehTerminal,
   precisaDeCompra,
@@ -195,5 +196,93 @@ describe('precisa de compra', () => {
     expect(proximoDepoisDaAprovacao([{ produtoId: null, quantidade: 1 }])).toBe(
       StatusSolicitacao.aguardando_compra,
     )
+  })
+})
+
+describe('encaminhamento em lote', () => {
+  const emEstoque = { controlaEstoque: true, estoque: 10 }
+  const noCatalogo = [{ produtoId: 'p1', quantidade: 1, produto: emEstoque }]
+  const especifico = [{ produtoId: null, quantidade: 1 }]
+
+  it('nada sai de pendente sem passar pela aprovação', () => {
+    const caminho = caminhoDeEncaminhamento(
+      StatusSolicitacao.pendente,
+      StatusSolicitacao.organizando_envio,
+      noCatalogo,
+    )
+
+    expect(caminho).toEqual({
+      ok: true,
+      passos: [StatusSolicitacao.aguardando_aprovacao, StatusSolicitacao.organizando_envio],
+    })
+  })
+
+  it('o automático aprova e libera o envio quando está tudo em estoque', () => {
+    expect(caminhoDeEncaminhamento(StatusSolicitacao.pendente, 'automatico', noCatalogo)).toEqual({
+      ok: true,
+      passos: [StatusSolicitacao.aguardando_aprovacao, StatusSolicitacao.organizando_envio],
+    })
+  })
+
+  it('o automático manda ao Financeiro quando há o que comprar', () => {
+    expect(caminhoDeEncaminhamento(StatusSolicitacao.pendente, 'automatico', especifico)).toEqual({
+      ok: true,
+      passos: [StatusSolicitacao.aguardando_aprovacao, StatusSolicitacao.aguardando_compra],
+    })
+  })
+
+  it('já aprovada anda um passo só', () => {
+    expect(
+      caminhoDeEncaminhamento(StatusSolicitacao.aguardando_aprovacao, 'automatico', noCatalogo),
+    ).toEqual({ ok: true, passos: [StatusSolicitacao.organizando_envio] })
+  })
+
+  it('o Admin pode contrariar a sugestão e mandar comprar mesmo com estoque', () => {
+    expect(
+      caminhoDeEncaminhamento(
+        StatusSolicitacao.aguardando_aprovacao,
+        StatusSolicitacao.aguardando_compra,
+        noCatalogo,
+      ),
+    ).toEqual({ ok: true, passos: [StatusSolicitacao.aguardando_compra] })
+  })
+
+  it('não inventa transição: de comprado não se volta para a compra', () => {
+    const caminho = caminhoDeEncaminhamento(
+      StatusSolicitacao.comprado,
+      StatusSolicitacao.aguardando_compra,
+      especifico,
+    )
+
+    expect(caminho.ok).toBe(false)
+  })
+
+  it('recusa o automático a partir de status que não é de aprovação', () => {
+    const caminho = caminhoDeEncaminhamento(StatusSolicitacao.comprado, 'automatico', especifico)
+
+    expect(caminho).toEqual({
+      ok: false,
+      erro: '"Comprado" não tem encaminhamento automático: escolha o destino.',
+    })
+  })
+
+  it('status final não anda', () => {
+    expect(
+      caminhoDeEncaminhamento(
+        StatusSolicitacao.cancelado,
+        StatusSolicitacao.organizando_envio,
+        noCatalogo,
+      ).ok,
+    ).toBe(false)
+  })
+
+  it('não repete o que já está feito', () => {
+    expect(
+      caminhoDeEncaminhamento(
+        StatusSolicitacao.organizando_envio,
+        StatusSolicitacao.organizando_envio,
+        noCatalogo,
+      ),
+    ).toEqual({ ok: false, erro: 'Já está em "Organizando envio".' })
   })
 })

@@ -69,10 +69,22 @@ arquivo original, que não servem a um ícone de aba.
 
 ## Movimento, sem layout shift
 
-A navegação tem movimento, e mede-se isso: **CLS ≤ 0,0001** em todas as telas,
-numa rede de 400 kbps com as fotos carregando — mil vezes abaixo do
-limite de 0,1 que o Core Web Vitals considera bom. As regras que sustentam esse
-número:
+A navegação tem movimento, e mede-se isso: **CLS ≤ 0,0031** em todas as telas,
+em build de produção, com CPU 4× mais lenta e rede a 400 kbps — trinta vezes
+abaixo do limite de 0,1 que o Core Web Vitals considera bom.
+
+Duas armadilhas da medição, aprendidas errando:
+
+- **`addInitScript` é cumulativo.** Medir várias rotas na mesma página instala
+  um observador a mais a cada volta, e a soma sai multiplicada pela posição na
+  lista. Um contexto novo por rota resolve, e vale conferir o instrumento
+  contra uma página que desloca de propósito.
+- **Servidor rápido esconde o problema.** Se a consulta responde antes da
+  primeira pintura, o esqueleto nunca aparece e a medição dá zero em tudo. Para
+  medir de verdade é preciso atrasar a consulta de propósito, que é quando o
+  esqueleto entra e o erro de dimensionamento aparece.
+
+As regras que sustentam esse número:
 
 1. **Anima-se só `opacity` e `transform`.** As duas rodam no compositor e não
    entram no cálculo de layout. Animar altura, margem ou largura reintroduz o

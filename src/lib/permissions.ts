@@ -11,9 +11,10 @@ import { Perfil } from '@prisma/client'
  * site — e altera o status do pedido. É o que está implementado abaixo:
  * `compras.verFila` e `solicitacao.alterarStatus`.
  *
- * `expedicao.verFila` não pertence a um perfil novo: a expedição trabalha fora
- * desta ferramenta, e quem exporta o pedido para ela é quem já enxerga tudo —
- * Admin e Financeiro.
+ * `expedicao.verFila` e `expedicao.registrarRastreio` não pertencem a um perfil
+ * novo: a expedição trabalha fora desta ferramenta, e quem exporta o pedido
+ * para ela — e depois anota o rastreio que ela devolve — é quem já enxerga
+ * tudo: Admin e Financeiro. O consultor lê o rastreio, não o escreve.
  *
  * O acesso a dados sensíveis do cliente segue liberado para o Financeiro por
  * coerência com a permissão de exportar, já que a exportação da spec carrega
@@ -27,6 +28,7 @@ export const ACOES = [
   'catalogo.gerenciar',
   'compras.verFila',
   'expedicao.verFila',
+  'expedicao.registrarRastreio',
   'solicitacao.criar',
   'solicitacao.verProprias',
   'solicitacao.verTodas',
@@ -69,6 +71,7 @@ const MATRIZ: Record<Perfil, Record<Acao, boolean>> = {
     'catalogo.gerenciar': false,
     'compras.verFila': false,
     'expedicao.verFila': false,
+    'expedicao.registrarRastreio': false,
     'solicitacao.criar': true,
     'solicitacao.verProprias': true,
     'solicitacao.verTodas': false,
@@ -86,6 +89,7 @@ const MATRIZ: Record<Perfil, Record<Acao, boolean>> = {
     'catalogo.gerenciar': true,
     'compras.verFila': true,
     'expedicao.verFila': true,
+    'expedicao.registrarRastreio': true,
     'solicitacao.criar': true,
     'solicitacao.verProprias': true,
     'solicitacao.verTodas': true,
@@ -103,6 +107,7 @@ const MATRIZ: Record<Perfil, Record<Acao, boolean>> = {
     'catalogo.gerenciar': false,
     'compras.verFila': true,
     'expedicao.verFila': true,
+    'expedicao.registrarRastreio': true,
     'solicitacao.criar': false,
     'solicitacao.verProprias': true,
     'solicitacao.verTodas': true,

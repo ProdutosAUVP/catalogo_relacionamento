@@ -88,6 +88,18 @@ export const mudancaDeStatusSchema = z.object({
   motivo: textoOpcional,
 })
 
+/**
+ * Código de rastreio e transportadora.
+ *
+ * Os dois são opcionais porque apagar também é uma operação: rastreio digitado
+ * errado precisa poder ser limpo, e não corrigido para outro número errado.
+ */
+export const rastreioSchema = z.object({
+  solicitacaoId: z.string().min(1),
+  rastreio: textoOpcional,
+  transportadora: textoOpcional,
+})
+
 export const ROTULO_MOTIVO: Record<MotivoEnvio, string> = {
   aniversario: 'Aniversário',
   casamento: 'Casamento',

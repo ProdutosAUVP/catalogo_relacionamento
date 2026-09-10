@@ -5,7 +5,8 @@ export default function Carregando() {
     <>
       <EsqueletoDeCabecalho />
       <EsqueletoDeStats />
-      <EsqueletoDeTabela />
+      {/* A fila de compras é curta e drena; sete linhas é o tamanho comum. */}
+      <EsqueletoDeTabela linhas={7} />
     </>
   )
 }

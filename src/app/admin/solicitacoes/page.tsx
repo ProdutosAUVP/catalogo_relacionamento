@@ -5,22 +5,13 @@ import { pode } from '@/lib/permissions'
 import { formatarBRL, totalDosItens } from '@/lib/money'
 import { formatarData } from '@/lib/datas'
 import { filtroSolicitacoesSchema, whereDeSolicitacoes } from '@/lib/validators/filtros'
-import { ROTULO_STATUS, STATUS_FORA_DO_SALDO } from '@/lib/status'
+import { ROTULO_STATUS, STATUS_FORA_DO_SALDO, precisaDeCompra } from '@/lib/status'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { StatusBadge } from '@/components/status-badge'
 import { Stat } from '@/components/stat'
 import { BarraDeFiltros, CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
+import { TabelaDaGestao, type LinhaDaGestao } from './tabela'
 
 /**
  * Painel de gestão.
@@ -50,6 +41,15 @@ export default async function AdminSolicitacoesPage({
         cliente: { select: { nome: true } },
         consultor: { select: { nome: true } },
         _count: { select: { itens: true } },
+        // Só para a coluna "rota": ela é o que evita abrir vinte telas para
+        // saber quais pedidos têm algo a comprar.
+        itens: {
+          select: {
+            produtoId: true,
+            quantidade: true,
+            produto: { select: { controlaEstoque: true, estoque: true } },
+          },
+        },
       },
       orderBy: { dataSolicitacao: 'desc' },
       skip: (filtro.pagina - 1) * filtro.porPagina,
@@ -79,6 +79,24 @@ export default async function AdminSolicitacoesPage({
     params.busca || params.de || params.ate || params.consultorId || params.status,
   )
 
+  // `Prisma.Decimal` não atravessa a fronteira do servidor, e a rota só importa
+  // enquanto a solicitação ainda não foi encaminhada.
+  const linhas: LinhaDaGestao[] = solicitacoes.map((s) => ({
+    id: s.id,
+    codigo: s.codigo,
+    data: formatarData(s.dataSolicitacao),
+    consultor: s.consultor.nome,
+    cliente: s.cliente.nome,
+    itens: s._count.itens,
+    valor: formatarBRL(s.valorTotal),
+    status: s.status,
+    precisaDeCompra:
+      s.status === 'pendente' || s.status === 'aguardando_aprovacao'
+        ? precisaDeCompra(s.itens)
+        : null,
+    rastreio: s.rastreio,
+  }))
+
   return (
     <>
       <CabecalhoDaPagina
@@ -104,7 +122,7 @@ export default async function AdminSolicitacoesPage({
         <Stat
           rotulo="Valor somado"
           valor={formatarBRL(soma._sum.valorTotal ?? totalDosItens([]))}
-          apoio="Canceladas e devolvidas fora da conta."
+          apoio="Todos os status entram na conta, cancelados e devolvidos inclusive."
         />
         <Stat
           rotulo="Precisando de atenção"
@@ -190,47 +208,10 @@ export default async function AdminSolicitacoesPage({
           }
         />
       ) : (
-        <Card className="overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Código</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Consultor</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead className="text-right">Itens</TableHead>
-                <TableHead className="text-right">Valor</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {solicitacoes.map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell className="font-medium whitespace-nowrap tabular-nums">
-                    <Link
-                      href={`/admin/solicitacoes/${s.id}`}
-                      className="hover:text-primary-emphasis underline-offset-4 hover:underline"
-                    >
-                      {s.codigo}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground whitespace-nowrap tabular-nums">
-                    {formatarData(s.dataSolicitacao)}
-                  </TableCell>
-                  <TableCell>{s.consultor.nome}</TableCell>
-                  <TableCell>{s.cliente.nome}</TableCell>
-                  <TableCell className="text-right tabular-nums">{s._count.itens}</TableCell>
-                  <TableCell className="text-right font-medium whitespace-nowrap tabular-nums">
-                    {formatarBRL(s.valorTotal)}
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={s.status} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
+        <TabelaDaGestao
+          linhas={linhas}
+          podeEncaminhar={pode(usuario.perfil, 'solicitacao.alterarStatus')}
+        />
       )}
     </>
   )

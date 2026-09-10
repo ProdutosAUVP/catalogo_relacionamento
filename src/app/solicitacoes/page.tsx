@@ -54,7 +54,7 @@ export default async function SolicitacoesPage() {
       <CabecalhoDaPagina
         sobrancelha="Minhas solicitações"
         titulo="Solicitações"
-        descricao="Os presentes que você pediu, com o status de cada envio."
+        descricao="Os presentes que você pediu, com o status e o rastreio de cada envio."
         acoes={
           podeCriar ? (
             <Button asChild>
@@ -85,7 +85,7 @@ export default async function SolicitacoesPage() {
                 </p>
               </div>
             ) : (
-              'Sem limite mensal definido. Canceladas e devolvidas não entram na conta.'
+              'Sem limite mensal definido. Tudo o que você solicitou no mês entra na conta.'
             )
           }
         />
@@ -123,13 +123,19 @@ export default async function SolicitacoesPage() {
                 <TableHead className="text-right">Itens</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Rastreio</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {solicitacoes.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell className="font-medium whitespace-nowrap tabular-nums">
-                    {s.codigo}
+                    <Link
+                      href={`/solicitacoes/${s.id}`}
+                      className="hover:text-primary-emphasis underline-offset-4 hover:underline"
+                    >
+                      {s.codigo}
+                    </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground whitespace-nowrap tabular-nums">
                     {formatarData(s.dataSolicitacao)}
@@ -141,6 +147,15 @@ export default async function SolicitacoesPage() {
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={s.status} />
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {s.rastreio ? (
+                      // `select-all`: o código é copiado para o site da
+                      // transportadora, e não digitado de novo.
+                      <span className="text-sm tabular-nums select-all">{s.rastreio}</span>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">—</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

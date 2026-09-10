@@ -62,6 +62,12 @@ describe('financeiro — definição da área', () => {
     expect(pode(Perfil.consultor, 'expedicao.verFila')).toBe(false)
   })
 
+  it('o consultor lê o rastreio, mas quem escreve é quem opera a expedição', () => {
+    expect(pode(Perfil.admin, 'expedicao.registrarRastreio')).toBe(true)
+    expect(pode(Perfil.financeiro, 'expedicao.registrarRastreio')).toBe(true)
+    expect(pode(Perfil.consultor, 'expedicao.registrarRastreio')).toBe(false)
+  })
+
   it('altera o status do pedido', () => {
     expect(pode(Perfil.financeiro, 'solicitacao.alterarStatus')).toBe(true)
   })

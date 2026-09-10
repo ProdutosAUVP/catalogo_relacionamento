@@ -18,7 +18,7 @@ duplique numa tela.
 | Regra                           | Arquivo                          |
 | ------------------------------- | -------------------------------- |
 | Quem pode o quê                 | `src/lib/permissions.ts`         |
-| Transições de status e motivos  | `src/lib/status.ts`              |
+| Transições, motivos e lote      | `src/lib/status.ts`              |
 | Gasto do mês e limite           | `src/lib/saldo.ts`               |
 | Fila de compras do Financeiro   | `src/lib/compras.ts`             |
 | Fila da expedição               | `src/lib/expedicao.ts`           |
@@ -49,12 +49,21 @@ Coisas que o código já garante e que não devem ser afrouxadas:
   produto; valor que chega do navegador não é usado.
 - **Tudo conta no saldo do mês**, cancelado e devolvido inclusive — a área
   reenvia. `STATUS_FORA_DO_SALDO` está vazia de propósito.
-- **Estoque não passa pelo Financeiro.** Solicitação com tudo em estoque vai da
-  aprovação direto para a expedição (`proximoDepoisDaAprovacao`).
+- **Estoque não passa pelo Financeiro.** Solicitação com tudo em estoque é
+  liberada para envio na própria aprovação (`proximoDepoisDaAprovacao`). O
+  atalho pula o Financeiro, nunca a aprovação — nada vai do pedido do consultor
+  para a expedição sem o OK do Admin.
+- **O lote não afrouxa a máquina de estados.** `caminhoDeEncaminhamento` insere
+  o passo da aprovação quando ele falta, e cada passo vira uma linha do
+  histórico. O que não pode andar volta como ignorado, com o motivo.
+- **Rastreio não muda status.** Gravar o código diz que saiu; "entregue" é
+  decisão de quem acompanha.
 - **Telas leem catálogo e clientes pelos providers**, não pelo Prisma direto.
 - **Movimento não pode gerar layout shift.** Anime só `opacity` e `transform`.
   Todo `loading.tsx` reserva as medidas exatas do conteúdo, e toda imagem tem
-  proporção e dimensões declaradas. O CLS medido hoje é ≤ 0,0001.
+  proporção e dimensões declaradas. O CLS medido hoje é ≤ 0,0031 — com um
+  contexto de navegador novo por rota, porque `addInitScript` é cumulativo e
+  medir tudo na mesma página soma o mesmo deslocamento várias vezes.
 - **A identidade visual vem do Design System AUVP**, portada de
   `ProdutosAUVP/central`. Use os tokens (`bg-success`, `text-muted-foreground`),
   nunca a paleta crua do Tailwind (`bg-amber-100`) — ela não passa pelas travas
@@ -96,10 +105,14 @@ solicitação, mudança de status, fila de compras, fila da expedição com
 exportação, CRUD de produto e categoria com upload de foto, CRUD de cliente
 com importação CSV e edição de usuário.
 
+O caminho do Admin é por pilha: a gestão encaminha em lote, e a expedição
+devolve o rastreio que o consultor lê na própria solicitação.
+
 O que continua fora do V1, por decisão registrada em
 `docs/05-perguntas-em-aberto.md`: geração da carta em formato de impressão,
-integração de escrita com o sistema da expedição e as integrações da fase 2
-(Tiny e Salesforce, que já têm provider e campos reservados).
+integração com o sistema da expedição (que escreveria rastreio e status sem
+digitação) e as integrações da fase 2 (Tiny e Salesforce, que já têm provider e
+campos reservados).
 
 ## Vitrine estática
 

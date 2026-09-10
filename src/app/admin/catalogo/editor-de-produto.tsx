@@ -206,8 +206,8 @@ export function EditorDeProduto({
                   className="max-w-40"
                 />
                 <p className="text-muted-foreground text-xs">
-                  É o que decide se a solicitação passa pelo Financeiro: com saldo suficiente, ela
-                  vai da aprovação direto para a expedição.
+                  É o que decide se a solicitação passa pelo Financeiro: com saldo suficiente, a
+                  aprovação já libera o envio.
                 </p>
               </div>
             ) : (

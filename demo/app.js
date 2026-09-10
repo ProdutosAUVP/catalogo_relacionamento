@@ -424,11 +424,30 @@ function telaNova() {
     </p>`
 }
 
-function linhasDeSolicitacao(lista, comConsultor) {
+/**
+ * Rota do pedido: tem o que comprar, ou já está na prateleira?
+ *
+ * Espelha `precisaDeCompra` de `src/lib/status.ts`. A coluna existe para que o
+ * Admin decida sem abrir cada pedido.
+ */
+function precisaDeCompra(s) {
+  return s.itens.some((i) => !i.emEstoque)
+}
+
+const ENCAMINHAVEIS = ['pendente', 'aguardando_aprovacao']
+
+function linhasDeSolicitacao(lista, comConsultor, comSelecao) {
   return lista
     .map(
       (s) => `
     <tr class="border-b last:border-0 hover:bg-muted/40">
+      ${
+        comSelecao
+          ? `<td class="px-4 py-3.5"><input type="checkbox" class="size-4 accent-primary align-middle" ${
+              ENCAMINHAVEIS.includes(s.status) ? 'checked' : 'disabled'
+            } /></td>`
+          : ''
+      }
       <td class="whitespace-nowrap px-4 py-3.5 font-medium tabular-nums">
         <button data-detalhe="${esc(s.codigo)}" class="underline-offset-4 hover:text-primary-emphasis hover:underline">${esc(s.codigo)}</button>
       </td>
@@ -437,7 +456,21 @@ function linhasDeSolicitacao(lista, comConsultor) {
       <td class="px-4 py-3.5">${esc(s.cliente)}</td>
       <td class="px-4 py-3.5 text-right tabular-nums">${s.itens.length}</td>
       <td class="whitespace-nowrap px-4 py-3.5 text-right font-medium tabular-nums">${brl(totalDaSolicitacao(s))}</td>
-      <td class="px-4 py-3.5">${selo(s.status)}</td>
+      ${
+        comSelecao
+          ? `<td class="whitespace-nowrap px-4 py-3.5">${
+              ENCAMINHAVEIS.includes(s.status)
+                ? `<span class="rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                    precisaDeCompra(s) ? 'border text-foreground' : 'bg-muted text-muted-foreground'
+                  }">${precisaDeCompra(s) ? 'compra' : 'estoque'}</span>`
+                : '<span class="text-muted-foreground">—</span>'
+            }</td>`
+          : ''
+      }
+      <td class="px-4 py-3.5">
+        ${selo(s.status)}
+        ${s.rastreio ? `<span class="mt-0.5 block text-xs tabular-nums text-muted-foreground">${esc(s.rastreio)}</span>` : ''}
+      </td>
     </tr>`,
     )
     .join('')
@@ -445,21 +478,20 @@ function linhasDeSolicitacao(lista, comConsultor) {
 
 function telaMinhas() {
   const minhas = SOLICITACOES.filter((s) => s.consultor === 'Carlos Consultor')
-  const gasto = minhas
-    .filter((s) => !['cancelado', 'devolvido'].includes(s.status))
-    .reduce((acc, s) => acc + totalDaSolicitacao(s), 0)
+  // Tudo entra na conta, cancelado e devolvido inclusive: a área reenvia.
+  const gasto = minhas.reduce((acc, s) => acc + totalDaSolicitacao(s), 0)
   const limite = 5000
   const pct = Math.min(100, (gasto / limite) * 100)
 
   return `
-    ${cabecalho('Solicitações', 'Os presentes que você pediu, com o status de cada envio.', 'Minhas solicitações')}
+    ${cabecalho('Solicitações', 'Os presentes que você pediu, com o status e o rastreio de cada envio.', 'Minhas solicitações')}
     <div class="mb-6 rounded-lg border bg-card p-5 shadow-sm">
       <p class="text-sm text-muted-foreground">Gasto no mês</p>
       <p class="mt-1 text-2xl font-semibold">${brl(gasto)}</p>
       <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
         <div class="h-full bg-success" style="width:${pct}%"></div>
       </div>
-      <p class="mt-2 text-sm text-muted-foreground">${brl(gasto)} de ${brl(limite)} — canceladas e devolvidas não entram na conta.</p>
+      <p class="mt-2 text-sm text-muted-foreground">${brl(gasto)} de ${brl(limite)} — tudo o que foi solicitado no mês entra na conta.</p>
     </div>
     <div class="overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(11,41,5,0.04)]">
       <table class="w-full text-sm">
@@ -477,6 +509,7 @@ function telaMinhas() {
 
 function telaGestao() {
   const total = SOLICITACOES.reduce((acc, s) => acc + totalDaSolicitacao(s), 0)
+  const pendentes = SOLICITACOES.filter((s) => ENCAMINHAVEIS.includes(s.status)).length
 
   return `
     ${cabecalho('Solicitações', 'Acompanhe o fluxo inteiro, corrija dados e exporte o resultado filtrado.', 'Gestão')}
@@ -497,23 +530,36 @@ function telaGestao() {
     </div>
     <div class="mb-6 grid gap-4 sm:grid-cols-3">
       ${cartao('Solicitações no filtro', String(SOLICITACOES.length))}
-      ${cartao('Valor somado', brl(total), 'Canceladas e devolvidas fora da conta.')}
+      ${cartao('Valor somado', brl(total), 'Todos os status entram na conta, cancelados e devolvidos inclusive.')}
       ${cartao('Precisando de atenção', String(SOLICITACOES.filter((s) => s.status === 'deu_problema').length), 'com status “deu problema”')}
+    </div>
+    <div class="mb-4 flex min-h-14 flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+      <p class="text-sm font-medium">${pendentes} selecionadas</p>
+      <div class="flex flex-wrap items-center gap-2 sm:ml-auto">
+        <span class="rounded-[5px] border border-primary bg-primary px-4 py-1.5 font-ui text-xs font-semibold uppercase text-primary-foreground">Aprovar e encaminhar</span>
+        <span class="rounded-[5px] border bg-card px-4 py-1.5 font-ui text-xs font-semibold uppercase">Mandar comprar</span>
+        <span class="rounded-[5px] border bg-card px-4 py-1.5 font-ui text-xs font-semibold uppercase">Liberar para envio</span>
+      </div>
     </div>
     <div class="overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(11,41,5,0.04)]">
       <table class="w-full text-sm">
         <thead class="border-b bg-muted/40 text-left text-muted-foreground">
           <tr>
+            <th class="font-ui h-11 w-10 px-4"><input type="checkbox" class="size-4 accent-primary align-middle" checked /></th>
             <th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Código</th><th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Data</th>
             <th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Consultor</th><th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Cliente</th>
             <th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Itens</th><th class="font-ui h-11 px-4 text-right text-xs font-semibold uppercase tracking-[0.08em]">Valor</th>
+            <th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Rota</th>
             <th class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">Status</th>
           </tr>
         </thead>
-        <tbody>${linhasDeSolicitacao(SOLICITACOES, true)}</tbody>
+        <tbody>${linhasDeSolicitacao(SOLICITACOES, true, true)}</tbody>
       </table>
     </div>
     <p class="mt-4 text-xs text-muted-foreground">
+      O Admin trabalha por pilha: marca os pedidos acumulados e encaminha de uma vez. Quando a
+      solicitação ainda está pendente, a aprovação entra como um passo antes do destino e vira uma
+      linha própria do histórico — nada vai do pedido do consultor para a expedição sem o OK.
       A exportação leva o resultado inteiro do filtro, uma linha por item, para que a soma dos
       valores feche. Clique num código para ver o detalhe.
     </p>`

@@ -28,9 +28,14 @@ export const FLUXO_LINEAR: readonly StatusSolicitacao[] = [
  * Atalhos que saem do fluxo linear.
  *
  * Solicitação cujos itens já estão em estoque não passa pelo Financeiro: da
- * aprovação ela vai direto para a expedição. Quem decide se o atalho aparece é
- * a tela, olhando os itens (`precisaDeCompra`); aqui só se declara que ele é
- * uma transição válida.
+ * aprovação ela é liberada para envio.
+ *
+ * O atalho **parte de `aguardando_aprovacao`**, e é isso que importa: ele pula
+ * o Financeiro, nunca a aprovação. Nada sai do pedido do consultor direto para
+ * a expedição — alguém precisa dar o OK antes, e é esse OK que libera o envio.
+ *
+ * Quem decide se o atalho aparece é a tela, olhando os itens
+ * (`precisaDeCompra`); aqui só se declara que ele é uma transição válida.
  */
 const ATALHOS: Partial<Record<StatusSolicitacao, readonly StatusSolicitacao[]>> = {
   [StatusSolicitacao.aguardando_aprovacao]: [StatusSolicitacao.organizando_envio],
@@ -181,8 +186,8 @@ export function validarMudancaDeStatus(
  * Uma solicitação precisa passar pelo Financeiro?
  *
  * Só precisa quando há algo a comprar. Item de catálogo com estoque disponível
- * já está na prateleira e vai direto para a expedição — regra da área, que
- * hoje resolve isso fora do sistema.
+ * já está na prateleira: aprovado, vai para a expedição sem passar pelo
+ * Financeiro — regra da área, que hoje resolve isso fora do sistema.
  *
  * Precisa de compra:
  * - presente específico (é comprado num site, por definição);
@@ -211,4 +216,64 @@ export function proximoDepoisDaAprovacao(itens: readonly ItemParaDecisao[]): Sta
   return precisaDeCompra(itens)
     ? StatusSolicitacao.aguardando_compra
     : StatusSolicitacao.organizando_envio
+}
+
+/**
+ * Caminho até o encaminhamento pedido, em um ou dois passos.
+ *
+ * O Admin trabalha por pilha: chegam vinte pedidos e ele decide de uma vez
+ * quais vão comprar e quais já podem ser separados. Só que "pendente" não vira
+ * "organizando envio" num salto — a aprovação é justamente o OK que falta, e
+ * ela precisa aparecer no histórico.
+ *
+ * Então esta função devolve os passos a percorrer, e cada passo vira uma linha
+ * de histórico. Nunca inventa uma transição: cada salto passa por
+ * `transicaoPermitida`, a mesma função que a tela do detalhe usa.
+ *
+ * `automatico` significa "aprove e mande para onde tiver de ir": expedição
+ * quando está tudo em estoque, Financeiro quando há o que comprar.
+ */
+export type Encaminhamento = StatusSolicitacao | 'automatico'
+
+export type CaminhoDeEncaminhamento =
+  { ok: true; passos: StatusSolicitacao[] } | { ok: false; erro: string }
+
+export function caminhoDeEncaminhamento(
+  atual: StatusSolicitacao,
+  destino: Encaminhamento,
+  itens: readonly ItemParaDecisao[],
+): CaminhoDeEncaminhamento {
+  const alvo =
+    destino === 'automatico'
+      ? atual === StatusSolicitacao.pendente || atual === StatusSolicitacao.aguardando_aprovacao
+        ? proximoDepoisDaAprovacao(itens)
+        : null
+      : destino
+
+  if (!alvo) {
+    return {
+      ok: false,
+      erro: `"${ROTULO_STATUS[atual]}" não tem encaminhamento automático: escolha o destino.`,
+    }
+  }
+
+  if (atual === alvo) {
+    return { ok: false, erro: `Já está em "${ROTULO_STATUS[alvo]}".` }
+  }
+
+  if (transicaoPermitida(atual, alvo)) {
+    return { ok: true, passos: [alvo] }
+  }
+
+  // O caso que dá o segundo passo: falta a aprovação no meio. É o OK do Admin,
+  // e ele fica registrado como uma linha própria do histórico.
+  const aprovacao = StatusSolicitacao.aguardando_aprovacao
+  if (transicaoPermitida(atual, aprovacao) && transicaoPermitida(aprovacao, alvo)) {
+    return { ok: true, passos: [aprovacao, alvo] }
+  }
+
+  return {
+    ok: false,
+    erro: `Não é possível ir de "${ROTULO_STATUS[atual]}" para "${ROTULO_STATUS[alvo]}".`,
+  }
 }
