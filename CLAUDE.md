@@ -61,7 +61,9 @@ Coisas que o código já garante e que não devem ser afrouxadas:
 - **Telas leem catálogo e clientes pelos providers**, não pelo Prisma direto.
 - **Movimento não pode gerar layout shift.** Anime só `opacity` e `transform`.
   Todo `loading.tsx` reserva as medidas exatas do conteúdo, e toda imagem tem
-  proporção e dimensões declaradas. O CLS medido hoje é ≤ 0,0001.
+  proporção e dimensões declaradas. O CLS medido hoje é ≤ 0,0031 — com um
+  contexto de navegador novo por rota, porque `addInitScript` é cumulativo e
+  medir tudo na mesma página soma o mesmo deslocamento várias vezes.
 - **A identidade visual vem do Design System AUVP**, portada de
   `ProdutosAUVP/central`. Use os tokens (`bg-success`, `text-muted-foreground`),
   nunca a paleta crua do Tailwind (`bg-amber-100`) — ela não passa pelas travas
