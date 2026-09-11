@@ -10,7 +10,7 @@ import { ZERO, dinheiro, type Dinheiro } from './money'
  * Soma do `valor_total` de **todas** as solicitações do consultor no mês
  * corrente, canceladas e devolvidas inclusive: a área reenvia, então o dinheiro
  * continua comprometido. Quem decide o que fica de fora é `STATUS_FORA_DO_SALDO`,
- * hoje vazia de propósito — ver `src/lib/status.ts`.
+ * hoje vazia de propósito, ver `src/lib/status.ts`.
  *
  * Estourar o limite apenas sinaliza no V1. O bloqueio depende de decisão da
  * área, e por isso `estourou` é devolvido como informação, não como veto.
@@ -63,7 +63,7 @@ export async function saldoDoMes(
   }
 }
 
-/** Saldo de todos os consultores no mês — visão de Admin e Financeiro. */
+/** Saldo de todos os consultores no mês, visão de Admin e Financeiro. */
 export async function saldoDoMesPorConsultor(referencia: Date = new Date()) {
   const { inicio, fim } = intervaloDoMes(referencia)
 
@@ -107,7 +107,7 @@ export async function saldoDoMesPorConsultor(referencia: Date = new Date()) {
 /**
  * Gasto do time no mês.
  *
- * Para Admin e Financeiro, o próprio gasto costuma ser zero — eles não criam
+ * Para Admin e Financeiro, o próprio gasto costuma ser zero, eles não criam
  * solicitações. O número que interessa a esses perfis é o do time inteiro.
  */
 export async function saldoDoMesDoTime(referencia: Date = new Date()) {

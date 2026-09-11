@@ -9,8 +9,8 @@ import { CATALOGO_AUVP, slugDoProduto } from '../prisma/catalogo-auvp'
  *
  * As originais vêm como o fornecedor mandou: JPEG, PNG, WebP e HEIC, de 0,55 a
  * 1,33 de proporção, com peso de foto de celular. O catálogo mostra todas na
- * mesma moldura 3:4, então elas saem daqui normalizadas — mesma proporção,
- * mesmo formato, mesmo peso — e a grade deixa de parecer uma colagem.
+ * mesma moldura 3:4, então elas saem daqui normalizadas, mesma proporção,
+ * mesmo formato, mesmo peso, e a grade deixa de parecer uma colagem.
  *
  * O recorte é `cover`, e não `contain`: só dez das quarenta e nove estão sobre
  * fundo branco. As outras são fotos com cenário, e barra branca em volta de
@@ -38,9 +38,33 @@ const chave = (texto: string) =>
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
 
+/**
+ * Ordem de preferência quando o mesmo presente tem mais de um arquivo. A área
+ * manda a foto de novo quando a primeira sai ilegível, sem apagar a anterior,
+ * então o mesmo nome pode existir em dois formatos. HEIC vem por último porque
+ * é o que o celular exporta e o que costuma chegar truncado.
+ */
+const PREFERENCIA = ['.jpg', '.jpeg', '.png', '.webp', '.heic']
+
+const preferencia = (arquivo: string) => {
+  const ext = path.extname(arquivo).toLowerCase()
+  const posicao = PREFERENCIA.indexOf(ext)
+  return posicao === -1 ? PREFERENCIA.length : posicao
+}
+
 async function main() {
   const arquivos = fs.readdirSync(ORIGEM).filter((f) => !f.startsWith('.'))
-  const porChave = new Map(arquivos.map((f) => [chave(f.replace(/\.[^.]+$/, '')), f]))
+
+  // Um nome pode ter vários arquivos, e a conversão tenta um por um: uma foto
+  // corrompida não deixa o presente sem imagem se existe outra cópia boa.
+  const porChave = new Map<string, string[]>()
+  for (const arquivo of arquivos) {
+    const k = chave(arquivo.replace(/\.[^.]+$/, ''))
+    porChave.set(
+      k,
+      [...(porChave.get(k) ?? []), arquivo].sort((a, b) => preferencia(a) - preferencia(b)),
+    )
+  }
 
   fs.mkdirSync(DESTINO, { recursive: true })
 
@@ -53,37 +77,48 @@ async function main() {
 
     // O nome do arquivo às vezes é mais curto que o do produto: a planilha traz
     // "- Escolha o vinho" no fim, e a foto não.
-    const arquivo =
+    const candidatos =
       porChave.get(alvo) ??
       [...porChave.entries()].find(([k]) => alvo.startsWith(k) || k.startsWith(alvo))?.[1]
 
-    if (!arquivo) {
+    if (!candidatos || candidatos.length === 0) {
       falhas.push({ nome: produto.nome, motivo: 'sem arquivo correspondente' })
       continue
     }
-    usados.add(arquivo)
+    // Todos contam como usados: o descartado tem produto, só não era o legível.
+    for (const c of candidatos) usados.add(c)
 
     const saida = path.join(DESTINO, `${slugDoProduto(produto.nome)}.webp`)
-    try {
-      const original = sharp(path.join(ORIGEM, arquivo))
-      const { width = 0, height = 0 } = await original.metadata()
+    const tentativas: string[] = []
 
-      // Foto larga perde muito no recorte central; `attention` procura a região
-      // com mais informação, que numa foto de produto é o produto.
-      const recorte = width / height > 1.05 ? sharp.strategy.attention : 'centre'
+    for (const arquivo of candidatos) {
+      try {
+        const original = sharp(path.join(ORIGEM, arquivo))
+        const { width = 0, height = 0 } = await original.metadata()
 
-      await original
-        .resize(LARGURA, ALTURA, { fit: 'cover', position: recorte })
-        .webp({ quality: 82 })
-        .toFile(saida)
+        // Foto larga perde muito no recorte central; `attention` procura a
+        // região com mais informação, que numa foto de produto é o produto.
+        const recorte = width / height > 1.05 ? sharp.strategy.attention : 'centre'
 
-      feitas++
-      const kb = Math.round(fs.statSync(saida).size / 1024)
-      console.log(`  ✓ ${produto.nome} → ${path.basename(saida)} (${kb} KB)`)
-    } catch (erro) {
-      const motivo = erro instanceof Error ? erro.message.split('\n')[0]! : String(erro)
-      falhas.push({ nome: produto.nome, motivo: `${arquivo}: ${motivo}` })
-      console.log(`  × ${produto.nome} — ${motivo}`)
+        await original
+          .resize(LARGURA, ALTURA, { fit: 'cover', position: recorte })
+          .webp({ quality: 82 })
+          .toFile(saida)
+
+        feitas++
+        const kb = Math.round(fs.statSync(saida).size / 1024)
+        console.log(`  ✓ ${produto.nome} → ${path.basename(saida)} (${kb} KB)`)
+        tentativas.length = 0
+        break
+      } catch (erro) {
+        const motivo = erro instanceof Error ? erro.message.split('\n')[0]! : String(erro)
+        tentativas.push(`${arquivo}: ${motivo}`)
+      }
+    }
+
+    if (tentativas.length > 0) {
+      falhas.push({ nome: produto.nome, motivo: tentativas.join(' / ') })
+      console.log(`  × ${produto.nome}: ${tentativas.join(' / ')}`)
     }
   }
 
@@ -97,7 +132,7 @@ async function main() {
 
   if (falhas.length > 0) {
     console.log(`\nSem foto (${falhas.length}):`)
-    for (const f of falhas) console.log(`  · ${f.nome} — ${f.motivo}`)
+    for (const f of falhas) console.log(`  · ${f.nome}, ${f.motivo}`)
     console.log('\nEsses produtos aparecem com a ilustração da categoria, não com um quadro vazio.')
   }
 }

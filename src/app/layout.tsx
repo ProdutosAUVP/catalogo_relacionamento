@@ -14,7 +14,7 @@ import './globals.css'
  * requisição a terceiro no carregamento.
  *
  * `display: 'optional'` é o que zera o layout shift de tipografia. Com `swap`,
- * a página pinta na fonte de fallback e troca quando a definitiva chega — e a
+ * a página pinta na fonte de fallback e troca quando a definitiva chega, e a
  * troca muda a largura do texto, empurrando os itens do menu e as colunas da
  * tabela. Com `optional`, o navegador usa a definitiva se ela chegar na janela
  * inicial e, se não chegar, mantém o fallback por aquele carregamento, sem
@@ -44,7 +44,7 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   title: 'Catálogo de Presentes',
-  description: 'Catálogo e solicitação de presentes — Relacionamento AUVP',
+  description: 'Catálogo e solicitação de presentes da área de Relacionamento da AUVP',
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -66,7 +66,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <footer className="border-t py-6">
             <div className="mx-auto max-w-7xl px-4 md:px-8">
               <p className="text-muted-foreground font-roboto text-center text-xs">
-                Catálogo de Presentes — Relacionamento AUVP
+                Catálogo de Presentes · Relacionamento AUVP
               </p>
             </div>
           </footer>

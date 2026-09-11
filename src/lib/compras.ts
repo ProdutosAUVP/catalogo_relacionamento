@@ -7,21 +7,21 @@ import { subtotal, totalDosItens, type Dinheiro } from './money'
  *
  * Definição da área: o Financeiro recebe as solicitações enviadas para compra
  * contendo data, produto, valor e site. É uma visão por item, não por
- * solicitação — quem compra compra item a item, e um item de catálogo e um
+ * solicitação: quem compra compra item a item, e um item de catálogo e um
  * presente específico têm origens diferentes.
  *
  * O "site" sai de três lugares, nesta ordem: o link que o consultor digitou no
  * presente específico, o link do cadastro do produto (a coluna "Link" da
  * planilha do catálogo) e, por último, o fornecedor padrão da categoria em
- * `src/lib/fornecedores.ts`. Quando nenhum existe, sobra a nota de compra —
- * "Pedido direto ao fornecedor" — ou a própria categoria.
+ * `src/lib/fornecedores.ts`. Quando nenhum existe, sobra a nota de compra,
+ * "Pedido direto ao fornecedor", ou a própria categoria.
  */
 
 export type ItemParaCompra = {
   itemId: string
   solicitacaoId: string
   codigo: string
-  /** Data da solicitação — a data que o Financeiro usa para priorizar. */
+  /** Data da solicitação: a data que o Financeiro usa para priorizar. */
   data: Date
   consultorNome: string
   clienteNome: string
@@ -29,7 +29,7 @@ export type ItemParaCompra = {
   produto: string
   /**
    * Onde comprar: o link do presente específico ou o do produto de catálogo.
-   * Nulo quando não há link — aí vale a nota, ou o padrão da categoria.
+   * Nulo quando não há link, aí vale a nota, ou o padrão da categoria.
    */
   site: string | null
   /** Instrução que não é link, do cadastro do produto. */
@@ -105,7 +105,7 @@ export async function filaDeCompras(filtro: FiltroDaFila = {}): Promise<ItemPara
       data: s.dataSolicitacao,
       consultorNome: s.consultor.nome,
       clienteNome: s.cliente.nome,
-      produto: item.produto?.nome ?? item.descricaoLivre ?? '—',
+      produto: item.produto?.nome ?? item.descricaoLivre ?? '-',
       // O link do presente específico foi escolhido pelo consultor para aquele
       // item; o do produto de catálogo é onde a área sempre compra aquilo.
       site: item.urlExterna ?? item.produto?.urlCompra ?? null,

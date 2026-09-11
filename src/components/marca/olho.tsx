@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 
 /**
- * O olho — símbolo da marca AUVP.
+ * O olho: símbolo da marca AUVP.
  *
  * Traçado extraído de `public/olho-branco.svg` da Central. Vem como SVG inline
  * com `fill="currentColor"`, e não como dois arquivos de imagem: o Design

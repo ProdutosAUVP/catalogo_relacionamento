@@ -85,7 +85,7 @@ describe('linhas da planilha de expedição', () => {
     expect(linhas.map((l) => l.origem)).toEqual(['Estoque', 'Compra'])
   })
 
-  it('repete o endereço em cada linha — quem separa lê item a item', () => {
+  it('repete o endereço em cada linha, quem separa lê item a item', () => {
     const linhas = linhasDaExpedicao([
       pedido({
         itens: [

@@ -21,6 +21,8 @@ type LinhaComCategoria = {
   estoque: number | null
   urlCompra: string | null
   notaDeCompra: string | null
+  exigeAcompanhamento: string | null
+  serveComoAcompanhamento: string | null
   ativo: boolean
   skuTiny: string | null
   categoria: { nome: string }
@@ -41,6 +43,8 @@ function mapear(linha: LinhaComCategoria): ProdutoDoCatalogo {
     estoque: linha.controlaEstoque ? linha.estoque : null,
     urlCompra: linha.urlCompra,
     notaDeCompra: linha.notaDeCompra,
+    exigeAcompanhamento: linha.exigeAcompanhamento,
+    serveComoAcompanhamento: linha.serveComoAcompanhamento,
     ativo: linha.ativo,
     skuTiny: linha.skuTiny,
   }

@@ -1,6 +1,12 @@
 import { z } from 'zod'
 import { OrigemProduto, TipoValor } from '@prisma/client'
-import { inteiroOpcional, textoOpcional, urlOpcional, valorOpcional } from './comuns'
+import {
+  inteiroOpcional,
+  rotuloOpcional,
+  textoOpcional,
+  urlOpcional,
+  valorOpcional,
+} from './comuns'
 
 /**
  * O CRUD de catálogo é operado pela própria área de Relacionamento, sem apoio
@@ -21,6 +27,10 @@ export const produtoSchema = z
     estoque: inteiroOpcional,
     urlCompra: urlOpcional,
     notaDeCompra: textoOpcional,
+    /** O que este presente precisa levar junto, como `vinho`. */
+    exigeAcompanhamento: rotuloOpcional,
+    /** O que este presente satisfaz quando entra junto de um kit. */
+    serveComoAcompanhamento: rotuloOpcional,
     ativo: z.boolean().default(true),
     skuTiny: textoOpcional,
   })
@@ -28,6 +38,18 @@ export const produtoSchema = z
     message: 'Produto que controla estoque precisa da quantidade em estoque.',
     path: ['estoque'],
   })
+  // O banco tem a mesma trava como CHECK. Aqui ela vira frase, porque quem
+  // erra isso é a área cadastrando, e não um script.
+  .refine(
+    (d) =>
+      !d.exigeAcompanhamento ||
+      !d.serveComoAcompanhamento ||
+      d.exigeAcompanhamento !== d.serveComoAcompanhamento,
+    {
+      message: 'Um presente não pode ser o próprio acompanhamento que exige.',
+      path: ['serveComoAcompanhamento'],
+    },
+  )
 
 export type ProdutoInput = z.input<typeof produtoSchema>
 export type ProdutoValidado = z.output<typeof produtoSchema>

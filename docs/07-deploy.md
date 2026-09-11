@@ -14,7 +14,7 @@ Dois destinos, com propósitos diferentes.
 V1 depende de servidor em quase tudo que o define: banco, sessão, permissões
 por perfil, geração de CSV e XLSX.
 
-## Aplicação — Railway
+## Aplicação: Railway
 
 ### Primeira vez
 
@@ -57,7 +57,7 @@ https://<seu-dominio>/api/auth/callback/auvp
 
 ### Migrations
 
-Aplicadas na subida do container, com `prisma migrate deploy` — só executa o
+Aplicadas na subida do container, com `prisma migrate deploy`, só executa o
 que ainda não rodou e nunca gera migration nova. Seguro em toda subida e com
 múltiplas réplicas.
 
@@ -67,7 +67,7 @@ O seed **não** roda em produção: ele carrega dados fictícios.
 
 `/login`, porque é a única rota que responde sem sessão.
 
-## Vitrine — GitHub Pages
+## Vitrine: GitHub Pages
 
 ### Habilitar
 
@@ -88,7 +88,7 @@ A URL fica em **Settings → Pages**, no formato
 Catálogo, etapas da nova solicitação, lista do consultor, painel de gestão,
 detalhe com histórico, fila de compras do Financeiro e os CRUDs. O seletor "Ver
 como" troca entre Consultor, Admin e Financeiro e reproduz a matriz de
-permissões — é a forma mais direta de mostrar que cada perfil enxerga um
+permissões: é a forma mais direta de mostrar que cada perfil enxerga um
 conjunto diferente de telas.
 
 Os dados são fictícios e espelham o seed. Nenhum dado real de cliente entra

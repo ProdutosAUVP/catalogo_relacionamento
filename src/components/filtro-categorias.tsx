@@ -5,7 +5,7 @@ import { CLASSES_DE_TOM, visualDaCategoria } from '@/lib/categorias'
 import { cn } from '@/lib/utils'
 
 /**
- * Seletor de categorias — cards com ícone e contagem, como na Central, no
+ * Seletor de categorias: cards com ícone e contagem, como na Central, no
  * lugar de um `select` solto.
  *
  * São links, e não botões com estado no cliente: o filtro já vive na URL, o

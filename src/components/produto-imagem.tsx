@@ -9,12 +9,12 @@ import { cn } from '@/lib/utils'
 /**
  * Foto do produto no card do catálogo.
  *
- * Proporção 3:4, a nativa dos mockups tratados da Central — a foto preenche o
+ * Proporção 3:4, a nativa dos mockups tratados da Central, a foto preenche o
  * quadro inteiro, sem faixa de fundo sobrando.
  *
  * Sobre layout shift: a moldura tem `aspect-[3/4]` e a `Image` recebe as
  * dimensões reais (900×1200). O espaço é reservado antes de qualquer byte da
- * imagem chegar, então nada se move quando ela carrega — nem na primeira
+ * imagem chegar, então nada se move quando ela carrega, nem na primeira
  * visita, nem com a rede lenta.
  *
  * Sem foto cadastrada, entra a ilustração da categoria: estado de repouso, não
@@ -28,7 +28,7 @@ const ALTURA = 1200
  * Foto guardada no nosso banco não passa pelo otimizador do Next.
  *
  * `/api/arquivos/...` fica atrás da sessão, e o otimizador busca a origem do
- * servidor, sem cookie — a resposta seria 401 e a imagem, um quadro quebrado.
+ * servidor, sem cookie: a resposta seria 401 e a imagem, um quadro quebrado.
  * O upload já é limitado a 5 MB e a foto de catálogo é pequena, então o custo
  * de servir o original é menor que o de abrir essa rota para fora.
  */
@@ -59,7 +59,7 @@ export function ProdutoImagem({
    *
    * O catálogo da área aponta para o Drive dela, e link externo quebra: some,
    * muda de permissão, passa a exigir login. Sem isto o card mostraria o ícone
-   * de imagem quebrada — que parece defeito do sistema, e não link vencido.
+   * de imagem quebrada: que parece defeito do sistema, e não link vencido.
    * A moldura tem proporção fixa, então a troca não desloca nada.
    */
   const [falhou, setFalhou] = useState(false)
@@ -115,7 +115,7 @@ export function ProdutoImagem({
             />
             <Image
               src={fotoVersoUrl!}
-              alt={`${nome} — verso`}
+              alt={`${nome}: verso`}
               width={LARGURA}
               height={ALTURA}
               unoptimized={semOtimizador(fotoVersoUrl!)}

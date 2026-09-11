@@ -13,7 +13,7 @@ import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
 import { Rastreio } from './rastreio'
 
 /**
- * Fila de expedição — a planilha que a área monta à mão hoje.
+ * Fila de expedição: a planilha que a área monta à mão hoje.
  *
  * Duas portas levam uma solicitação até aqui: o caminho normal, depois que o
  * Financeiro compra; e o atalho, quando os itens já estão em estoque e não há o
@@ -92,7 +92,7 @@ export default async function ExpedicaoPage({
       {pedidos.length === 0 ? (
         <EstadoVazio
           titulo="Nada para separar agora"
-          descricao="Os pedidos aparecem aqui quando o Admin move a solicitação para organizando envio — seja depois da compra, seja direto da aprovação quando já há estoque."
+          descricao="Os pedidos aparecem aqui quando o Admin move a solicitação para organizando envio, seja depois da compra, seja direto da aprovação quando já há estoque."
         />
       ) : (
         <div className="space-y-4">
@@ -143,7 +143,7 @@ export default async function ExpedicaoPage({
                     <span className="font-medium">{pedido.destinatario}</span>
                     <br />
                     {pedido.logradouro}, {pedido.numero}
-                    {pedido.complemento ? ` — ${pedido.complemento}` : ''}
+                    {pedido.complemento ? `, ${pedido.complemento}` : ''}
                     <br />
                     {pedido.bairro}
                     <br />

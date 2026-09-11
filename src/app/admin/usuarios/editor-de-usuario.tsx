@@ -102,13 +102,13 @@ export function EditorDeUsuario({ usuario }: { usuario: UsuarioEditavel }) {
             />
             <p className="text-muted-foreground text-xs">
               Em branco = sem teto. Estourar o limite sinaliza no painel, não bloqueia a solicitação
-              — é o que a spec define para o V1.
+              : é o que a spec define para o V1.
             </p>
           </div>
 
           {perfil !== Perfil.consultor ? (
             <p className="bg-muted/50 text-muted-foreground rounded-md border px-3 py-2 text-xs leading-relaxed">
-              Admin e Financeiro não criam solicitação, então o limite mensal não se aplica a eles —
+              Admin e Financeiro não criam solicitação, então o limite mensal não se aplica a eles,
               o painel mostra o gasto do time.
             </p>
           ) : null}

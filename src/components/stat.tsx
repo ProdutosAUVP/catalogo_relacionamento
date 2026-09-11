@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 /**
- * Bloco de número — o cartão de métrica do painel.
+ * Bloco de número: o cartão de métrica do painel.
  *
  * Duas decisões de tipografia que valem registrar:
  *

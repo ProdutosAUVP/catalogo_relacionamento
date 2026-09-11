@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
  * Cabeçalho padrão das telas.
  *
  * A "sobrancelha" acima do título dá contexto de seção sem exigir um segundo
- * nível de navegação — o consultor sabe onde está sem migalha de pão.
+ * nível de navegação: o consultor sabe onde está sem migalha de pão.
  */
 export function CabecalhoDaPagina({
   sobrancelha,

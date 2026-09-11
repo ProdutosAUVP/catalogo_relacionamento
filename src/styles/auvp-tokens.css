@@ -62,8 +62,8 @@
      que um componente copiado de lá funcione sem reescrita. `font-display`,
      `font-body` e `font-ui` dizem o papel, e são os preferidos em código novo. */
   /* O fallback dentro do `var()` é necessário, não decorativo: `--font-*-src`
-     é definida pelo next/font e só existe na aplicação. Sem ele, a vitrine —
-     que carrega as mesmas fontes pelo Google Fonts — teria a declaração
+     é definida pelo next/font e só existe na aplicação. Sem ele, a vitrine,
+     que carrega as mesmas fontes pelo Google Fonts, teria a declaração
      inteira invalidada e cairia na fonte do sistema. */
   --font-anek: var(--font-anek-src, 'Anek Latin'), sans-serif;
   --font-roboto: var(--font-roboto-src, 'Roboto'), sans-serif;
@@ -84,7 +84,7 @@
 
 @layer base {
   :root {
-    /* === AUVP Capital (verde) — tema claro === */
+    /* === AUVP Capital (verde), tema claro === */
     --background: 0 0% 100%;
     --foreground: 110 78% 9%;
 
@@ -152,7 +152,7 @@
   }
 
   .dark {
-    /* === AUVP Capital — tema escuro (fundo preto) ===
+    /* === AUVP Capital: tema escuro (fundo preto) ===
        Base preto/branco/cinza. O verde #5A8770 fica reservado para acentos
        pontuais, não para superfícies inteiras. */
     --background: 0 0% 0%;
@@ -222,7 +222,7 @@
      * Reserva a canaleta da barra de rolagem sempre.
      *
      * Sem isso, ir de uma tela alta para uma curta faz a barra sumir, a área
-     * de conteúdo alargar alguns pixels e tudo deslizar na horizontal — um
+     * de conteúdo alargar alguns pixels e tudo deslizar na horizontal, um
      * layout shift em toda navegação, e dos mais irritantes porque acontece
      * justamente quando a pessoa vai clicar.
      */
@@ -263,7 +263,7 @@
    * Entrada de conteúdo a cada navegação.
    *
    * Anima só `opacity` e `transform`. Os dois rodam no compositor e não
-   * participam do cálculo de layout, então a transição não desloca nada —
+   * participam do cálculo de layout, então a transição não desloca nada,
    * é o que permite ter movimento sem layout shift. Qualquer animação de
    * altura, margem ou largura aqui reintroduziria o salto.
    */
@@ -320,7 +320,7 @@
   }
 }
 
-/* === Acessibilidade — menos movimento ===
+/* === Acessibilidade: menos movimento ===
    Neutraliza animações e transições quando o sistema pede menos movimento.
    Mesma regra da Central. */
 @media (prefers-reduced-motion: reduce) {

@@ -16,11 +16,11 @@ import { OrigemProduto, TipoValor } from '@prisma/client'
  *   porque parte vem de cada lugar;
  * A coluna "Link para a imagem" da planilha apontava para o Drive da área. As
  * fotos vieram depois para o próprio repositório, em `imgs produtos/`, e é de
- * lá que `scripts/preparar-fotos.ts` gera `public/produtos/<slug>.webp` — que é
+ * lá que `scripts/preparar-fotos.ts` gera `public/produtos/<slug>.webp`, que é
  * o que o catálogo serve. Link externo quebra; arquivo versionado, não.
  *
  * Este arquivo é a fonte: o seed grava a partir dele e o script de fotos lê
- * dele. Depois de a ferramenta estar no ar, quem manda é o CRUD de catálogo —
+ * dele. Depois de a ferramenta estar no ar, quem manda é o CRUD de catálogo,
  * aqui fica o ponto de partida.
  */
 
@@ -33,7 +33,19 @@ export type ProdutoDoCatalogoAUVP = {
   origem: OrigemProduto
   urlCompra?: string
   notaDeCompra?: string
+  /** O que este item precisa levar junto, por exemplo `vinho`. */
+  exigeAcompanhamento?: string
+  /** O que este item satisfaz quando entra na mesma solicitação. */
+  serveComoAcompanhamento?: string
 }
+
+/**
+ * Rótulo do pareamento entre kit e bebida.
+ *
+ * Três itens da planilha trazem "Escolha o vinho" no nome: eles embalam um
+ * vinho e não fazem sentido sozinhos. Ver `src/lib/acompanhamentos.ts`.
+ */
+const VINHO = 'vinho'
 
 /**
  * Nome do arquivo da foto, derivado do nome do produto.
@@ -216,6 +228,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   // --- Bebida: kits ----------------------------------------------------------
   {
     nome: 'Caixa MDF para vinho com Acessórios - Escolha o vinho',
+    exigeAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: null,
     origem: OrigemProduto.mediante_pedido,
@@ -263,6 +276,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Kit Queijos com Vinho - Escolha o vinho',
+    exigeAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '165.00',
     origem: OrigemProduto.mediante_pedido,
@@ -270,6 +284,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Kit Vinho com Abridor Elétrico e Petisqueira - Escolha o vinho',
+    exigeAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '215.00',
     origem: OrigemProduto.mediante_pedido,
@@ -279,6 +294,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   // --- Bebida: vinhos --------------------------------------------------------
   {
     nome: 'Vinho Alma Negra',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '200.00',
     origem: OrigemProduto.mediante_pedido,
@@ -286,6 +302,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho Angelica Zapata Cabernet Franc',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '350.00',
     origem: OrigemProduto.mediante_pedido,
@@ -293,6 +310,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho Carnivor Zinfandel',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '150.00',
     origem: OrigemProduto.mediante_pedido,
@@ -300,6 +318,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho DV Catena Cabernet Malbec',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '250.00',
     origem: OrigemProduto.mediante_pedido,
@@ -307,6 +326,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho El Enemigo',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '300.00',
     origem: OrigemProduto.mediante_pedido,
@@ -314,6 +334,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho Marques de Tomares',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '120.00',
     origem: OrigemProduto.mediante_pedido,
@@ -321,6 +342,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho Pintas Character Tinto',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '350.00',
     origem: OrigemProduto.mediante_pedido,
@@ -328,6 +350,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho Poeira Douro 37 Barricas',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '450.00',
     origem: OrigemProduto.mediante_pedido,
@@ -335,6 +358,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho Poeme Gran Reserva Cabernet Syrah',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '120.00',
     origem: OrigemProduto.mediante_pedido,
@@ -343,6 +367,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho Premier Rendez Vous Merlot Cabernet',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '120.00',
     origem: OrigemProduto.mediante_pedido,
@@ -351,6 +376,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho Ruben E Flora Cabernet E Carmenere',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '120.00',
     origem: OrigemProduto.mediante_pedido,
@@ -359,6 +385,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho Silk & Spice',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '100.00',
     origem: OrigemProduto.mediante_pedido,
@@ -366,6 +393,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho Soprasasso Amarone Della Valpolicella',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '400.00',
     origem: OrigemProduto.mediante_pedido,
@@ -374,6 +402,7 @@ export const CATALOGO_AUVP: readonly ProdutoDoCatalogoAUVP[] = [
   },
   {
     nome: 'Vinho Telmo E Ruth Cabernet E Merlot',
+    serveComoAcompanhamento: VINHO,
     categoria: 'Bebida',
     valor: '120.00',
     origem: OrigemProduto.mediante_pedido,

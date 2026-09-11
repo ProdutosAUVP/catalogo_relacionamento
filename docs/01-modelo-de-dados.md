@@ -7,7 +7,7 @@ explica as decisões que o schema não consegue dizer sozinho.
 
 Produto, categoria e usuário são desativados pelo campo `ativo`, nunca
 removidos. Uma solicitação de seis meses atrás precisa continuar legível
-exatamente como foi criada — inclusive com o produto que saiu do catálogo.
+exatamente como foi criada, inclusive com o produto que saiu do catálogo.
 
 As chaves estrangeiras usam `onDelete: Restrict` justamente para que uma
 exclusão acidental falhe em vez de apagar histórico.
@@ -49,12 +49,12 @@ A regra existe em dois lugares:
 `Produto.origem` responde de onde o presente sai: `estoque_interno` está na
 prateleira, `mediante_pedido` é comprado quando alguém pede. É a coluna
 "Estoque" da planilha do catálogo, e é ela que decide se a solicitação passa
-pelo Financeiro — ver `precisaDeCompra` em `src/lib/status.ts`.
+pelo Financeiro: ver `precisaDeCompra` em `src/lib/status.ts`.
 
 `controla_estoque` é o refinamento opcional: a área não conta peça a peça hoje,
 mas se um dia contar, um pedido maior que o saldo vai ao Financeiro mesmo sendo
 item de prateleira. Com `false`, a tela omite a disponibilidade em vez de
-exibir zero — zero significaria "acabou", que é outra coisa.
+exibir zero: zero significaria "acabou", que é outra coisa.
 
 ## Onde comprar mora no produto
 
@@ -65,11 +65,34 @@ há kit em que parte vem de cada lugar.
 Na fila do Financeiro a ordem é: link do presente específico → `url_compra` do
 produto → fornecedor padrão da categoria (`src/lib/fornecedores.ts`) → nota.
 
+## Kit que embala bebida não vai sozinho
+
+Três presentes do catálogo existem para levar um vinho, e a planilha da área já
+diz isso no nome: "Kit Queijos com Vinho - Escolha o vinho". Chegando sozinhos
+ao cliente, chegam pela metade.
+
+O pareamento é por rótulo, e não por produto: `exige_acompanhamento` no kit
+guarda `vinho`, e `serve_como_acompanhamento` guarda `vinho` em cada garrafa.
+A área acrescenta um vinho ao catálogo sem voltar em nenhum kit, e um kit que
+peça `whisky` amanhã não precisa de código novo.
+
+Item de presente específico nunca satisfaz a exigência: é texto livre, e não dá
+para afirmar que "uma garrafa de tinto" é o vinho que o kit pede.
+
+A regra mora em `src/lib/acompanhamentos.ts` e aparece em três lugares:
+
+- o formulário de nova solicitação, que não deixa avançar e oferece o atalho
+  para a grade recortada nos acompanhamentos;
+- `criarSolicitacao`, porque a action é um endpoint, e quem chamar direto
+  encontra a mesma regra;
+- a CHECK constraint `produto_acompanhamento_nao_circular`, que impede o
+  cadastro de um produto que seja o próprio acompanhamento que exige.
+
 ## Valor nulo não é zero
 
 `Produto.valor` aceita nulo, e seis produtos do catálogo estão assim: são
 brindes personalizados comprados em lote, e a planilha veio sem o custo
-unitário. O catálogo mostra "valor a definir" — R$ 0,00 se leria como grátis, e
+unitário. O catálogo mostra "valor a definir", R$ 0,00 se leria como grátis, e
 a soma do mês passaria a mentir sem ninguém perceber.
 
 O item da solicitação **não** aceita nulo: `valor_unitario` congela na criação,
@@ -99,6 +122,6 @@ não vai exigir migração de dados.
 ## Status `cancelado`
 
 A spec lista nove status. O schema tem dez: `cancelado` é exigido por duas
-regras do próprio documento — "de Deu problema a solicitação pode voltar para
+regras do próprio documento, "de Deu problema a solicitação pode voltar para
 qualquer status anterior ou ser cancelada" e "o saldo considera todos os status
 exceto os cancelados e devolvidos". Sem ele, nenhuma das duas é representável.

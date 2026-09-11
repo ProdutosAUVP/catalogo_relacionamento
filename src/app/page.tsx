@@ -103,7 +103,7 @@ export default async function Home() {
 
       <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {gasto ? (
-          // Número principal da tela — o único em tamanho de destaque.
+          // Número principal da tela, o único em tamanho de destaque.
           <Stat
             destaque
             rotulo={veTudo ? `Gasto do time em ${mes}` : `Seu gasto em ${mes}`}
@@ -120,7 +120,7 @@ export default async function Home() {
                   <p>
                     de {formatarBRL(saldoProprio.limite)}
                     {/* O V1 apenas sinaliza. O bloqueio depende de decisão da área. */}
-                    {saldoProprio.estourou ? ' — limite ultrapassado.' : ' no limite do mês.'}
+                    {saldoProprio.estourou ? ': limite ultrapassado.' : ' no limite do mês.'}
                   </p>
                 </div>
               ) : (

@@ -12,7 +12,7 @@ import { alterarStatus, registrarRastreio } from '@/lib/actions/solicitacoes'
 /**
  * Rastreio do pedido.
  *
- * É a pergunta que o consultor faz por mensagem hoje — "já foi?" — e a razão
+ * É a pergunta que o consultor faz por mensagem hoje, "já foi?", e a razão
  * de ela existir é não ter onde olhar. Preenchido aqui, aparece na tela dele.
  *
  * Salvar o rastreio **não** muda o status: pôr o código é dizer que saiu, e

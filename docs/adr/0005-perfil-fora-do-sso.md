@@ -1,11 +1,11 @@
-# 0005 — Perfil e limite fora do provedor de identidade
+# 0005: Perfil e limite fora do provedor de identidade
 
 ## Contexto
 
 A autenticação é o SSO da AUVP, via OIDC. A pergunta é onde moram perfil e
 limite mensal: no provedor de identidade, em grupos, ou na tabela `usuarios`.
 
-Grupos no SSO parecem mais corretos — identidade e autorização juntas. Mas cada
+Grupos no SSO parecem mais corretos, identidade e autorização juntas. Mas cada
 mudança de perfil passaria por TI, e a spec quer justamente o contrário: a
 área ajusta sozinha.
 
@@ -29,7 +29,7 @@ acesso na hora, porque sem SSO não há login.
 
 Em troca, há dois lugares de verdade sobre pessoas: quem existe está no SSO,
 quem pode o quê está no banco. Alguém desligado da empresa continua como linha
-em `usuarios` — desativado por não conseguir mais entrar, mas ainda listado.
+em `usuarios`: desativado por não conseguir mais entrar, mas ainda listado.
 É aceitável: o histórico de solicitações precisa do nome de quem pediu.
 
 `AUTH_OIDC_GROUPS_CLAIM` fica reservado caso o SSO passe a devolver grupos e a

@@ -1,4 +1,4 @@
-# 0001 — Camada de providers para catálogo e clientes
+# 0001: Camada de providers para catálogo e clientes
 
 ## Contexto
 
@@ -11,7 +11,7 @@ reescrever as telas. Isso transformaria uma integração em um refactor.
 
 ## Decisão
 
-Catálogo e clientes são lidos por trás de duas interfaces —
+Catálogo e clientes são lidos por trás de duas interfaces,
 `CatalogoProvider` e `ClienteProvider`. Nenhuma tela consulta `db.produto` ou
 `db.cliente` diretamente para leitura.
 

@@ -9,7 +9,7 @@ import { CATALOGO_AUVP, CATEGORIAS_AUVP, slugDoProduto } from './catalogo-auvp'
  *
  * O catálogo **não é exemplo**: são os 49 presentes que a área mantém hoje,
  * transcritos da planilha dela em `prisma/catalogo-auvp.ts`. Depois que a
- * ferramenta estiver no ar, quem manda é o CRUD de catálogo — este arquivo é o
+ * ferramenta estiver no ar, quem manda é o CRUD de catálogo, este arquivo é o
  * ponto de partida.
  *
  * O resto (usuários, clientes e algumas solicitações) é exemplo mesmo, para
@@ -42,7 +42,7 @@ const USUARIOS = [
   },
 ]
 
-// CPFs com dígitos verificadores válidos — a validação recusaria fictícios.
+// CPFs com dígitos verificadores válidos, a validação recusaria fictícios.
 const CLIENTES = [
   { nome: 'Marina Alves Pereira', cpf: '52998224725', telefone: '11987654321' },
   { nome: 'Roberto Cardoso Lima', cpf: '11144477735', telefone: '21987651234' },
@@ -91,6 +91,8 @@ async function main() {
       estoque: null,
       urlCompra: p.urlCompra ?? null,
       notaDeCompra: p.notaDeCompra ?? null,
+      exigeAcompanhamento: p.exigeAcompanhamento ?? null,
+      serveComoAcompanhamento: p.serveComoAcompanhamento ?? null,
       ativo: true,
     }
 
@@ -240,7 +242,7 @@ async function main() {
           descricaoLivre: null,
           urlExterna: null,
           // O valor é congelado na criação, e não lido do produto depois.
-          // Produto sem preço na planilha congela como zero — o mesmo que
+          // Produto sem preço na planilha congela como zero, o mesmo que
           // `criarSolicitacao` faz.
           valorUnitario: p.valor ?? '0',
           quantidade: item.quantidade,

@@ -36,6 +36,8 @@ export type ProdutoEditavel = {
   estoque: number | null
   urlCompra: string | null
   notaDeCompra: string | null
+  exigeAcompanhamento: string | null
+  serveComoAcompanhamento: string | null
   ativo: boolean
   skuTiny: string | null
 }
@@ -45,9 +47,12 @@ export type CategoriaOpcao = { id: string; nome: string; ativo: boolean }
 export function EditorDeProduto({
   produto,
   categorias,
+  rotulos,
 }: {
   produto?: ProdutoEditavel
   categorias: CategoriaOpcao[]
+  /** Rótulos de acompanhamento já em uso, sugeridos nos dois campos. */
+  rotulos: string[]
 }) {
   const router = useRouter()
   const [aberto, setAberto] = useState(false)
@@ -73,7 +78,7 @@ export function EditorDeProduto({
   /**
    * `onSubmit`, e não `action`: React limpa um formulário não controlado depois
    * de rodar a action, e uma recusa do servidor apagaria tudo o que a pessoa
-   * digitou — inclusive o arquivo escolhido, que ela teria de buscar de novo.
+   * digitou: inclusive o arquivo escolhido, que ela teria de buscar de novo.
    */
   function enviar(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault()
@@ -132,7 +137,7 @@ export function EditorDeProduto({
               name="descricao"
               rows={2}
               defaultValue={produto?.descricao ?? ''}
-              placeholder="O que é, material, tamanho — o que ajuda o consultor a escolher."
+              placeholder="O que é, material, tamanho, o que ajuda o consultor a escolher."
             />
           </div>
 
@@ -160,7 +165,7 @@ export function EditorDeProduto({
                 id="produto-sku"
                 name="skuTiny"
                 defaultValue={produto?.skuTiny ?? ''}
-                placeholder="Opcional — usado na fase 2"
+                placeholder="Opcional, usado na fase 2"
               />
             </div>
 
@@ -174,7 +179,7 @@ export function EditorDeProduto({
                 placeholder="a definir"
               />
               <p className="text-muted-foreground text-xs">
-                Em branco, o catálogo mostra “valor a definir” — e o presente não soma no gasto do
+                Em branco, o catálogo mostra “valor a definir”, e o presente não soma no gasto do
                 mês de quem o pedir.
               </p>
             </div>
@@ -186,8 +191,8 @@ export function EditorDeProduto({
                 name="tipoValor"
                 defaultValue={produto?.tipoValor ?? TipoValor.exato}
               >
-                <option value={TipoValor.exato}>Exato — preço fechado</option>
-                <option value={TipoValor.medio}>Médio — exibido como “a partir de”</option>
+                <option value={TipoValor.exato}>Exato: preço fechado</option>
+                <option value={TipoValor.medio}>Médio: exibido como “a partir de”</option>
               </Select>
             </div>
           </div>
@@ -202,10 +207,10 @@ export function EditorDeProduto({
                 onChange={(e) => setOrigem(e.target.value as OrigemProduto)}
               >
                 <option value={OrigemProduto.estoque_interno}>
-                  Estoque interno — já está na prateleira
+                  Estoque interno: já está na prateleira
                 </option>
                 <option value={OrigemProduto.mediante_pedido}>
-                  Mediante pedido — comprado quando alguém pede
+                  Mediante pedido: comprado quando alguém pede
                 </option>
               </Select>
               <p className="text-muted-foreground text-xs">
@@ -247,7 +252,7 @@ export function EditorDeProduto({
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-xs">
-                    Sem contagem, o catálogo omite disponibilidade em vez de mostrar zero — é como o
+                    Sem contagem, o catálogo omite disponibilidade em vez de mostrar zero, é como o
                     catálogo da área está hoje.
                   </p>
                 )}
@@ -287,6 +292,53 @@ export function EditorDeProduto({
             </div>
           ) : null}
 
+          {/*
+            Kit que embala bebida não sai sozinho: a solicitação só passa se o
+            vinho entrar junto. A regra mora em `src/lib/acompanhamentos.ts` e
+            é pareamento de rótulo, não de produto, então a área acrescenta um
+            vinho novo sem voltar aqui para mexer em nenhum kit.
+          */}
+          <div className="space-y-4 rounded-lg border border-dashed p-4">
+            <p className="font-display font-semibold">Acompanhamento obrigatório</p>
+
+            <datalist id="rotulos-de-acompanhamento">
+              {rotulos.map((r) => (
+                <option key={r} value={r} />
+              ))}
+            </datalist>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="produto-exige">Precisa ir junto de</Label>
+                <Input
+                  id="produto-exige"
+                  name="exigeAcompanhamento"
+                  list="rotulos-de-acompanhamento"
+                  defaultValue={produto?.exigeAcompanhamento ?? ''}
+                  placeholder="vinho"
+                />
+                <p className="text-muted-foreground text-xs">
+                  Para o kit que existe para embalar uma bebida. Sem o item marcado abaixo na mesma
+                  solicitação, o consultor não consegue enviar o pedido.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="produto-serve">Serve como</Label>
+                <Input
+                  id="produto-serve"
+                  name="serveComoAcompanhamento"
+                  list="rotulos-de-acompanhamento"
+                  defaultValue={produto?.serveComoAcompanhamento ?? ''}
+                  placeholder="vinho"
+                />
+                <p className="text-muted-foreground text-xs">
+                  Marque nas garrafas. É o que satisfaz o kit acima. Deixe vazio no resto.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="produto-foto">Foto</Label>
             <div className="flex items-start gap-4">
@@ -314,7 +366,7 @@ export function EditorDeProduto({
                 <input type="hidden" name="fotoUrl" value={produto?.fotoUrl ?? ''} />
                 <p className="text-muted-foreground text-xs">
                   JPEG, PNG, WebP ou AVIF, até 5 MB. Sem foto, o catálogo desenha uma ilustração da
-                  categoria — nunca um espaço vazio.
+                  categoria: nunca um espaço vazio.
                 </p>
               </div>
             </div>

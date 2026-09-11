@@ -9,16 +9,16 @@ botão e bloquear a ação nunca divirjam.
 | Ação                                      |    Consultor    | Admin | Financeiro |
 | ----------------------------------------- | :-------------: | :---: | :--------: |
 | Ver catálogo                              |        ✓        |   ✓   |     ✓      |
-| Criar solicitação                         |        ✓        |   ✓   |     —      |
+| Criar solicitação                         |        ✓        |   ✓   |     -      |
 | Ver as próprias solicitações              |        ✓        |   ✓   |     ✓      |
-| Ver todas as solicitações                 |        —        |   ✓   |     ✓      |
-| Ver a fila de compras                     |        —        |   ✓   |     ✓      |
-| Ver a fila da expedição                   |        —        |   ✓   |     ✓      |
+| Ver todas as solicitações                 |        -        |   ✓   |     ✓      |
+| Ver a fila de compras                     |        -        |   ✓   |     ✓      |
+| Ver a fila da expedição                   |        -        |   ✓   |     ✓      |
 | Ver dados sensíveis do cliente            | só das próprias |   ✓   |    ✓ ¹     |
-| Alterar status                            |        —        |   ✓   |     ✓      |
-| Editar/corrigir solicitação               |        —        |   ✓   |     —      |
-| Gerenciar catálogo, categorias e usuários |        —        |   ✓   |     —      |
-| Exportar                                  |        —        |   ✓   |     ✓      |
+| Alterar status                            |        -        |   ✓   |     ✓      |
+| Editar/corrigir solicitação               |        -        |   ✓   |     -      |
+| Gerenciar catálogo, categorias e usuários |        -        |   ✓   |     -      |
+| Exportar                                  |        -        |   ✓   |     ✓      |
 | Ver saldo gasto                           |     próprio     | todos |   todos    |
 
 ¹ Único ponto do perfil Financeiro ainda sem confirmação da área. Ver abaixo.
@@ -33,11 +33,11 @@ A spec deixou esse perfil "a definir". A área definiu depois:
 Foi implementado assim:
 
 - **Fila de compras** (`/financeiro/compras`): lista por item, e não por
-  solicitação, porque a compra acontece item a item — um pedido com três
+  solicitação, porque a compra acontece item a item, um pedido com três
   presentes pode ter três origens. Traz data, produto, valor e site. O "site" é
   o link do presente específico; item de catálogo não tem site, e no lugar
   aparece a categoria.
-  Item de catálogo também mostra site quando a categoria tem fornecedor fixo —
+  Item de catálogo também mostra site quando a categoria tem fornecedor fixo,
   bebida é sempre comprada na Casa da Bebida, por regra da área
   (`src/lib/fornecedores.ts`). O link do presente específico vence o padrão da
   categoria, porque foi escolhido para aquele item.
@@ -48,7 +48,7 @@ Foi implementado assim:
 
 A ação `expedicao.verFila` abre `/expedicao`, a lista de pedidos prontos para
 separar. Ela existe para Admin e Financeiro; não há perfil "expedição" porque a
-expedição trabalha fora desta ferramenta — hoje recebe uma planilha, e a tela é
+expedição trabalha fora desta ferramenta, hoje recebe uma planilha, e a tela é
 o que substitui essa planilha.
 
 Se um dia a expedição passar a entrar no sistema, o perfil entra em
@@ -72,9 +72,9 @@ escreveu a query.
 
 Sempre no servidor:
 
-- `exigirUsuario()` — exige sessão;
-- `exigirPermissao(acao)` — exige uma permissão, redireciona quem não tem;
-- `autorizarAction(acao)` — versão para server action e rota de API, que lança
+- `exigirUsuario()`: exige sessão;
+- `exigirPermissao(acao)`: exige uma permissão, redireciona quem não tem;
+- `autorizarAction(acao)`: versão para server action e rota de API, que lança
   em vez de redirecionar.
 
 O middleware só checa a existência do cookie de sessão. Ele roda no edge e não

@@ -16,7 +16,7 @@ Pendente
 ```
 
 Avança uma etapa por vez. Não é possível pular etapa nem voltar pelo caminho
-linear — voltar acontece por "Deu problema".
+linear: voltar acontece por "Deu problema".
 
 ### Atalho: estoque não passa pelo Financeiro
 
@@ -24,7 +24,7 @@ Há uma exceção declarada em `ATALHOS`: de **Aguardando aprovação** a
 solicitação pode ir direto para **Organizando envio**, pulando o Financeiro.
 
 O atalho **parte da aprovação**, e é isso que importa: ele pula o Financeiro,
-nunca a aprovação. Nada sai do pedido do consultor direto para a expedição —
+nunca a aprovação. Nada sai do pedido do consultor direto para a expedição,
 alguém precisa dar o OK antes, e é esse OK que libera o envio.
 
 Regra da área: item que já está na prateleira não tem o que ser comprado, e
@@ -48,7 +48,7 @@ continua sendo do Admin, e as duas transições são válidas.
 
 O Admin trabalha por pilha: chegam vinte pedidos e ele decide de uma vez quais
 vão comprar e quais já podem ser separados. A tela de gestão tem seleção por
-linha e três ações — "Aprovar e encaminhar" (roteia pelo estoque), "Mandar
+linha e três ações, "Aprovar e encaminhar" (roteia pelo estoque), "Mandar
 comprar" e "Liberar para envio".
 
 Quem monta o caminho é `caminhoDeEncaminhamento`, e ela não afrouxa nada:
@@ -62,7 +62,7 @@ Quem monta o caminho é `caminhoDeEncaminhamento`, e ela não afrouxa nada:
   o motivo.
 
 A coluna "rota" da tabela diz, antes do clique, se aquela solicitação tem o que
-comprar — é o que evita abrir vinte telas para decidir.
+comprar: é o que evita abrir vinte telas para decidir.
 
 ## Saídas do fluxo
 
@@ -91,7 +91,7 @@ Admin e Financeiro. O consultor acompanha.
 Uma solicitação com três itens tem um status só. Se um item der problema, o
 Admin usa observações e histórico.
 
-**Vale confirmar com a área se isso atende** — está registrado em
+**Vale confirmar com a área se isso atende**, está registrado em
 [perguntas em aberto](05-perguntas-em-aberto.md). Se não atender, a mudança é
 de porte médio: o status desce para `solicitacao_itens` e o status da
 solicitação passa a ser derivado dos itens.
@@ -120,13 +120,13 @@ entregue só aparece depois que há código.
 
 Os campos já existiam reservados para a fase 2. Quando a integração com o Tiny
 ou com o sistema da expedição existir, ela escreve nos mesmos campos e o
-formulário vira o caminho manual de exceção — nada muda nas telas de leitura.
+formulário vira o caminho manual de exceção, nada muda nas telas de leitura.
 
 ## Da expedição para a frente
 
 "Organizando envio" é o status em que a solicitação está com a expedição. A
 tela `/expedicao` monta a partir dele a lista que hoje é uma planilha feita à
-mão — ver [`src/lib/expedicao.ts`](../src/lib/expedicao.ts).
+mão: ver [`src/lib/expedicao.ts`](../src/lib/expedicao.ts).
 
 A expedição não é um perfil novo: ela trabalha fora desta ferramenta, e quem
 abre a tela é Admin ou Financeiro (`expedicao.verFila`). A carta que acompanha

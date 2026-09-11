@@ -1,4 +1,4 @@
-# 0004 — Regras críticas também no banco
+# 0004: Regras críticas também no banco
 
 ## Contexto
 
@@ -15,14 +15,14 @@ importação de dados e correção manual em produção.
 
 As regras existem em duas camadas. Zod na aplicação, para que a pessoa receba
 uma mensagem legível. CHECK constraint no banco, para que nada grave dado
-inválido — venha de onde vier.
+inválido: venha de onde vier.
 
 ## Consequências
 
 Um dado corrompido por script é impossível, não improvável.
 
 Em troca, há duplicação: mudar a regra exige mexer no validador e criar
-migration. É duplicação consciente, e as camadas têm papéis diferentes — uma
+migration. É duplicação consciente, e as camadas têm papéis diferentes, uma
 conversa com a pessoa, a outra protege o dado.
 
 Um efeito colateral útil: o seed roda contra as mesmas constraints, então erro

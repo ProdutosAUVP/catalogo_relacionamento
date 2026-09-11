@@ -11,7 +11,7 @@ import { usePathname } from 'next/navigation'
  *
  * A animação em si é `opacity` + `transform`, ambas fora do cálculo de layout.
  * O esqueleto de `loading.tsx` entra com a mesma transição, então a sequência
- * — esqueleto, depois conteúdo — é contínua, e as duas etapas ocupam
+ *: esqueleto, depois conteúdo: é contínua, e as duas etapas ocupam
  * exatamente o mesmo espaço.
  */
 export function Transicao({ children }: { children: React.ReactNode }) {

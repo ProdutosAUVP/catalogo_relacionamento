@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils'
 /**
  * Select nativo com a moldura do Design System.
  *
- * `appearance-none` remove o controle padrão do navegador — que é o detalhe
- * que mais denuncia protótipo numa barra de filtros — e a seta volta como
+ * `appearance-none` remove o controle padrão do navegador, que é o detalhe
+ * que mais denuncia protótipo numa barra de filtros, e a seta volta como
  * fundo SVG, mantendo o comportamento nativo (teclado, mobile, acessibilidade)
  * que um menu reconstruído em JavaScript costuma perder.
  */

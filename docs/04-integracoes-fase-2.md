@@ -44,7 +44,7 @@ Pendências antes de começar:
 
 - quem detém as credenciais de API;
 - como tratar itens externos, que não geram pedido no Tiny e podem não ter
-  rastreio. O desenho atual permite catálogo híbrido — produto com `sku_tiny`
+  rastreio. O desenho atual permite catálogo híbrido, produto com `sku_tiny`
   vai para o Tiny, item específico continua fora dele.
 
 ## Salesforce

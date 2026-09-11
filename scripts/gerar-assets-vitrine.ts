@@ -16,7 +16,7 @@ import { CATALOGO_AUVP, CATEGORIAS_AUVP, slugDoProduto } from '../prisma/catalog
 // --- ilustrações -----------------------------------------------------------
 writeFileSync(
   'demo/ilustracoes.js',
-  `/* Gerado por scripts/gerar-assets-vitrine.ts — não editar à mão.
+  `/* Gerado por scripts/gerar-assets-vitrine.ts: não editar à mão.
    A fonte é src/lib/ilustracoes.ts. */
 const ILUSTRACOES = ${JSON.stringify(
     Object.fromEntries(Object.entries(ILUSTRACOES).map(([k, v]) => [k, v.path])),
@@ -65,8 +65,8 @@ const svgs: Record<string, string> = {}
 /**
  * Lê o traçado de um ícone do lucide.
  *
- * Alguns nomes são apenas apelidos — `user-square.js` só reexporta
- * `square-user.js` —, então a leitura segue a indireção antes de tentar
+ * Alguns nomes são apenas apelidos, `user-square.js` só reexporta
+ * `square-user.js`, então a leitura segue a indireção antes de tentar
  * extrair as formas.
  */
 function lerIcone(arquivo: string, saltos = 0): string {
@@ -115,7 +115,7 @@ for (const [apelido, original] of Object.entries(APELIDOS)) {
 
 writeFileSync(
   'demo/icones.js',
-  `/* Gerado por scripts/gerar-assets-vitrine.ts — não editar à mão.
+  `/* Gerado por scripts/gerar-assets-vitrine.ts: não editar à mão.
    Os traçados vêm do pacote lucide-react instalado. */
 const ICONES = ${JSON.stringify(svgs, null, 2)}
 `,
@@ -140,7 +140,7 @@ console.log('demo/produtos: fotos copiadas de public/produtos')
  * A vitrine mostra o catálogo de verdade, gerado da mesma fonte do seed.
  *
  * Antes ela tinha a própria cópia dos produtos, em `demo/dados.js`. Duas
- * cópias da mesma lista divergem no primeiro produto que a área acrescenta —
+ * cópias da mesma lista divergem no primeiro produto que a área acrescenta,
  * e quem aprova o V1 olha justamente a vitrine.
  */
 const produtosDaVitrine = CATALOGO_AUVP.map((p) => ({
@@ -154,14 +154,18 @@ const produtosDaVitrine = CATALOGO_AUVP.map((p) => ({
   ativo: true,
   urlCompra: p.urlCompra ?? null,
   notaDeCompra: p.notaDeCompra ?? null,
+  // Kit que embala bebida não sai sozinho: a vitrine mostra o mesmo selo e o
+  // mesmo aviso da aplicação.
+  exigeAcompanhamento: p.exigeAcompanhamento ?? null,
+  serveComoAcompanhamento: p.serveComoAcompanhamento ?? null,
   // Sem o arquivo em `public/produtos/`, o card desenha a ilustração da
-  // categoria — o mesmo que a aplicação faz.
+  // categoria: o mesmo que a aplicação faz.
   semFoto: !existsSync(join('public/produtos', `${slugDoProduto(p.nome)}.webp`)),
 }))
 
 writeFileSync(
   'demo/produtos.js',
-  `/* Gerado por scripts/gerar-assets-vitrine.ts — não editar à mão.
+  `/* Gerado por scripts/gerar-assets-vitrine.ts: não editar à mão.
    O catálogo vem de prisma/catalogo-auvp.ts, a mesma fonte do seed. */
 const CATEGORIAS = ${JSON.stringify([...CATEGORIAS_AUVP], null, 2)}
 const PRODUTOS = ${JSON.stringify(produtosDaVitrine, null, 2)}

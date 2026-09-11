@@ -18,7 +18,7 @@ import type { LucideIcon } from 'lucide-react'
  *
  * Portado de `categoriaVisual` em `src/data/produtosFisicos.ts` da Central,
  * junto com `tagToneClasses`. Os tons vêm da paleta categórica do Design
- * System — sempre fundo a 14–16% de opacidade com o texto na cor cheia, que é
+ * System: sempre fundo a 14–16% de opacidade com o texto na cor cheia, que é
  * o que mantém o selo legível nos dois temas.
  */
 

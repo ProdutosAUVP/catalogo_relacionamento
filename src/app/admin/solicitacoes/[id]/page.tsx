@@ -51,7 +51,7 @@ export default async function DetalheSolicitacaoPage({
   const podeAlterar = pode(usuario.perfil, 'solicitacao.alterarStatus')
 
   // Solicitação com tudo em estoque não passa pelo Financeiro: aprovar já
-  // libera o envio. A aprovação continua acontecendo — o atalho começa nela,
+  // libera o envio. A aprovação continua acontecendo, o atalho começa nela,
   // não a substitui. A tela só sugere.
   const sugerido =
     solicitacao.status === StatusSolicitacao.aguardando_aprovacao

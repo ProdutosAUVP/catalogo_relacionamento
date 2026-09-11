@@ -30,7 +30,7 @@ import { cn } from '@/lib/utils'
  *
  * A coluna "rota" existe para que a decisão não dependa de abrir cada pedido:
  * ela diz, antes do clique, se aquela solicitação tem o que comprar. Quem
- * decide continua sendo o Admin — o botão de mandar para o Financeiro fica
+ * decide continua sendo o Admin, o botão de mandar para o Financeiro fica
  * disponível mesmo quando há estoque.
  */
 
@@ -185,7 +185,7 @@ export function TabelaDaGestao({
                     {/* A rota é informação de apoio, não status: fica em tom
                         neutro para não competir com a coluna ao lado. */}
                     {l.precisaDeCompra === null ? (
-                      <span className="text-muted-foreground">—</span>
+                      <span className="text-muted-foreground">-</span>
                     ) : l.precisaDeCompra ? (
                       <Badge variant="outline">compra</Badge>
                     ) : (

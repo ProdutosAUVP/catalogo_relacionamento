@@ -27,7 +27,7 @@ export function ImportarClientes() {
 
   /**
    * `onSubmit`, e não `action`: React limparia o campo de arquivo junto, e o
-   * resumo apareceria ao lado de um formulário vazio — como se nada tivesse
+   * resumo apareceria ao lado de um formulário vazio, como se nada tivesse
    * sido enviado.
    */
   function enviar(evento: React.FormEvent<HTMLFormElement>) {
@@ -83,7 +83,7 @@ export function ImportarClientes() {
               sinônimos comuns são aceitos (“nome completo”, “documento”, “celular”, “e-mail”).
             </p>
             <p className="mt-2">
-              Separador <code>;</code> ou <code>,</code> — o do Excel pt-BR e o do Sheets. Campo
+              Separador <code>;</code> ou <code>,</code>, o do Excel pt-BR e o do Sheets. Campo
               vazio na planilha mantém o que já está no cadastro.
             </p>
           </div>
@@ -121,7 +121,7 @@ export function ImportarClientes() {
                     ))}
                   </ul>
                   <p className="text-muted-foreground mt-2 text-xs">
-                    Corrija na planilha e importe de novo — o que já entrou não duplica.
+                    Corrija na planilha e importe de novo, o que já entrou não duplica.
                   </p>
                 </div>
               ) : null}

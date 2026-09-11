@@ -9,7 +9,7 @@ da Central, incluindo as correções de contraste documentadas lá.
 
 ## Onde os tokens moram
 
-`src/styles/auvp-tokens.css` — arquivo único, importado por dois consumidores:
+`src/styles/auvp-tokens.css`: arquivo único, importado por dois consumidores:
 
 - `src/app/globals.css`, a aplicação;
 - `demo/tailwind.css`, a vitrine estática.
@@ -31,8 +31,8 @@ idênticos, então um componente copiado de lá funciona sem reescrita.
 
 Duas escolhas merecem explicação:
 
-**Fontes por `next/font`.** As três famílias são as mesmas — Anek Latin nos
-títulos, Roboto no corpo, Sora nos botões —, mas são baixadas no build e
+**Fontes por `next/font`.** As três famílias são as mesmas (Anek Latin nos
+títulos, Roboto no corpo, Sora nos botões), mas são baixadas no build e
 servidas pelo próprio domínio. Elimina a requisição a terceiro no carregamento
 e o pulo de layout na troca da fonte de fallback pela definitiva. A vitrine, que
 não passa pelo Next, continua carregando do Google Fonts como a Central.
@@ -46,7 +46,7 @@ Central para o arquivo de tokens.
 
 Verde AUVP `hsl(155 93% 11%)` como primária no tema claro. No escuro a base é
 preto e branco, e o verde `hsl(145 20% 44%)` fica reservado para acentos
-pontuais — é decisão da Central, não uma adaptação.
+pontuais: é decisão da Central, não uma adaptação.
 
 Os status semânticos (`success`, `warning`, `info`, `error`) já vêm com o par
 fundo/texto resolvido nos dois temas. **Use-os em vez da paleta crua do
@@ -64,13 +64,13 @@ escura sobre fundo claro. Com `currentColor`, isso vira consequência da cor do
 texto em volta, em vez de uma escolha manual a cada uso.
 
 Aparece na navegação, na tela de login e nos estados vazios. O favicon usa o
-mesmo traçado sobre o verde da marca — sem os ~15 KB de metadados C2PA do
+mesmo traçado sobre o verde da marca, sem os ~15 KB de metadados C2PA do
 arquivo original, que não servem a um ícone de aba.
 
 ## Movimento, sem layout shift
 
 A navegação tem movimento, e mede-se isso: **CLS ≤ 0,0031** em todas as telas,
-em build de produção, com CPU 4× mais lenta e rede a 400 kbps — trinta vezes
+em build de produção, com CPU 4× mais lenta e rede a 400 kbps, trinta vezes
 abaixo do limite de 0,1 que o Core Web Vitals considera bom.
 
 Duas armadilhas da medição, aprendidas errando:
@@ -96,7 +96,7 @@ As regras que sustentam esse número:
 3. **Toda imagem tem moldura com proporção fixa e dimensões declaradas.** O
    espaço fica reservado antes de o primeiro byte chegar.
 4. **`scrollbar-gutter: stable`.** Sem isso, ir de uma tela alta para uma curta
-   faz a barra sumir e tudo deslizar na horizontal — um shift em toda
+   faz a barra sumir e tudo deslizar na horizontal, um shift em toda
    navegação, bem na hora em que a pessoa vai clicar.
 
 5. **As fontes usam `display: 'optional'`.** Com `swap`, a página pinta na
@@ -119,7 +119,7 @@ A curva de todas as transições é `ease-apple`, a mesma da Central.
 
 O catálogo usa as fotos de estúdio dos brindes reais da AUVP, trazidas de
 `src/assets/produtos-fisicos/` da Central para `public/produtos/`. São 900×1200
-em WebP, e o card usa a proporção nativa 3:4 — a foto preenche o quadro inteiro,
+em WebP, e o card usa a proporção nativa 3:4, a foto preenche o quadro inteiro,
 sem faixa de fundo sobrando.
 
 A caneca AUPO11 tem os dois lados desenhados e gira em 3D no hover, como na
@@ -157,12 +157,12 @@ fundo cheio.
   em cinco itens, como a da Central. Sete itens não cabiam;
 - não existe `overflow-x-auto` no menu. Além de a barra de rolagem horizontal
   ficar feia, `overflow-x: auto` **obriga o `overflow-y` a virar `auto`
-  também** — o CSS não permite um eixo recortado e o outro visível. O
+  também**: o CSS não permite um eixo recortado e o outro visível. O
   resultado eram duas barras de rolagem dentro do cabeçalho e os balões de
   hover cortados, já que são filhos posicionados do item.
 
 Cada item tem um balão com ícone e descrição no hover. O balão fica **sempre no
-DOM**, entrando por opacidade e deslocamento — montá-lo e desmontá-lo a cada
+DOM**, entrando por opacidade e deslocamento, montá-lo e desmontá-lo a cada
 passagem do mouse recalcularia layout.
 
 No celular, o nome da seção atual vira o gatilho de um menu com as mesmas
@@ -201,7 +201,7 @@ tokens.
 
 ## Ao atualizar a identidade
 
-1. Atualize a Central primeiro — ela é a fonte.
+1. Atualize a Central primeiro, ela é a fonte.
 2. Traga os valores para `src/styles/auvp-tokens.css`.
 3. `npm run demo:build`, para a vitrine acompanhar.
 

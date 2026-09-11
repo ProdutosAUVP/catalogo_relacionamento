@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 /**
  * Preço de um produto do catálogo.
  *
- * Nulo não é zero. Parte dos brindes personalizados chegou da área sem preço —
+ * Nulo não é zero. Parte dos brindes personalizados chegou da área sem preço,
  * eles são comprados em lote e o custo unitário não está na planilha. Exibir
  * "R$ 0,00" ali se leria como grátis, e a soma do mês passaria a mentir sem
  * ninguém perceber.

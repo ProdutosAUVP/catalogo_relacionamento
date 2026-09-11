@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
  *
  * Antes usava a paleta crua do Tailwind (`bg-amber-100`), que não passa pelas
  * travas de contraste do DS e não acompanha o tema escuro. Agora cada status
- * mapeia para um token semântico — `success`, `warning`, `info`, `error` —,
+ * mapeia para um token semântico (`success`, `warning`, `info`, `error`),
  * que já vem com o par fundo/texto resolvido nos dois temas.
  *
  * O agrupamento é o que o painel precisa comunicar numa varredura:
@@ -31,7 +31,7 @@ const ESTILO: Record<StatusSolicitacao, Estilo> = {
   // Desfecho ideal: recebe o verde cheio da marca, e não o verde de status.
   cliente_confirmou: { variant: 'default' },
   deu_problema: { variant: 'error' },
-  // Vazado: também é desfecho negativo, mas encerrado — não pede ação como
+  // Vazado: também é desfecho negativo, mas encerrado, não pede ação como
   // "deu problema", que segue aberto.
   devolvido: { variant: 'outline', className: 'border-error text-error' },
   cancelado: { variant: 'outline', className: 'text-muted-foreground' },

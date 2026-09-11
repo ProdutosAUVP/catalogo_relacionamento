@@ -8,7 +8,7 @@ import { usuarioAtual } from '@/lib/auth-guards'
  * Fica atrás da sessão como todo o resto: é uma ferramenta interna, e uma URL
  * de imagem aberta seria o único endereço público do sistema.
  *
- * O cache é longo e imutável porque o id nunca é reaproveitado — trocar a foto
+ * O cache é longo e imutável porque o id nunca é reaproveitado, trocar a foto
  * de um produto cria outro arquivo, com outra URL.
  */
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {

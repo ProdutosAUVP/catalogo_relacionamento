@@ -10,7 +10,7 @@ import { comoErro, primeiroErro, type ResultadoDaAction } from './comuns'
 /**
  * Edição de usuário: perfil, limite mensal e ativação.
  *
- * Usuário não é criado aqui — ele entra sozinho no primeiro login pelo SSO,
+ * Usuário não é criado aqui, ele entra sozinho no primeiro login pelo SSO,
  * como consultor. Esta tela é onde o Admin promove e define teto de gasto sem
  * passar por TI.
  */

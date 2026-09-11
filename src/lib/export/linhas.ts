@@ -9,7 +9,7 @@ import { whereDeSolicitacoes, type FiltroSolicitacoes } from '@/lib/validators/f
 /**
  * Montagem das linhas de exportação (seção 7 da spec).
  *
- * Uma linha por item, não por solicitação — é o que faz a soma da coluna de
+ * Uma linha por item, não por solicitação, é o que faz a soma da coluna de
  * valores fechar com o total. O valor total da solicitação aparece repetido em
  * todas as linhas dela, então somar essa coluna dá número inflado de
  * propósito; quem soma, soma o subtotal do item.

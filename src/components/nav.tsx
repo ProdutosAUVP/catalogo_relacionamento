@@ -39,11 +39,11 @@ import { cn } from '@/lib/utils'
  *   o que mantém a barra enxuta, como a da Central;
  * - não existe `overflow-x-auto` aqui. Além de a barra de rolagem horizontal
  *   ficar feia, `overflow-x: auto` obriga o `overflow-y` a virar `auto`
- *   também — o que criava uma segunda barra, vertical, e ainda cortava os
+ *   também: o que criava uma segunda barra, vertical, e ainda cortava os
  *   balões de hover, que são filhos posicionados do item.
  *
  * O menu é montado a partir da matriz de permissões, mas **não é controle de
- * acesso** — cada rota tem a própria guarda de servidor.
+ * acesso**: cada rota tem a própria guarda de servidor.
  */
 
 type ItemDeMenu = {
@@ -169,7 +169,7 @@ function IconeDoItem({ Icone, ativo }: { Icone: LucideIcon; ativo: boolean }) {
  *
  * Precisa encaminhar `className`, `ref` e o resto das props: o `asChild` do
  * Radix entrega os estilos e os handlers do item ao filho, e um componente que
- * os ignora perde o layout inteiro — foi assim que o ícone e o texto acabaram
+ * os ignora perde o layout inteiro, foi assim que o ícone e o texto acabaram
  * empilhados em vez de lado a lado.
  */
 const ItemDeLista = forwardRef<
@@ -221,7 +221,7 @@ export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 md:h-16 md:px-8">
         <div className="flex min-w-0 items-center gap-3">
           {/* O olho fica solto sobre o fundo, sem caixa. Como usa
-              `currentColor`, acompanha o tema sozinho — escuro no claro, claro
+              `currentColor`, acompanha o tema sozinho, escuro no claro, claro
               no escuro, que é a regra do Design System. */}
           <Link
             href="/"

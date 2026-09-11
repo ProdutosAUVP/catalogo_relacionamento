@@ -10,7 +10,7 @@
 
 /**
  * Catálogo e categorias vivem em `demo/produtos.js`, gerado de
- * `prisma/catalogo-auvp.ts` — a mesma fonte do seed da aplicação. Aqui ficam
+ * `prisma/catalogo-auvp.ts`: a mesma fonte do seed da aplicação. Aqui ficam
  * só os dados fictícios que a vitrine inventa: clientes, consultores e
  * solicitações.
  */
@@ -27,7 +27,7 @@ const SOLICITACOES = [
     status: 'aguardando_compra',
     carta:
       'Marina, parabéns pelo seu dia! Que o novo ciclo venha cheio de conquistas. Um abraço da AUVP.',
-    entrega: 'Avenida Paulista, 1000 — Apto 152, Bela Vista, São Paulo/SP · 01310-100',
+    entrega: 'Avenida Paulista, 1000: Apto 152, Bela Vista, São Paulo/SP · 01310-100',
     destinatario: 'Marina Alves Pereira',
     itens: [
       {
@@ -109,7 +109,7 @@ const SOLICITACOES = [
     motivo: 'Nascimento',
     status: 'aguardando_compra',
     carta: 'Juliana, felicidades para a família que acaba de crescer!',
-    entrega: 'Avenida Afonso Pena, 500 — Sala 12, Centro, Belo Horizonte/MG · 30130-010',
+    entrega: 'Avenida Afonso Pena, 500, Sala 12, Centro, Belo Horizonte/MG · 30130-010',
     destinatario: 'Juliana Moreira Dias',
     itens: [
       {
@@ -156,7 +156,7 @@ const SOLICITACOES = [
     motivo: 'Reforço de relacionamento',
     status: 'deu_problema',
     carta: 'Marina, obrigado pela confiança de sempre.',
-    entrega: 'Avenida Paulista, 1000 — Apto 152, Bela Vista, São Paulo/SP · 01310-100',
+    entrega: 'Avenida Paulista, 1000: Apto 152, Bela Vista, São Paulo/SP · 01310-100',
     destinatario: 'Marina Alves Pereira',
     itens: [
       { produto: 'Kit Churrasco AUVP com faca', quantidade: 1, valorUnitario: 330.0, site: null },
@@ -229,7 +229,7 @@ const SOLICITACOES = [
     motivo: 'Reforço de relacionamento',
     status: 'pendente',
     carta: 'Marina, obrigado por seguir com a gente mais um ano.',
-    entrega: 'Avenida Paulista, 1000 — Apto 152, Bela Vista, São Paulo/SP · 01310-100',
+    entrega: 'Avenida Paulista, 1000: Apto 152, Bela Vista, São Paulo/SP · 01310-100',
     destinatario: 'Marina Alves Pereira',
     // Tudo em estoque: ao aprovar, o Admin já libera para envio.
     itens: [
