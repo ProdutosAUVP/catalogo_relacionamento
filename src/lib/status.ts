@@ -32,7 +32,7 @@ export const FLUXO_LINEAR: readonly StatusSolicitacao[] = [
  *
  * O atalho **parte de `aguardando_aprovacao`**, e é isso que importa: ele pula
  * o Financeiro, nunca a aprovação. Nada sai do pedido do consultor direto para
- * a expedição — alguém precisa dar o OK antes, e é esse OK que libera o envio.
+ * a expedição: alguém precisa dar o OK antes, e é esse OK que libera o envio.
  *
  * Quem decide se o atalho aparece é a tela, olhando os itens
  * (`precisaDeCompra`); aqui só se declara que ele é uma transição válida.
@@ -121,7 +121,7 @@ export function transicoesPermitidas(atual: StatusSolicitacao): StatusSolicitaca
   const proximo = indice >= 0 ? FLUXO_LINEAR[indice + 1] : undefined
   if (proximo) proximos.push(proximo)
 
-  // Atalhos declarados — hoje, aprovação direto para expedição.
+  // Atalhos declarados: hoje, aprovação direto para expedição.
   for (const atalho of ATALHOS[atual] ?? []) {
     if (!proximos.includes(atalho)) proximos.push(atalho)
   }
@@ -233,7 +233,7 @@ export function proximoDepoisDaAprovacao(itens: readonly ItemParaDecisao[]): Sta
  *
  * O Admin trabalha por pilha: chegam vinte pedidos e ele decide de uma vez
  * quais vão comprar e quais já podem ser separados. Só que "pendente" não vira
- * "organizando envio" num salto — a aprovação é justamente o OK que falta, e
+ * "organizando envio" num salto, a aprovação é justamente o OK que falta, e
  * ela precisa aparecer no histórico.
  *
  * Então esta função devolve os passos a percorrer, e cada passo vira uma linha

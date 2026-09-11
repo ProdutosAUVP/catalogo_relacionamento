@@ -12,7 +12,7 @@ import type { ColunaExport } from './export/linhas'
  *
  * Hoje a área monta uma planilha à mão com estes dados e manda para a
  * expedição. O objetivo é que a solicitação do consultor já produza o pedido
- * pronto, sem redigitação — a carta continua sendo feita fora, como a área
+ * pronto, sem redigitação: a carta continua sendo feita fora, como a área
  * pediu.
  *
  * Duas coisas mandam uma solicitação para cá:
@@ -26,7 +26,7 @@ export type ItemDoPedido = {
   produto: string
   quantidade: number
   deCatalogo: boolean
-  /** Do estoque ou comprado — a expedição precisa saber o que separar. */
+  /** Do estoque ou comprado, a expedição precisa saber o que separar. */
   jaEmEstoque: boolean
 }
 
@@ -139,7 +139,7 @@ export async function filaDeExpedicao(
     motivo: s.motivo === 'outro' ? (s.motivoOutro ?? 'Outro') : ROTULO_MOTIVO[s.motivo],
     observacoes: s.observacoes,
     itens: s.itens.map((item) => ({
-      produto: item.produto?.nome ?? item.descricaoLivre ?? '—',
+      produto: item.produto?.nome ?? item.descricaoLivre ?? '-',
       quantidade: item.quantidade,
       deCatalogo: item.produtoId !== null,
       jaEmEstoque: Boolean(
@@ -155,7 +155,7 @@ export async function filaDeExpedicao(
   }))
 }
 
-/** Total de peças a separar — o número que a expedição olha primeiro. */
+/** Total de peças a separar, o número que a expedição olha primeiro. */
 export function pecasASeparar(pedidos: readonly PedidoDeExpedicao[]): number {
   return pedidos.reduce((acc, p) => acc + p.itens.reduce((soma, i) => soma + i.quantidade, 0), 0)
 }
@@ -163,7 +163,7 @@ export function pecasASeparar(pedidos: readonly PedidoDeExpedicao[]): number {
 /**
  * Linhas da planilha de expedição.
  *
- * Uma linha por item, como na planilha que a área monta hoje — a expedição
+ * Uma linha por item, como na planilha que a área monta hoje, a expedição
  * separa item a item, não pedido a pedido.
  */
 export const COLUNAS_DA_EXPEDICAO = [

@@ -10,7 +10,7 @@ import type { CatalogoProvider, ClienteProvider } from './types'
  *
  * As telas importam `catalogoProvider` e `clienteProvider` daqui. Ligar o Tiny
  * ou o Salesforce na fase 2 é mudar `CATALOG_PROVIDER` / `CLIENT_PROVIDER` no
- * ambiente — nenhuma tela precisa saber.
+ * ambiente: nenhuma tela precisa saber.
  */
 
 export const catalogoProvider: CatalogoProvider =

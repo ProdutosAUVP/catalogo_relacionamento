@@ -5,13 +5,13 @@ import { Skeleton } from '@/components/ui/skeleton'
  *
  * A regra que vale para todos: **mesmas medidas do conteúdo real**. Um
  * esqueleto mais baixo que a tabela que ele antecede produz exatamente o salto
- * que ele deveria evitar — e um mais alto também, porque o rodapé sobe quando
+ * que ele deveria evitar, e um mais alto também, porque o rodapé sobe quando
  * o conteúdo chega.
  *
  * A quantidade de linhas é a única medida que não dá para acertar sempre: ela
  * depende de quantos registros a consulta devolve. Por isso cada `loading.tsx`
- * passa o número que corresponde ao tamanho típico da sua lista — o catálogo
- * tem dezenas de produtos, a lista de usuários tem o time — em vez de todos
+ * passa o número que corresponde ao tamanho típico da sua lista, o catálogo
+ * tem dezenas de produtos, a lista de usuários tem o time, em vez de todos
  * usarem o mesmo padrão. Errar esse número é a única fonte de deslocamento que
  * sobra, e ela cresce com a diferença: um esqueleto de 5 linhas antes de uma
  * tabela de 13 move o rodapé meia tela.
@@ -22,7 +22,7 @@ export function EsqueletoDeCabecalho({
   acoes = 1,
 }: {
   comAcoes?: boolean
-  /** Quantos botões a tela põe no cabeçalho — dois reservam mais largura. */
+  /** Quantos botões a tela põe no cabeçalho, dois reservam mais largura. */
   acoes?: number
 }) {
   return (
@@ -108,7 +108,7 @@ export function EsqueletoDeCatalogo({ cards = 8 }: { cards?: number }) {
  * Cartões de pedido da expedição.
  *
  * Altura fixa por cartão porque a coluna do endereço tem sempre as mesmas cinco
- * linhas — é o dado de envio, não texto livre.
+ * linhas: é o dado de envio, não texto livre.
  */
 export function EsqueletoDePedidos({ cards = 1 }: { cards?: number }) {
   return (
@@ -127,7 +127,7 @@ export function EsqueletoDePedidos({ cards = 1 }: { cards?: number }) {
  *
  * As alturas são as do conteúdo real medido: itens, carta e histórico à
  * esquerda; rastreio, cliente e entrega à direita, mais o que a tela do Admin
- * acrescenta. Variam com o número de itens e o tamanho da carta — é o resíduo
+ * acrescenta. Variam com o número de itens e o tamanho da carta, é o resíduo
  * conhecido desta tela, e ele é pequeno porque as três medidas maiores
  * (endereço, cliente, rastreio) são campos fixos.
  */

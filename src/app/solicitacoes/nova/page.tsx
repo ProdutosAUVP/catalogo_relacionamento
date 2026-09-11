@@ -6,7 +6,7 @@ import { FormularioDeSolicitacao, type ProdutoDoCatalogo } from './formulario'
 /**
  * Nova solicitação: cliente → itens → entrega → carta → revisão.
  *
- * O catálogo vem inteiro para o cliente porque a busca da etapa 2 é local — são
+ * O catálogo vem inteiro para o cliente porque a busca da etapa 2 é local, são
  * dezenas de produtos, não milhares, e um round-trip por tecla atrapalharia
  * mais do que economizaria. `Prisma.Decimal` não atravessa a fronteira do
  * servidor, então o valor vira `number` aqui; o valor que conta é o relido do
@@ -25,8 +25,12 @@ export default async function NovaSolicitacaoPage() {
     fotoUrl: p.fotoUrl,
     valor: p.valor ? p.valor.toNumber() : null,
     tipoValor: p.tipoValor,
+    origem: p.origem,
     controlaEstoque: p.controlaEstoque,
     estoque: p.estoque,
+    urlCompra: p.urlCompra,
+    exigeAcompanhamento: p.exigeAcompanhamento,
+    serveComoAcompanhamento: p.serveComoAcompanhamento,
   }))
 
   return (

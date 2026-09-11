@@ -29,7 +29,7 @@ function revalidarCatalogo() {
  * Lê a foto do formulário.
  *
  * São dois caminhos no mesmo campo: o arquivo enviado agora, que é gravado e
- * vira URL, ou a URL que já estava lá — inclusive vazia, quando a pessoa
+ * vira URL, ou a URL que já estava lá, inclusive vazia, quando a pessoa
  * removeu a foto.
  */
 async function resolverFoto(
@@ -62,6 +62,8 @@ function comoProduto(dados: FormData, fotoUrl: string | null) {
     estoque: dados.get('estoque'),
     urlCompra: dados.get('urlCompra'),
     notaDeCompra: dados.get('notaDeCompra'),
+    exigeAcompanhamento: dados.get('exigeAcompanhamento'),
+    serveComoAcompanhamento: dados.get('serveComoAcompanhamento'),
     ativo: dados.get('ativo') !== 'off',
     skuTiny: dados.get('skuTiny'),
   }

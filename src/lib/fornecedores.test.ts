@@ -37,7 +37,7 @@ describe('site de compra do item', () => {
 })
 
 describe('a categoria é o último recurso', () => {
-  it('aceita "Bebida" e "Bebidas" — a planilha mudou o plural no caminho', () => {
+  it('aceita "Bebida" e "Bebidas", a planilha mudou o plural no caminho', () => {
     expect(fornecedorDaCategoria('Bebida')).toBe('https://casadabebida.com.br')
     expect(fornecedorDaCategoria('Bebidas')).toBe('https://casadabebida.com.br')
   })

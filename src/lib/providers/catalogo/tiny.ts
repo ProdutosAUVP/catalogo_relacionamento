@@ -1,7 +1,7 @@
 import { ProviderIndisponivelError, type CatalogoProvider } from '../types'
 
 /**
- * Fase 2 — catálogo vindo do Tiny ERP.
+ * Fase 2: catálogo vindo do Tiny ERP.
  *
  * Deliberadamente não implementado. O arquivo existe para fixar o contrato e
  * deixar visível o que falta: consulta de produtos e de estoque pela API do

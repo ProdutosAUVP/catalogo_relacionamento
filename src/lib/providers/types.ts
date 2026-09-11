@@ -24,15 +24,19 @@ export type ProdutoDoCatalogo = {
   /** Nulo quando a área ainda não informou o preço. Nulo não é zero. */
   valor: Prisma.Decimal | null
   tipoValor: TipoValor
-  /** Prateleira ou compra sob demanda — decide se passa pelo Financeiro. */
+  /** Prateleira ou compra sob demanda, decide se passa pelo Financeiro. */
   origem: OrigemProduto
   /** Quando false, a tela omite disponibilidade em vez de exibir zero. */
   controlaEstoque: boolean
   estoque: number | null
   /** Onde o Financeiro compra. Vence o fornecedor padrão da categoria. */
   urlCompra: string | null
-  /** Instrução de compra que não é link — "Pedido direto ao fornecedor". */
+  /** Instrução de compra que não é link, "Pedido direto ao fornecedor". */
   notaDeCompra: string | null
+  /** Rótulo que este presente exige na mesma solicitação, como `vinho`. */
+  exigeAcompanhamento: string | null
+  /** Rótulo que este presente satisfaz quando entra junto de um kit. */
+  serveComoAcompanhamento: string | null
   ativo: boolean
   skuTiny: string | null
 }
@@ -77,13 +81,13 @@ export type ClienteEncontrado = {
 
 export interface ClienteProvider {
   readonly nome: 'local' | 'salesforce'
-  /** Busca por CPF — a chave de deduplicação da spec. */
+  /** Busca por CPF: a chave de deduplicação da spec. */
   buscarPorCpf(cpf: string): Promise<ClienteEncontrado | null>
   buscarPorTexto(termo: string, limite?: number): Promise<ClienteEncontrado[]>
   obter(id: string): Promise<ClienteEncontrado | null>
 }
 
-/** Erro esperado de provider externo indisponível — a tela trata, não quebra. */
+/** Erro esperado de provider externo indisponível, a tela trata, não quebra. */
 export class ProviderIndisponivelError extends Error {
   constructor(provider: string, causa?: unknown) {
     super(`Fonte de dados "${provider}" indisponível no momento.`)

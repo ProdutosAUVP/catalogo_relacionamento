@@ -5,3 +5,9 @@ prisma/migrations
 
 # Documento de origem: preservado exatamente como recebido.
 catalogo-presentes-spec-v1.md
+
+# Gerados por scripts/gerar-assets-vitrine.ts. Quem formata é o gerador, e
+# formatar de novo aqui só criaria diferença entre gerar e conferir.
+demo/produtos.js
+demo/icones.js
+demo/ilustracoes.js

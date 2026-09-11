@@ -12,7 +12,7 @@ import { DetalheDaSolicitacao } from '@/components/detalhe-da-solicitacao'
  * Detalhe da solicitação para quem a fez.
  *
  * Existe por uma pergunta só: "já foi?". Sem esta tela, o consultor volta a
- * perguntar por mensagem — que é o trabalho que a ferramenta deveria ter
+ * perguntar por mensagem: que é o trabalho que a ferramenta deveria ter
  * tirado do caminho.
  *
  * O escopo vem de `filtroDeSolicitacoes` e entra no `where`, não numa

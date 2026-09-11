@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
  *
  * Nativo por três coisas que uma reimplementação em React costuma perder e que
  * aqui importam: o foco fica preso dentro do modal, Esc fecha, e o conteúdo
- * sobe para a top layer — não há `z-index` competindo com a barra de navegação.
+ * sobe para a top layer, não há `z-index` competindo com a barra de navegação.
  *
  * O conteúdo só é montado quando aberto, para que um formulário reaberto volte
  * com os valores do registro e não com o rascunho da vez anterior.
@@ -47,7 +47,7 @@ export function Dialogo({
       onClick={(e) => e.target === ref.current && aoFechar()}
       aria-labelledby="titulo-do-dialogo"
       // `text-left` explícito: o `<dialog>` sobe para a top layer, mas continua
-      // herdando CSS do lugar onde está no DOM — e o gatilho costuma ser um
+      // herdando CSS do lugar onde está no DOM, e o gatilho costuma ser um
       // botão numa célula alinhada à direita, que jogava o formulário inteiro
       // para a direita.
       className={cn(

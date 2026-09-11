@@ -1,7 +1,7 @@
 import { ProviderIndisponivelError, type ClienteProvider } from '../types'
 
 /**
- * Fase 2 — clientes vindos do Salesforce.
+ * Fase 2: clientes vindos do Salesforce.
  *
  * Não implementado por decisão de escopo. Duas perguntas precisam de resposta
  * antes: quais campos podem ser consultados e por qual chave (CPF ou ID).

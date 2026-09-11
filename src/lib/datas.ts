@@ -44,7 +44,7 @@ export function intervaloDoMes(referencia: Date = new Date()): { inicio: Date; f
   return { inicio, fim }
 }
 
-/** Ano corrente no fuso local — usado na numeração SOL-AAAA-NNNN. */
+/** Ano corrente no fuso local, usado na numeração SOL-AAAA-NNNN. */
 export function anoCorrente(referencia: Date = new Date()): number {
   return partesLocais(referencia).ano
 }

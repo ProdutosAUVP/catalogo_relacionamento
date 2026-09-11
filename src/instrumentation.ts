@@ -4,7 +4,7 @@
  * Sem isto, `env.ts` só seria avaliado quando a primeira rota que o importa
  * fosse acessada: um deploy sem credencial de SSO subiria "saudável" e passaria
  * a devolver 500 por requisição. Validar aqui faz o processo morrer na subida,
- * com a mensagem dizendo o que falta — que é o comportamento que a
+ * com a mensagem dizendo o que falta, que é o comportamento que a
  * documentação de deploy promete.
  */
 export async function register() {

@@ -12,7 +12,7 @@ resposta que já foi assumida em algum lugar.
 
 ## Onde as regras moram
 
-Cada regra de negócio tem **um** lugar. Ao mexer numa delas, mexa lá — nunca
+Cada regra de negócio tem **um** lugar. Ao mexer numa delas, mexa lá, nunca
 duplique numa tela.
 
 | Regra                           | Arquivo                          |
@@ -22,6 +22,7 @@ duplique numa tela.
 | Gasto do mês e limite           | `src/lib/saldo.ts`               |
 | Fila de compras do Financeiro   | `src/lib/compras.ts`             |
 | Fila da expedição               | `src/lib/expedicao.ts`           |
+| Kit que exige bebida junto      | `src/lib/acompanhamentos.ts`     |
 | Fornecedor padrão por categoria | `src/lib/fornecedores.ts`        |
 | Upload e leitura de foto        | `src/lib/arquivos.ts`            |
 | Leitura do CSV de clientes      | `src/lib/importacao-clientes.ts` |
@@ -48,7 +49,7 @@ Coisas que o código já garante e que não devem ser afrouxadas:
   `filtroDeSolicitacoes`, não um `where` escrito à mão.
 - **Preço de item vem do banco na hora de gravar.** `criarSolicitacao` relê o
   produto; valor que chega do navegador não é usado.
-- **Tudo conta no saldo do mês**, cancelado e devolvido inclusive — a área
+- **Tudo conta no saldo do mês**, cancelado e devolvido inclusive, a área
   reenvia. `STATUS_FORA_DO_SALDO` está vazia de propósito.
 - **Quem decide a rota é `Produto.origem`**, não a quantidade em estoque. É a
   coluna "Estoque" da planilha da área: `estoque_interno` não passa pelo
@@ -56,7 +57,7 @@ Coisas que o código já garante e que não devem ser afrouxadas:
   opcional, e a área não a mantém hoje.
 - **Estoque não passa pelo Financeiro.** Solicitação com tudo em estoque é
   liberada para envio na própria aprovação (`proximoDepoisDaAprovacao`). O
-  atalho pula o Financeiro, nunca a aprovação — nada vai do pedido do consultor
+  atalho pula o Financeiro, nunca a aprovação, nada vai do pedido do consultor
   para a expedição sem o OK do Admin.
 - **`Produto.valor` nulo não é zero.** Seis produtos vieram sem preço; a tela
   diz "valor a definir". `SolicitacaoItem.valorUnitario` continua obrigatório e
@@ -64,17 +65,26 @@ Coisas que o código já garante e que não devem ser afrouxadas:
 - **O lote não afrouxa a máquina de estados.** `caminhoDeEncaminhamento` insere
   o passo da aprovação quando ele falta, e cada passo vira uma linha do
   histórico. O que não pode andar volta como ignorado, com o motivo.
+- **Kit que embala bebida não vai sozinho.** Três presentes existem para levar
+  um vinho, e a planilha da área já diz isso no nome ("Escolha o vinho").
+  O pareamento é por rótulo, não por produto: o kit declara
+  `exigeAcompanhamento: 'vinho'` e cada garrafa declara
+  `serveComoAcompanhamento: 'vinho'`, então acrescentar um vinho novo não mexe
+  em nenhum kit. Presente específico nunca satisfaz: é texto livre, e trava que
+  se contorna digitando qualquer coisa não é trava. A tela impede e
+  `criarSolicitacao` valida de novo.
+
 - **Rastreio não muda status.** Gravar o código diz que saiu; "entregue" é
   decisão de quem acompanha.
 - **Telas leem catálogo e clientes pelos providers**, não pelo Prisma direto.
 - **Movimento não pode gerar layout shift.** Anime só `opacity` e `transform`.
   Todo `loading.tsx` reserva as medidas exatas do conteúdo, e toda imagem tem
-  proporção e dimensões declaradas. O CLS medido hoje é ≤ 0,0031 — com um
+  proporção e dimensões declaradas. O CLS medido hoje é ≤ 0,0031, com um
   contexto de navegador novo por rota, porque `addInitScript` é cumulativo e
   medir tudo na mesma página soma o mesmo deslocamento várias vezes.
 - **A identidade visual vem do Design System AUVP**, portada de
   `ProdutosAUVP/central`. Use os tokens (`bg-success`, `text-muted-foreground`),
-  nunca a paleta crua do Tailwind (`bg-amber-100`) — ela não passa pelas travas
+  nunca a paleta crua do Tailwind (`bg-amber-100`), ela não passa pelas travas
   de contraste do DS nem acompanha o tema escuro. Ver
   `docs/08-identidade-visual.md`.
 
@@ -89,7 +99,7 @@ Coisas que o código já garante e que não devem ser afrouxadas:
 ## Ao alterar o banco
 
 1. Edite `prisma/schema.prisma`.
-2. `npm run db:migrate` — sempre gere a migration.
+2. `npm run db:migrate`: sempre gere a migration.
 3. Regra que não pode ser violada por script vai também como CHECK constraint.
 
 A CI recusa schema que não bate com as migrations.
@@ -103,7 +113,7 @@ npm run check
 Formato, lint, tipos e testes. É o que a CI roda.
 
 Regra de negócio nova entra com teste. Os testes existentes cobrem transições
-de status, permissões, aritmética monetária, CPF, fuso horário e exportação —
+de status, permissões, aritmética monetária, CPF, fuso horário e exportação,
 siga o mesmo padrão.
 
 ## O que está construído e o que não está
@@ -126,17 +136,19 @@ campos reservados).
 
 O catálogo é o de verdade: 49 presentes transcritos da planilha da área em
 `prisma/catalogo-auvp.ts`, conferidos campo a campo. Depois de a ferramenta
-subir, quem manda é o CRUD — este arquivo é o ponto de partida.
+subir, quem manda é o CRUD, este arquivo é o ponto de partida.
 
 As fotos originais que a área mandou ficam em `imgs produtos/`.
 `npm run fotos:preparar` converte para `public/produtos/<slug>.webp`, na
 moldura 3:4 que o catálogo serve. Rode de novo quando ela trocar ou
-acrescentar foto.
+acrescentar foto. Quando o mesmo presente tem mais de um arquivo, porque a
+foto voltou em outro formato, a conversão tenta um por um até abrir, JPG antes
+de HEIC: não é preciso apagar o original ruim.
 
 ## Vitrine estática
 
 `demo/` é uma demonstração com dados fictícios publicada no GitHub Pages, para
-mostrar as telas a quem aprova o V1. **A aplicação real não roda no Pages** —
+mostrar as telas a quem aprova o V1. **A aplicação real não roda no Pages**,
 ela precisa de Postgres, sessão e servidor, e vai para o Railway.
 
 Ao mudar uma tela de forma relevante, vale refletir na vitrine.

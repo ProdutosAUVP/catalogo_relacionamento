@@ -5,7 +5,7 @@ import { db } from './db'
  *
  * O arquivo é gravado no Postgres, e não num bucket. A spec previa S3 e o
  * `env` reserva as variáveis, mas o V1 tem algumas dezenas de fotos e a área
- * precisa cadastrar produto no dia em que a ferramenta subir — esperar bucket
+ * precisa cadastrar produto no dia em que a ferramenta subir, esperar bucket
  * provisionado travaria justamente o que ela faz sozinha.
  *
  * A troca por bucket acontece aqui dentro e em nenhum outro lugar: `fotoUrl`
@@ -51,7 +51,7 @@ export async function salvarFoto(arquivo: File, usuarioId: string): Promise<Resu
   return { ok: true, url: `/api/arquivos/${salvo.id}` }
 }
 
-/** URL que esta ferramenta serve — o que pode ser apagado junto com o produto. */
+/** URL que esta ferramenta serve, o que pode ser apagado junto com o produto. */
 export function ehArquivoInterno(url: string | null | undefined): boolean {
   return Boolean(url?.startsWith('/api/arquivos/'))
 }

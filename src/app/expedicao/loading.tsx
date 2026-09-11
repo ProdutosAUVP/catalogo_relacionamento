@@ -14,7 +14,7 @@ export default function Carregando() {
         deslocamento acontece quando esqueleto e conteúdo caem em lados
         diferentes dessa linha.
         Um cartão deixa o rodapé visível, e qualquer fila com dois ou mais
-        pedidos o empurra para fora — que era o deslocamento medido. Com dois,
+        pedidos o empurra para fora, que era o deslocamento medido. Com dois,
         esqueleto e conteúdo já nascem do mesmo lado no caso comum, porque a
         fila da expedição raramente tem um pedido só.
       */}

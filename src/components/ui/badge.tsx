@@ -3,7 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 /**
- * Selo do Design System AUVP. Portado da Central — cápsula arredondada, não o
+ * Selo do Design System AUVP. Portado da Central: cápsula arredondada, não o
  * retângulo do shadcn padrão.
  *
  * As variantes de status usam os tokens semânticos do DS, que já vêm com o

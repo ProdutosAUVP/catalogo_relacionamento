@@ -17,7 +17,7 @@ import { EditorDeProduto, BotaoAtivar } from './editor-de-produto'
 import { EditorDeCategorias } from './editor-de-categorias'
 
 /**
- * CRUD do catálogo — operado pela própria área de Relacionamento.
+ * CRUD do catálogo: operado pela própria área de Relacionamento.
  *
  * Requisito de primeira ordem da spec: cadastrar, editar, ativar e desativar
  * produto sem passar pelo time técnico.
@@ -35,6 +35,16 @@ export default async function AdminCatalogoPage() {
 
   const ativos = produtos.filter((p) => p.ativo).length
 
+  // Rótulos de acompanhamento que já existem, para o cadastro sugerir em vez
+  // de deixar a área digitar "vinhos" e a trava deixar de parear.
+  const rotulos = [
+    ...new Set(
+      produtos
+        .flatMap((p) => [p.exigeAcompanhamento, p.serveComoAcompanhamento])
+        .filter((r): r is string => Boolean(r)),
+    ),
+  ].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+
   // `Prisma.Decimal` não atravessa a fronteira do servidor: o valor vai como
   // texto no formato que o formulário edita.
   const opcoesDeCategoria = categorias.map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo }))
@@ -44,11 +54,11 @@ export default async function AdminCatalogoPage() {
       <CabecalhoDaPagina
         sobrancelha="Administração"
         titulo="Gerenciar catálogo"
-        descricao="Cadastro, edição e ativação de produtos — feitos pela própria área, sem depender do time técnico."
+        descricao="Cadastro, edição e ativação de produtos, feitos pela própria área, sem depender do time técnico."
         acoes={
           <>
             <EditorDeCategorias categorias={opcoesDeCategoria} />
-            <EditorDeProduto categorias={opcoesDeCategoria} />
+            <EditorDeProduto categorias={opcoesDeCategoria} rotulos={rotulos} />
           </>
         }
       />
@@ -67,7 +77,7 @@ export default async function AdminCatalogoPage() {
         <EstadoVazio
           titulo="Nenhum produto cadastrado"
           descricao="Cadastre o primeiro produto no botão acima, ou rode npm run db:seed para carregar exemplos."
-          acao={<EditorDeProduto categorias={opcoesDeCategoria} />}
+          acao={<EditorDeProduto categorias={opcoesDeCategoria} rotulos={rotulos} />}
         />
       ) : (
         <Card className="overflow-hidden">
@@ -110,6 +120,7 @@ export default async function AdminCatalogoPage() {
                   <TableCell className="text-right whitespace-nowrap">
                     <EditorDeProduto
                       categorias={opcoesDeCategoria}
+                      rotulos={rotulos}
                       produto={{
                         id: p.id,
                         nome: p.nome,
@@ -123,6 +134,8 @@ export default async function AdminCatalogoPage() {
                         estoque: p.estoque,
                         urlCompra: p.urlCompra,
                         notaDeCompra: p.notaDeCompra,
+                        exigeAcompanhamento: p.exigeAcompanhamento,
+                        serveComoAcompanhamento: p.serveComoAcompanhamento,
                         ativo: p.ativo,
                         skuTiny: p.skuTiny,
                       }}

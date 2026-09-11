@@ -64,7 +64,7 @@ describe('solicitação', () => {
     itens: [{ produtoId: 'p1', valorUnitario: '149,90', quantidade: 1 }],
   }
 
-  it('aceita dois itens de catálogo e um específico — critério de aceite', () => {
+  it('aceita dois itens de catálogo e um específico, critério de aceite', () => {
     const r = solicitacaoSchema.safeParse({
       ...base,
       itens: [

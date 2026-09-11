@@ -84,7 +84,7 @@ export default async function AdminClientesPage() {
                     {veDadosCompletos ? formatarCpf(c.cpf) : mascararCpf(c.cpf)}
                   </TableCell>
                   <TableCell className="text-muted-foreground tabular-nums">
-                    {c.telefone ? formatarTelefone(c.telefone) : '—'}
+                    {c.telefone ? formatarTelefone(c.telefone) : '-'}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{c.origem}</Badge>

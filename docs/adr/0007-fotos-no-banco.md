@@ -1,4 +1,4 @@
-# 0007 — Fotos de produto no Postgres, não em bucket
+# 0007: Fotos de produto no Postgres, não em bucket
 
 ## Contexto
 
@@ -9,7 +9,7 @@ ordem: a área de Relacionamento precisa cadastrar presente sem chamar o time
 técnico.
 
 Um bucket depende de escolher o provedor, provisionar, gerar credenciais e
-decidir quem as guarda — decisões que não são da área e que travariam a única
+decidir quem as guarda, decisões que não são da área e que travariam a única
 coisa que ela faria sozinha desde o primeiro dia.
 
 O volume ajuda a decidir: são algumas dezenas de fotos de catálogo, com teto
@@ -19,7 +19,7 @@ de 5 MB cada. Não é acervo, é vitrine.
 
 A foto é gravada na tabela `arquivos` e servida por `/api/arquivos/[id]`,
 atrás da sessão como o resto da ferramenta. `Produto.fotoUrl` continua sendo
-uma URL — as telas não sabem de onde ela vem.
+uma URL: as telas não sabem de onde ela vem.
 
 Toda a leitura e escrita de arquivo mora em `src/lib/arquivos.ts`.
 

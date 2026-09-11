@@ -20,7 +20,7 @@ import { LinhaDoTempo } from '@/components/linha-do-tempo'
  *
  * Compartilhado pelo Admin e pelo consultor. O consultor não é um visitante de
  * segunda classe aqui: ele vê os mesmos itens, a mesma carta e o mesmo
- * histórico — é a solicitação dele. O que muda é o que fica na coluna da
+ * histórico: é a solicitação dele. O que muda é o que fica na coluna da
  * direita, que entra por `acoes`, e os dados sensíveis do cliente, que seguem
  * a matriz de permissões.
  */
@@ -41,7 +41,7 @@ export function DetalheDaSolicitacao({
 }: {
   solicitacao: SolicitacaoDetalhada
   verDadosSensiveis: boolean
-  /** Cartões extras da coluna da direita — a mudança de status, no Admin. */
+  /** Cartões extras da coluna da direita, a mudança de status, no Admin. */
   acoes?: ReactNode
 }) {
   return (
@@ -182,7 +182,7 @@ export function DetalheDaSolicitacao({
             <p className="text-foreground font-medium">{solicitacao.entregaDestinatario}</p>
             <p>
               {solicitacao.entregaLogradouro}, {solicitacao.entregaNumero}
-              {solicitacao.entregaComplemento ? ` — ${solicitacao.entregaComplemento}` : ''}
+              {solicitacao.entregaComplemento ? `, ${solicitacao.entregaComplemento}` : ''}
             </p>
             <p>{solicitacao.entregaBairro}</p>
             <p>
@@ -206,7 +206,7 @@ export function DetalheDaSolicitacao({
  * Rastreio, do lado de quem lê.
  *
  * Fica no topo da coluna, e não no fim: é a pergunta que traz o consultor a
- * esta tela. Sem código, o cartão diz em que pé está em vez de sumir — um
+ * esta tela. Sem código, o cartão diz em que pé está em vez de sumir, um
  * espaço vazio faria a pessoa procurar o que não existe.
  */
 function CartaoDeRastreio({

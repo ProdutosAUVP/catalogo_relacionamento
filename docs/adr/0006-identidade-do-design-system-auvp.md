@@ -1,8 +1,8 @@
-# 0006 — Identidade vem do Design System AUVP, portada
+# 0006: Identidade vem do Design System AUVP, portada
 
 ## Contexto
 
-A ferramenta nasceu com a paleta neutra padrão do shadcn/ui — cinzas, sem
+A ferramenta nasceu com a paleta neutra padrão do shadcn/ui, cinzas, sem
 relação com a AUVP. A AUVP já tem um Design System maduro em
 `ProdutosAUVP/central`: tokens em HSL, dois temas, correções de contraste
 documentadas caso a caso e uma biblioteca de componentes.
@@ -37,5 +37,5 @@ manda atualizar a Central primeiro e trazer de lá, e os tokens ficam num
 arquivo só, para que a atualização seja uma edição localizada.
 
 Se a divergência virar problema recorrente, o passo seguinte é publicar os
-tokens da Central como pacote — o que este porte deixa mais fácil, já que os
+tokens da Central como pacote, o que este porte deixa mais fácil, já que os
 nomes já batem.

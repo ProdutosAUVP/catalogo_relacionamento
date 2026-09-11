@@ -11,7 +11,7 @@ describe('aritmética de dinheiro', () => {
     expect(subtotal('19.99', 3).toString()).toBe('59.97')
   })
 
-  it('fecha o total dos itens — critério de aceite da exportação', () => {
+  it('fecha o total dos itens, critério de aceite da exportação', () => {
     const itens = [
       { valorUnitario: '149.90', quantidade: 2 },
       { valorUnitario: '89.90', quantidade: 1 },

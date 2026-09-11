@@ -14,7 +14,7 @@ import { salvarCliente } from '@/lib/actions/clientes'
  * Cadastro e edição de cliente.
  *
  * Não existe excluir: o cliente aparece em solicitações antigas, que precisam
- * continuar legíveis. O CPF é a chave de deduplicação — a action recusa um CPF
+ * continuar legíveis. O CPF é a chave de deduplicação, a action recusa um CPF
  * que já pertence a outro cadastro em vez de criar o segundo.
  */
 

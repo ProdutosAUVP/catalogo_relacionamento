@@ -81,7 +81,7 @@ export default async function SolicitacoesPage() {
                 </div>
                 <p>
                   de {formatarBRL(saldo.limite)}
-                  {saldo.estourou ? ' — limite do mês ultrapassado.' : ' no limite do mês.'}
+                  {saldo.estourou ? ': limite do mês ultrapassado.' : ' no limite do mês.'}
                 </p>
               </div>
             ) : (
@@ -154,7 +154,7 @@ export default async function SolicitacoesPage() {
                       // transportadora, e não digitado de novo.
                       <span className="text-sm tabular-nums select-all">{s.rastreio}</span>
                     ) : (
-                      <span className="text-muted-foreground text-sm">—</span>
+                      <span className="text-muted-foreground text-sm">-</span>
                     )}
                   </TableCell>
                 </TableRow>

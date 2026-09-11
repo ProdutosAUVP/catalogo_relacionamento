@@ -148,7 +148,7 @@ export function lerCsvDeClientes(conteudo: string): LeituraDoCsv {
   }
 
   // CPF repetido dentro do próprio arquivo: vale a última ocorrência, que é o
-  // que aconteceria de qualquer forma ao gravar linha a linha — mas assim a
+  // que aconteceria de qualquer forma ao gravar linha a linha, mas assim a
   // pessoa fica sabendo.
   const porCpf = new Map<string, LinhaImportacaoCliente>()
   for (const linha of validas) {

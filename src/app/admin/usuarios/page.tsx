@@ -85,7 +85,7 @@ export default async function AdminUsuariosPage() {
                     <Badge variant="secondary">{ROTULO_PERFIL[u.perfil]}</Badge>
                   </TableCell>
                   <TableCell className="text-right whitespace-nowrap tabular-nums">
-                    {u.limiteMensal ? formatarBRL(u.limiteMensal) : '—'}
+                    {u.limiteMensal ? formatarBRL(u.limiteMensal) : '-'}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{u._count.solicitacoes}</TableCell>
                   <TableCell>

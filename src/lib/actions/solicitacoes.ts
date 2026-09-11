@@ -7,6 +7,7 @@ import { autorizarAction } from '@/lib/auth-guards'
 import { proximoCodigo } from '@/lib/codigo'
 import { totalDosItens } from '@/lib/money'
 import { normalizarCpf } from '@/lib/cpf'
+import { acompanhamentosFaltando, mensagemDePendencia } from '@/lib/acompanhamentos'
 import {
   ROTULO_STATUS,
   caminhoDeEncaminhamento,
@@ -98,7 +99,7 @@ export async function criarCliente(entrada: unknown): Promise<ResultadoDaAction<
  * solicitação nem solicitação sem histórico.
  *
  * O valor unitário do item de catálogo é **relido do banco e copiado agora**,
- * nunca aceito do cliente — e congela. Reajuste de preço depois não mexe nesta
+ * nunca aceito do cliente, e congela. Reajuste de preço depois não mexe nesta
  * solicitação.
  */
 export async function criarSolicitacao(
@@ -115,7 +116,13 @@ export async function criarSolicitacao(
     const produtos = idsDeProdutos.length
       ? await db.produto.findMany({
           where: { id: { in: idsDeProdutos }, ativo: true },
-          select: { id: true, valor: true },
+          select: {
+            id: true,
+            nome: true,
+            valor: true,
+            exigeAcompanhamento: true,
+            serveComoAcompanhamento: true,
+          },
         })
       : []
     const porId = new Map(produtos.map((p) => [p.id, p]))
@@ -124,6 +131,18 @@ export async function criarSolicitacao(
     if (faltando) {
       return { ok: false, erro: 'Um dos produtos saiu do catálogo. Revise os itens.' }
     }
+
+    // Kit que embala bebida não vai sozinho. A tela já impede, mas esta action
+    // é um endpoint: quem chamar direto encontra a mesma regra.
+    const pendencias = mensagemDePendencia(
+      acompanhamentosFaltando(
+        dados.itens.map((item) => ({
+          produtoId: item.produtoId,
+          produto: item.produtoId ? porId.get(item.produtoId) : null,
+        })),
+      ),
+    )
+    if (pendencias) return { ok: false, erro: pendencias, campo: 'itens' }
 
     const itens = dados.itens.map((item) => {
       if (item.produtoId) {
@@ -197,7 +216,7 @@ export async function criarSolicitacao(
 /**
  * Muda o status de uma solicitação.
  *
- * A transição e a exigência de motivo passam por `validarMudancaDeStatus` — a
+ * A transição e a exigência de motivo passam por `validarMudancaDeStatus`, a
  * mesma função que a tela usa para montar as opções, para que o que é oferecido
  * e o que é aceito nunca divirjam.
  */
@@ -242,7 +261,7 @@ export async function alterarStatus(entrada: unknown): Promise<ResultadoDaAction
   }
 }
 
-/** O que aconteceu com um lote — a tela precisa disso para dizer o que sobrou. */
+/** O que aconteceu com um lote, a tela precisa disso para dizer o que sobrou. */
 export type ResumoDoLote = {
   movidas: { codigo: string; para: string }[]
   ignoradas: { codigo: string; motivo: string }[]

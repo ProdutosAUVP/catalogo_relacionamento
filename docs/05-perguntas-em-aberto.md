@@ -27,7 +27,7 @@ spec v1 pedia o contrário; a regra da área prevalece. Ver
 ### O que já está em estoque não passa pelo Financeiro ✅
 
 > Os itens que já temos em estoque não passam pelo financeiro, então é preciso
-> que haja uma forma deles passarem direto pra expedição — hoje todos esses
+> que haja uma forma deles passarem direto pra expedição, hoje todos esses
 > dados vão pra expedição via planilha.
 
 Implementado em duas partes: o atalho de status
@@ -41,7 +41,7 @@ em CSV e XLSX. Ver [fluxo de status](03-fluxo-de-status.md).
 > `casadabebida.com.br/u`.
 
 Implementado em `src/lib/fornecedores.ts`, como fornecedor padrão da categoria
-"Bebidas" — o Financeiro passa a ver o site também em item de catálogo, não só
+"Bebidas": o Financeiro passa a ver o site também em item de catálogo, não só
 em presente específico. O `/u` do endereço parece truncado; ficou o domínio.
 **Confirmar com a área** se o caminho completo importa, e quais outras
 categorias têm fornecedor fixo.
@@ -73,26 +73,16 @@ MDF:
 - Caixa MDF para vinho com Acessórios
 
 **Assumido:** `valor` fica nulo, o catálogo mostra "valor a definir" e o item
-congela como zero quando alguém o pede — ou seja, **não entra no gasto do mês
+congela como zero quando alguém o pede, ou seja, **não entra no gasto do mês
 de quem pediu**. Faz sentido para brinde comprado em lote, cujo custo já foi
 pago antes; deixa de fazer se a área quiser ratear.
 
 **Onde mudar:** basta preencher o valor no cadastro de produto. Nenhuma linha
 de código muda.
 
-### A foto do Kit Caneca de Chopp está corrompida
-
-`imgs produtos/Kit Caneca de Chopp + Cerveja Artesanal.HEIC` não abre: a
-extensão do item aponta para além do fim do arquivo, e nenhum decodificador
-consegue lê-la. Os outros 48 converteram sem problema.
-
-O produto aparece no catálogo com a ilustração de caneca, que é um estado
-previsto — não um quadro quebrado. **Para resolver:** mandar o arquivo de novo,
-de preferência em JPG ou PNG, e rodar `npm run fotos:preparar`.
-
 ### O Financeiro pode ver CPF, telefone e endereço do cliente?
 
-A lista pedida para a fila de compras — data, produto, valor, site — não inclui
+A lista pedida para a fila de compras, data, produto, valor, site, não inclui
 esses campos. Mas a spec dá ao Financeiro a permissão de exportar, e a
 exportação carrega CPF, telefone e endereço.
 
@@ -120,7 +110,7 @@ comparando `valor_total` com o teto do aprovador.
 O campo `limite_mensal` existe e é opcional. Quando preenchido, a tela mostra o
 consumo contra o limite.
 
-**Assumido:** estourar o limite apenas sinaliza, não bloqueia — é o que a spec
+**Assumido:** estourar o limite apenas sinaliza, não bloqueia, é o que a spec
 determina para o V1.
 **Se for bloquear:** a checagem entra na criação da solicitação, usando
 `saldoDoMes`.
@@ -156,7 +146,7 @@ transportadora em `/expedicao`, e o consultor lê na lista e no detalhe da
 própria solicitação (`/solicitacoes/[id]`, criada para isso). Ver
 [fluxo de status](03-fluxo-de-status.md#rastreio).
 
-A integração continua em aberto junto com a pergunta abaixo — e ela escreve
+A integração continua em aberto junto com a pergunta abaixo, e ela escreve
 nos mesmos dois campos, então ligar uma não mexe em nenhuma tela.
 
 ### O pedido de expedição deve nascer dentro do sistema deles?
@@ -166,11 +156,11 @@ nos mesmos dois campos, então ligar uma não mexe em nenhuma tela.
 > envio, com exceção da carta.
 
 **Assumido para o V1:** a ferramenta produz a lista pronta em `/expedicao`,
-com exportação em CSV e XLSX nas mesmas colunas da planilha atual — o dado
+com exportação em CSV e XLSX nas mesmas colunas da planilha atual, o dado
 deixa de ser redigitado, mas ainda é levado à mão para o outro sistema.
 
-**Para fechar o ciclo** — inclusive puxar o rastreio sozinho, em vez de alguém
-digitá-lo — é preciso saber qual é o sistema da expedição e se ele tem API. Se for o Tiny, o caminho já está previsto na fase 2: os campos
+**Para fechar o ciclo**, inclusive puxar o rastreio sozinho, em vez de alguém
+digitá-lo: é preciso saber qual é o sistema da expedição e se ele tem API. Se for o Tiny, o caminho já está previsto na fase 2: os campos
 `tiny_pedido_id`, `rastreio` e `transportadora` existem no modelo esperando
 isso. Ver [integrações da fase 2](04-integracoes-fase-2.md).
 **Onde mudar:** `src/lib/expedicao.ts` ganha um provider de escrita, no mesmo
@@ -192,7 +182,7 @@ entrar em uso.
 Necessário para ligar a autenticação: `AUTH_OIDC_ISSUER`,
 `AUTH_OIDC_CLIENT_ID`, `AUTH_OIDC_CLIENT_SECRET`.
 
-O código já está pronto para qualquer provedor OIDC — Google Workspace, Entra
+O código já está pronto para qualquer provedor OIDC, Google Workspace, Entra
 ID, Keycloak. Sem as credenciais, a tela de login diz o que falta, e o
 desenvolvimento roda com `AUTH_DEV_BYPASS`.
 
@@ -215,7 +205,7 @@ Admin promove. `BOOTSTRAP_ADMIN_EMAILS` resolve o problema do primeiro Admin.
 
 Foi o que destravou o CRUD de produto sem depender de bucket provisionado. As
 variáveis `STORAGE_*` continuam reservadas: quando o bucket existir, muda
-`salvarFoto` em `src/lib/arquivos.ts` e nada mais — `fotoUrl` já é uma URL.
+`salvarFoto` em `src/lib/arquivos.ts` e nada mais, `fotoUrl` já é uma URL.
 
 **Ainda em aberto:** qual bucket (Railway, Cloudflare R2, S3) e quem cria as
 credenciais. Vira urgente se o catálogo passar de algumas dezenas de fotos.

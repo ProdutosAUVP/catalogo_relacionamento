@@ -13,7 +13,7 @@ describe('consultor', () => {
     expect(pode(Perfil.consultor, 'solicitacao.criar')).toBe(true)
   })
 
-  it('só enxerga as próprias solicitações — critério de aceite da spec', () => {
+  it('só enxerga as próprias solicitações, critério de aceite da spec', () => {
     expect(escopoDeSolicitacoes(Perfil.consultor)).toBe('proprias')
     expect(filtroDeSolicitacoes(Perfil.consultor, 'u1')).toEqual({ consultorId: 'u1' })
   })
@@ -51,7 +51,7 @@ describe('admin', () => {
   })
 })
 
-describe('financeiro — definição da área', () => {
+describe('financeiro: definição da área', () => {
   it('recebe a fila de compras', () => {
     expect(pode(Perfil.financeiro, 'compras.verFila')).toBe(true)
   })

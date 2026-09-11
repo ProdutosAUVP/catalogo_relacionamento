@@ -74,7 +74,7 @@ const esc = (s) =>
   )
 
 /**
- * Preço de um produto — espelha `src/components/valor-do-produto.tsx`.
+ * Preço de um produto, espelha `src/components/valor-do-produto.tsx`.
  *
  * Nulo não é zero: parte dos brindes personalizados veio da área sem preço, e
  * "R$ 0,00" se leria como grátis.
@@ -152,7 +152,7 @@ function estadoVazio(titulo, descricao) {
 }
 
 /**
- * Ilustração do produto — mesma regra da aplicação: nome antes da categoria.
+ * Ilustração do produto: mesma regra da aplicação: nome antes da categoria.
  * As formas vêm de `ilustracoes.js`, gerado de `src/lib/ilustracoes.ts`.
  */
 const POR_PALAVRA = [
@@ -199,7 +199,7 @@ function imagemDoProduto(p) {
       <div class="absolute inset-0 transition-transform duration-700 ease-apple [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] motion-reduce:transition-none">
         <img src="${foto}" alt="${esc(p.nome)}" width="900" height="1200" loading="lazy"
           class="absolute inset-0 h-full w-full object-cover [backface-visibility:hidden]" />
-        <img src="produtos/${p.slug}-verso.webp" alt="${esc(p.nome)} — verso" width="900" height="1200" loading="lazy"
+        <img src="produtos/${p.slug}-verso.webp" alt="${esc(p.nome)}: verso" width="900" height="1200" loading="lazy"
           class="absolute inset-0 h-full w-full object-cover [backface-visibility:hidden] [transform:rotateY(180deg)]" />
       </div>
       <span class="selo-lado pointer-events-none absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-background/85 px-2 py-1 font-roboto text-[10px] font-bold uppercase tracking-wider text-foreground shadow-sm backdrop-blur-sm">
@@ -213,7 +213,7 @@ function imagemDoProduto(p) {
       class="h-full w-full object-cover transition-transform duration-500 ease-apple group-hover:scale-105" />`)
 }
 
-/** Selo de categoria — ícone e nome, como na Central. */
+/** Selo de categoria: ícone e nome, como na Central. */
 const TOM_DA_CATEGORIA = {
   'personalizado auvp': 'bg-[hsl(var(--chart-1)/0.14)] text-[hsl(var(--chart-1))]',
   'bebês e crianças': 'bg-[hsl(var(--chart-4)/0.14)] text-[hsl(var(--chart-4))]',
@@ -240,6 +240,32 @@ function categoriaBadge(categoria) {
   return `<span class="inline-flex items-center gap-1.5 rounded-full px-2 py-1 font-roboto text-[10px] font-bold uppercase tracking-wider ${tom}">
     ${iconeSvg(chave, 'h-3 w-3 shrink-0')}${esc(categoria)}
   </span>`
+}
+
+/**
+ * Selo do kit que embala bebida.
+ *
+ * Dito no card, e não só no aviso que trava depois: quem olha o catálogo
+ * precisa saber antes de escolher. Espelha `CardDeProduto` e a tela de
+ * catálogo da aplicação.
+ */
+function seloDeAcompanhamento(p) {
+  if (!p.exigeAcompanhamento) return ''
+  return `<span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">vai com ${esc(p.exigeAcompanhamento)}</span>`
+}
+
+/** Link da loja onde o presente é comprado, como em `LinkDoProduto`. */
+function linkDaLoja(p) {
+  if (!p.urlCompra) return ''
+  const dominio = p.urlCompra
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .split('/')[0]
+  return `<a href="${esc(p.urlCompra)}" target="_blank" rel="noopener noreferrer" title="${esc(p.urlCompra)}"
+    class="inline-flex max-w-full items-center gap-1 text-xs text-muted-foreground underline-offset-4 transition-colors hover:text-primary-emphasis hover:underline">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3 shrink-0" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+    <span class="truncate">${esc(dominio)}</span>
+  </a>`
 }
 
 // --- telas ------------------------------------------------------------------
@@ -286,8 +312,11 @@ function telaCatalogo() {
       <article class="group flex flex-col overflow-hidden rounded-2xl border bg-card transition-[transform,box-shadow,border-color] duration-300 ease-apple hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl">
         ${imagemDoProduto(p)}
         <div class="flex flex-1 flex-col items-start gap-1.5 p-4">
-          ${categoriaBadge(p.categoria)}
+          <div class="flex flex-wrap items-center gap-1.5">
+            ${categoriaBadge(p.categoria)}${seloDeAcompanhamento(p)}
+          </div>
           <h2 class="font-display font-semibold leading-snug">${esc(p.nome)}</h2>
+          ${linkDaLoja(p)}
           <div class="mt-auto flex w-full items-end justify-between gap-3 pt-3">
             <p class="flex items-baseline gap-1.5 leading-tight">${preco(p, 'text-lg font-semibold')}</p>
             ${
@@ -328,7 +357,7 @@ function telaCatalogo() {
  * Nova solicitação.
  *
  * A vitrine mostra a etapa 2 (itens), que é a mais visual das cinco, com a
- * trilha de progresso e o resumo lateral — os mesmos de
+ * trilha de progresso e o resumo lateral, os mesmos de
  * `src/app/solicitacoes/nova/formulario.tsx`. O formulário é interativo no
  * sistema real; aqui ele está congelado, para caber numa página estática.
  */
@@ -358,14 +387,24 @@ function telaNova() {
       </li>`
   }).join('')
 
-  const escolhidos = [
-    { nome: 'Agenda AUVP', quantidade: 1, valor: 98.0 },
-    { nome: 'Caneca AUPO11', quantidade: 2, valor: 72.0 },
-  ]
+  // O momento retratado é o do kit escolhido sem a bebida: é o que mostra a
+  // trava funcionando, que é a pergunta que a área fez.
+  // Com preço, para o resumo lateral não ficar zerado num item que a área
+  // ainda não precificou.
+  const kit =
+    PRODUTOS.find((p) => p.exigeAcompanhamento && p.valor !== null) ||
+    PRODUTOS.find((p) => p.exigeAcompanhamento) ||
+    PRODUTOS[0]
+  const escolhidos = [{ nome: kit.nome, quantidade: 1, valor: kit.valor ?? 0 }]
   const total = escolhidos.reduce((acc, i) => acc + i.valor * i.quantidade, 0)
 
-  const cards = PRODUTOS.filter((p) => p.ativo)
-    .slice(0, 6)
+  // A grade fica recortada no que serve de acompanhamento, como o atalho do
+  // aviso faz na aplicação.
+  const acompanhamentos = PRODUTOS.filter(
+    (p) => p.ativo && p.serveComoAcompanhamento === kit.exigeAcompanhamento,
+  ).slice(0, 6)
+
+  const cards = acompanhamentos
     .map(
       (p) => `
       <div class="group flex flex-col overflow-hidden rounded-xl border text-left">
@@ -373,6 +412,7 @@ function telaNova() {
         <div class="flex flex-1 flex-col gap-1 p-3">
           ${categoriaBadge(p.categoria)}
           <p class="font-display text-sm font-semibold leading-snug">${esc(p.nome)}</p>
+          ${linkDaLoja(p)}
           <p class="mt-auto pt-1 text-sm font-medium">
             ${preco(p)}
           </p>
@@ -401,13 +441,30 @@ function telaNova() {
       <div class="min-w-0">
         <ol class="mb-6 flex flex-wrap items-center gap-x-1 gap-y-2">${trilha}</ol>
 
+        <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3">
+          <p class="min-w-0 flex-1 text-sm">
+            “${esc(kit.nome)}” precisa de um ${esc(kit.exigeAcompanhamento)} na mesma solicitação.
+            Escolha no catálogo antes de continuar.
+          </p>
+          <span class="font-ui inline-flex h-8 items-center rounded-[5px] border px-3 text-xs font-semibold uppercase">
+            Escolher o ${esc(kit.exigeAcompanhamento)}
+          </span>
+        </div>
+
         <div class="rounded-lg border bg-card p-6 shadow-[0_1px_2px_rgba(11,41,5,0.04)]">
           <p class="font-display text-lg font-semibold">O que vai no envio?</p>
           <p class="mt-1 text-sm text-muted-foreground">
             Escolha do catálogo ou descreva um presente específico com o link onde comprar.
           </p>
 
-          <div class="mt-5 h-10 w-full rounded-md border px-3 py-2 text-sm text-muted-foreground">
+          <div class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border bg-muted/40 px-3 py-2">
+            <p class="min-w-0 flex-1 text-sm">
+              Mostrando só o que serve como <strong>${esc(kit.exigeAcompanhamento)}</strong>.
+            </p>
+            <span class="text-xs text-muted-foreground">Ver o catálogo inteiro</span>
+          </div>
+
+          <div class="mt-4 h-10 w-full rounded-md border px-3 py-2 text-sm text-muted-foreground">
             Buscar no catálogo
           </div>
 
@@ -437,7 +494,9 @@ function telaNova() {
     <p class="mt-6 text-xs text-muted-foreground">
       O CPF deduplica o cliente na etapa 1; o CEP preenche o endereço na etapa 3; o valor de cada
       item é relido do banco e congelado na hora de gravar, para que reajuste de preço não mexa em
-      solicitação já feita.
+      solicitação já feita. O kit que embala bebida não avança sozinho: enquanto o
+      ${esc(kit.exigeAcompanhamento)} não entrar na mesma solicitação, o “Continuar” fica
+      desligado, e a mesma regra roda de novo no servidor.
     </p>`
 }
 
@@ -480,7 +539,7 @@ function linhasDeSolicitacao(lista, comConsultor, comSelecao) {
                 ? `<span class="rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                     precisaDeCompra(s) ? 'border text-foreground' : 'bg-muted text-muted-foreground'
                   }">${precisaDeCompra(s) ? 'compra' : 'estoque'}</span>`
-                : '<span class="text-muted-foreground">—</span>'
+                : '<span class="text-muted-foreground">-</span>'
             }</td>`
           : ''
       }
@@ -508,7 +567,7 @@ function telaMinhas() {
       <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
         <div class="h-full bg-success" style="width:${pct}%"></div>
       </div>
-      <p class="mt-2 text-sm text-muted-foreground">${brl(gasto)} de ${brl(limite)} — tudo o que foi solicitado no mês entra na conta.</p>
+      <p class="mt-2 text-sm text-muted-foreground">${brl(gasto)} de ${brl(limite)}, tudo o que foi solicitado no mês entra na conta.</p>
     </div>
     <div class="overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(11,41,5,0.04)]">
       <table class="w-full text-sm">
@@ -576,7 +635,7 @@ function telaGestao() {
     <p class="mt-4 text-xs text-muted-foreground">
       O Admin trabalha por pilha: marca os pedidos acumulados e encaminha de uma vez. Quando a
       solicitação ainda está pendente, a aprovação entra como um passo antes do destino e vira uma
-      linha própria do histórico — nada vai do pedido do consultor para a expedição sem o OK.
+      linha própria do histórico, nada vai do pedido do consultor para a expedição sem o OK.
       A exportação leva o resultado inteiro do filtro, uma linha por item, para que a soma dos
       valores feche. Clique num código para ver o detalhe.
     </p>`
@@ -690,7 +749,7 @@ function telaDetalhe() {
 }
 
 /**
- * Fornecedor padrão por categoria — espelha `src/lib/fornecedores.ts`.
+ * Fornecedor padrão por categoria, espelha `src/lib/fornecedores.ts`.
  *
  * Bebida é sempre comprada na Casa da Bebida, por regra da área. O link do
  * presente específico vence o padrão: ele foi escolhido para aquele item.
@@ -765,13 +824,13 @@ function telaCompras() {
       </table>
     </div>
     <p class="mt-4 text-xs text-muted-foreground">
-      Data, produto, valor e site — os campos que a área pediu. A lista é por item, e não por
+      Data, produto, valor e site, os campos que a área pediu. A lista é por item, e não por
       solicitação, porque a compra acontece item a item. O Financeiro também altera o status.
     </p>`
 }
 
 /**
- * Fila da expedição — a planilha que a área monta à mão hoje.
+ * Fila da expedição: a planilha que a área monta à mão hoje.
  *
  * Espelha `src/app/expedicao/page.tsx`: uma solicitação chega aqui pelo caminho
  * normal (depois da compra) ou pelo atalho (tudo em estoque, sem passar pelo
@@ -844,7 +903,7 @@ function telaExpedicao() {
     ${cartoes || estadoVazio('Nada para separar agora', 'Os pedidos aparecem quando o Admin move a solicitação para organizando envio.')}
     <p class="mt-6 text-xs text-muted-foreground">
       Substitui a planilha montada à mão. Duas portas trazem uma solicitação até aqui: o caminho
-      normal, depois que o Financeiro compra, e o atalho — itens já em estoque vão da aprovação
+      normal, depois que o Financeiro compra, e o atalho, itens já em estoque vão da aprovação
       direto para a expedição.
     </p>`
 }
@@ -867,7 +926,7 @@ function telaClientes() {
     <tr class="border-b last:border-0 hover:bg-muted/40">
       <td class="p-3 font-medium">${esc(c.nome)}</td>
       <td class="p-3 text-muted-foreground">${esc(c.cpf)}</td>
-      <td class="p-3 text-muted-foreground">${esc(c.telefone || '—')}</td>
+      <td class="p-3 text-muted-foreground">${esc(c.telefone || '-')}</td>
       <td class="p-3 text-right">${c.total}</td>
       <td class="p-3 text-right"><span class="text-xs text-muted-foreground">Editar</span></td>
     </tr>`,
@@ -897,7 +956,7 @@ function telaClientes() {
     </div>
     <p class="mt-4 text-xs text-muted-foreground">
       Na importação, linha com CPF que já existe atualiza o cadastro em vez de criar outro, e as
-      linhas inválidas voltam numeradas com o motivo — sem derrubar o arquivo inteiro. Os CPFs desta
+      linhas inválidas voltam numeradas com o motivo, sem derrubar o arquivo inteiro. Os CPFs desta
       vitrine são fictícios e aparecem mascarados.
     </p>`
 }
@@ -926,7 +985,7 @@ function telaProdutos() {
   return `
     ${cabecalho(
       'Gerenciar catálogo',
-      'Cadastro, edição e ativação de produtos — feitos pela própria área.',
+      'Cadastro, edição e ativação de produtos, feitos pela própria área.',
       'Administração',
       '<span class="rounded-[5px] border px-5 py-2 font-ui text-sm font-semibold uppercase">Categorias</span><span class="rounded-[5px] border border-primary bg-primary px-5 py-2 font-ui text-sm font-semibold uppercase text-primary-foreground">Novo produto</span>',
     )}
@@ -953,7 +1012,7 @@ function telaUsuarios() {
     <tr class="border-b last:border-0">
       <td class="font-ui h-11 px-4 text-xs font-semibold uppercase tracking-[0.08em]">${esc(u.nome)}</td>
       <td class="p-3"><span class="rounded-md bg-muted px-2 py-0.5 text-xs">${esc(u.perfil)}</span></td>
-      <td class="whitespace-nowrap p-3 text-right">${u.limite ? brl(u.limite) : '—'}</td>
+      <td class="whitespace-nowrap p-3 text-right">${u.limite ? brl(u.limite) : '-'}</td>
       <td class="p-3 text-right text-xs text-muted-foreground">Editar</td>
     </tr>`,
   ).join('')
@@ -1073,7 +1132,7 @@ function render() {
 
   // Reinicia a animação de entrada a cada troca de tela: recriar o elemento é
   // o que faz o navegador rodar a animação de novo. Só opacity e transform,
-  // que não participam do cálculo de layout — movimento sem layout shift.
+  // que não participam do cálculo de layout, movimento sem layout shift.
   const conteudo = document.getElementById('conteudo')
   conteudo.innerHTML = `<div class="animar-entrada">${RENDER[tela]()}</div>`
 }

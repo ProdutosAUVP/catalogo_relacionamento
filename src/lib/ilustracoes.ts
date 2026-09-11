@@ -6,7 +6,7 @@
  * categoria ganha um traço próprio, desenhado no mesmo peso de linha, de modo
  * que a grade tenha ritmo mesmo antes de existir uma foto real.
  *
- * Quando o produto tiver `fotoUrl`, a foto substitui a ilustração — ela é o
+ * Quando o produto tiver `fotoUrl`, a foto substitui a ilustração, ela é o
  * estado de repouso do card, não um placeholder de erro.
  *
  * Traçado sem preenchimento, `currentColor`, viewBox 200×150.
@@ -249,7 +249,7 @@ function normalizar(texto: string | null | undefined): string {
  *
  * A planilha da área chegou com "Bebida" e "Livro" no singular, e com "Beleza e
  * Bem estar" onde o desenho se chamava "bem-estar". Apelidar é mais barato que
- * duplicar traçado — e mais seguro que renomear a chave, porque a Central usa
+ * duplicar traçado: e mais seguro que renomear a chave, porque a Central usa
  * os nomes antigos.
  */
 const APELIDOS: Record<string, string> = {

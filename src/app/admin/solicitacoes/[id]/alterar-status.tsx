@@ -18,7 +18,7 @@ import { alterarStatus } from '@/lib/actions/solicitacoes'
  * de novo com a mesma função: o que a tela oferece e o que o servidor aceita
  * não podem divergir.
  *
- * `sugerido` é o próximo passo natural calculado a partir dos itens — quando
+ * `sugerido` é o próximo passo natural calculado a partir dos itens, quando
  * está tudo em estoque, a solicitação pula o Financeiro e vai para a expedição.
  * É só uma pré-seleção; quem decide é o Admin.
  */
@@ -41,7 +41,7 @@ export function AlterarStatus({
   // A escolha é guardada como "o que a pessoa clicou", não como o status em si.
   // Depois de gravar, a tela recarrega com outras opções, e uma escolha antiga
   // deixaria o `<select>` mostrando a primeira opção enquanto o React ainda
-  // acharia que vale a anterior — o botão gravaria coisa diferente do que a
+  // acharia que vale a anterior, o botão gravaria coisa diferente do que a
   // tela mostra. Descartar o que saiu da lista resolve na origem.
   const [escolhido, setEscolhido] = useState<StatusSolicitacao | null>(null)
   const status = escolhido && opcoes.includes(escolhido) ? escolhido : padrao

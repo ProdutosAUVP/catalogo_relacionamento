@@ -30,6 +30,22 @@ export const ufSchema = z.string().trim().toUpperCase().length(2, 'UF deve ter 2
 /** Texto livre opcional. */
 export const textoOpcional = z.preprocess(vazioViraNulo, z.string().nullable())
 
+/**
+ * Rótulo de acompanhamento, como `vinho`.
+ *
+ * Minúsculo e sem espaço nas pontas porque o pareamento entre o kit e a
+ * garrafa é comparação de texto exata: "Vinho" cadastrado num e "vinho" no
+ * outro deixaria a trava passar sem ninguém entender por quê.
+ */
+export const rotuloOpcional = z.preprocess(
+  vazioViraNulo,
+  z
+    .string()
+    .max(40, 'Use um rótulo curto, como "vinho".')
+    .transform((v) => v.toLowerCase())
+    .nullable(),
+)
+
 /** Link opcional, validado só quando preenchido. */
 export const urlOpcional = z.preprocess(
   vazioViraNulo,
@@ -77,7 +93,7 @@ export const valorOpcional = z.preprocess((v) => {
   return v
 }, valorSchema.nullable())
 
-/** Inteiro não negativo opcional — usado no estoque. */
+/** Inteiro não negativo opcional, usado no estoque. */
 export const inteiroOpcional = z.preprocess((v) => {
   if (v === null || v === undefined || v === '') return null
   const n = Number(v)

@@ -4,7 +4,7 @@ import { StatusSolicitacao } from '@prisma/client'
 /**
  * Filtros do painel de gestão.
  *
- * O mesmo schema alimenta a tabela e a exportação — é o que garante o critério
+ * O mesmo schema alimenta a tabela e a exportação, é o que garante o critério
  * de aceite "a exportação respeita os filtros da tela".
  */
 export const filtroSolicitacoesSchema = z.object({

@@ -7,13 +7,13 @@ import { Perfil } from '@prisma/client'
  * tabela, para que esconder um botão e bloquear a ação nunca divirjam.
  *
  * O perfil Financeiro veio "a definir" na spec e foi definido pela área depois:
- * recebe as solicitações enviadas para compra — com data, produto, valor e
- * site — e altera o status do pedido. É o que está implementado abaixo:
+ * recebe as solicitações enviadas para compra, com data, produto, valor e
+ * site: e altera o status do pedido. É o que está implementado abaixo:
  * `compras.verFila` e `solicitacao.alterarStatus`.
  *
  * `expedicao.verFila` e `expedicao.registrarRastreio` não pertencem a um perfil
  * novo: a expedição trabalha fora desta ferramenta, e quem exporta o pedido
- * para ela — e depois anota o rastreio que ela devolve — é quem já enxerga
+ * para ela: e depois anota o rastreio que ela devolve, é quem já enxerga
  * tudo: Admin e Financeiro. O consultor lê o rastreio, não o escreve.
  *
  * O acesso a dados sensíveis do cliente segue liberado para o Financeiro por
@@ -57,8 +57,8 @@ export type Escopo = 'nenhum' | 'proprias' | 'todas'
 const PENDENTE_CONFIRMACAO = {
   /**
    * Proposta: Financeiro vê dados sensíveis de todos os clientes.
-   * A lista que a área pediu para a fila de compras — data, produto, valor,
-   * site — não inclui CPF nem endereço, mas a permissão de exportar concedida
+   * A lista que a área pediu para a fila de compras, data, produto, valor,
+   * site: não inclui CPF nem endereço, mas a permissão de exportar concedida
    * pela spec traz esses campos junto. Mantido `true` para não deixar a
    * exportação incoerente; virar `false` restringe os dois lugares de uma vez.
    */
@@ -130,7 +130,7 @@ export function pode(perfil: Perfil, acao: Acao): boolean {
 /**
  * Escopo de leitura de solicitações.
  *
- * Consultor enxerga só as próprias — critério de aceite explícito da spec.
+ * Consultor enxerga só as próprias, critério de aceite explícito da spec.
  * Admin e Financeiro enxergam todas.
  */
 export function escopoDeSolicitacoes(perfil: Perfil): Escopo {

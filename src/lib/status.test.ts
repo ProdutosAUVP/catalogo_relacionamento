@@ -56,7 +56,7 @@ describe('deu problema', () => {
     )
   })
 
-  it('é recusado sem motivo — critério de aceite da spec', () => {
+  it('é recusado sem motivo, critério de aceite da spec', () => {
     const semMotivo = validarMudancaDeStatus(
       StatusSolicitacao.comprado,
       StatusSolicitacao.deu_problema,

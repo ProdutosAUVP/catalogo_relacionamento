@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { ProdutoImagem } from '@/components/produto-imagem'
 import { CategoriaBadge } from '@/components/categoria-badge'
 import { ValorDoProduto } from '@/components/valor-do-produto'
+import { LinkDoProduto } from '@/components/link-do-produto'
 import { FiltroCategorias } from '@/components/filtro-categorias'
 import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
 
@@ -18,7 +19,7 @@ import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
  * Catálogo do consultor.
  *
  * Lê pelo `catalogoProvider`, nunca pelo Prisma diretamente: quando o Tiny
- * entrar na fase 2, esta tela não muda. A contagem por categoria é a exceção —
+ * entrar na fase 2, esta tela não muda. A contagem por categoria é a exceção,
  * é agregação de tela, não leitura de catálogo.
  */
 export default async function CatalogoPage({
@@ -32,7 +33,7 @@ export default async function CatalogoPage({
   const [pagina, categorias, contagem] = await Promise.all([
     // O catálogo tem dezenas de itens e cresce devagar: cabe numa página, e
     // uma paginação de duas páginas atrapalha mais do que ajuda a escolher.
-    // O provider limita em 100 — se um dia passar disso, entra paginação.
+    // O provider limita em 100, se um dia passar disso, entra paginação.
     catalogoProvider.listar({ busca, categoriaId: categoria, apenasAtivos: true, porPagina: 100 }),
     db.categoria.findMany({ where: { ativo: true }, orderBy: { nome: 'asc' } }),
     db.produto.groupBy({ by: ['categoriaId'], where: { ativo: true }, _count: { _all: true } }),
@@ -141,7 +142,14 @@ export default async function CatalogoPage({
                 />
 
                 <div className="flex flex-1 flex-col items-start gap-1.5 p-4">
-                  <CategoriaBadge categoria={produto.categoriaNome} />
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <CategoriaBadge categoria={produto.categoriaNome} />
+                    {/* Kit que embala bebida não sai sozinho, e quem olha o
+                        catálogo precisa saber disso antes de pedir. */}
+                    {produto.exigeAcompanhamento ? (
+                      <Badge variant="outline">vai com {produto.exigeAcompanhamento}</Badge>
+                    ) : null}
+                  </div>
                   <h2 className="font-display leading-snug font-semibold text-balance">
                     {produto.nome}
                   </h2>
@@ -150,6 +158,10 @@ export default async function CatalogoPage({
                       {produto.descricao}
                     </p>
                   ) : null}
+
+                  {/* A loja onde o presente é comprado. A foto mostra o
+                      presente; o link mostra medida, sabor e o resto. */}
+                  <LinkDoProduto url={produto.urlCompra} />
 
                   <div className="mt-auto flex w-full items-end justify-between gap-3 pt-3">
                     <ValorDoProduto

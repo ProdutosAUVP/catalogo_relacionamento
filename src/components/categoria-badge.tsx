@@ -1,7 +1,7 @@
 import { CLASSES_DE_TOM, visualDaCategoria } from '@/lib/categorias'
 import { cn } from '@/lib/utils'
 
-/** Selo de categoria — ícone e nome, como na Central. */
+/** Selo de categoria: ícone e nome, como na Central. */
 export function CategoriaBadge({
   categoria,
   className,

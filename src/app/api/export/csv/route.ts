@@ -6,7 +6,7 @@ import { gerarCsv, linhasParaExportar, nomeDoArquivo } from '@/lib/export'
 /**
  * Exportação em CSV do resultado filtrado.
  *
- * Os parâmetros são os mesmos da tela de gestão, lidos pelo mesmo schema — é o
+ * Os parâmetros são os mesmos da tela de gestão, lidos pelo mesmo schema, é o
  * que garante que o arquivo traga exatamente o que está na tela.
  */
 export async function GET(req: Request) {

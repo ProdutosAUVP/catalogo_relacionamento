@@ -57,7 +57,7 @@ export async function salvarCliente(dados: FormData): Promise<ResultadoDaAction<
 /**
  * Importa clientes de um CSV.
  *
- * Linha com CPF que já existe **atualiza** o cadastro em vez de criar outro —
+ * Linha com CPF que já existe **atualiza** o cadastro em vez de criar outro,
  * o arquivo costuma ser um recorte de planilha, e reimportar não pode duplicar
  * a base. As linhas inválidas não derrubam a importação: elas voltam
  * numeradas, com o motivo, para quem exportou corrigir.

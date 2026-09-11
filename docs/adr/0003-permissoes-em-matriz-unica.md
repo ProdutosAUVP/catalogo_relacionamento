@@ -1,11 +1,11 @@
-# 0003 — Permissões numa matriz única
+# 0003: Permissões numa matriz única
 
 ## Contexto
 
 Três perfis, treze ações, e uma regra que não é binária: o consultor vê
 solicitações, mas só as dele.
 
-O jeito comum — `if (perfil === 'admin')` espalhado por telas e actions —
+O jeito comum: `if (perfil === 'admin')` espalhado por telas e actions,
 diverge com o tempo. O botão some mas a action continua aceitando, ou o
 contrário.
 
@@ -25,7 +25,7 @@ uma caçada pela matriz.
 ## Consequências
 
 Adicionar um perfil é preencher uma coluna, e o TypeScript exige que todas as
-ações sejam respondidas — esquecer uma vira erro de compilação, não brecha.
+ações sejam respondidas: esquecer uma vira erro de compilação, não brecha.
 
 Em troca, a matriz é grosseira: não expressa "pode editar enquanto estiver
 pendente". Se aparecer regra desse tipo, ela vai precisar de um lugar próprio,

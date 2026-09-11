@@ -6,7 +6,7 @@ import { gerarCsv, gerarXlsx } from '@/lib/export'
 /**
  * A planilha que hoje é montada à mão e enviada para a expedição.
  *
- * Mesmas colunas da tela, geradas da mesma função — enquanto a integração com o
+ * Mesmas colunas da tela, geradas da mesma função, enquanto a integração com o
  * sistema da expedição não existe, o arquivo é a ponte, e ele precisa sair
  * pronto para colar sem redigitação.
  */

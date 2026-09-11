@@ -23,7 +23,7 @@ BOOTSTRAP_ADMIN_EMAILS="seu.email@auvp.com.br"
 ```
 
 A tela de login passa a aceitar um e-mail direto. O e-mail listado em
-`BOOTSTRAP_ADMIN_EMAILS` entra como Admin — sem isso, o primeiro usuário do
+`BOOTSTRAP_ADMIN_EMAILS` entra como Admin, sem isso, o primeiro usuário do
 ambiente entraria como consultor e não haveria ninguém com poder de promover.
 
 O bypass é recusado fora de `NODE_ENV=development`: `env.ts` derruba o boot se
@@ -33,8 +33,8 @@ alguém tentar ligá-lo em produção.
 
 | E-mail                   | Perfil     | Limite mensal |
 | ------------------------ | ---------- | ------------- |
-| `bia@auvp.com.br`        | Admin      | —             |
-| `financeiro@auvp.com.br` | Financeiro | —             |
+| `bia@auvp.com.br`        | Admin      | -             |
+| `financeiro@auvp.com.br` | Financeiro | -             |
 | `carlos@auvp.com.br`     | Consultor  | R$ 5.000      |
 | `fernanda@auvp.com.br`   | Consultor  | R$ 3.000      |
 
@@ -44,13 +44,13 @@ O seed é idempotente: pode rodar quantas vezes precisar.
 
 O seed monta situações que valem olhar:
 
-- **`/catalogo`** — a "Caneca personalizada" está desativada e não aparece,
+- **`/catalogo`**: a "Caneca personalizada" está desativada e não aparece,
   mas continua visível nas solicitações antigas.
-- **`/catalogo`** — "Cesta gourmet" e a placa do primeiro milhão não mostram
+- **`/catalogo`**: "Cesta gourmet" e a placa do primeiro milhão não mostram
   estoque, porque não controlam estoque.
-- **`/financeiro/compras`** — a SOL-2026-0003 tem um presente específico com
+- **`/financeiro/compras`**: a SOL-2026-0003 tem um presente específico com
   link externo, ao lado de um item de catálogo.
-- **`/admin/solicitacoes`** — filtros e exportação.
+- **`/admin/solicitacoes`**: filtros e exportação.
 
 ## Trabalhando no banco
 

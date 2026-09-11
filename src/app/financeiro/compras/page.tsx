@@ -19,7 +19,7 @@ import { Stat } from '@/components/stat'
 import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
 
 /**
- * Fila de compras — tela do perfil Financeiro.
+ * Fila de compras: tela do perfil Financeiro.
  *
  * A área definiu o conteúdo: as solicitações enviadas para compra, com data,
  * produto, valor e site. É uma lista por item, e não por solicitação, porque a
@@ -125,7 +125,7 @@ export default async function FilaDeComprasPage() {
  *
  * Três fontes, nesta ordem: o link do item (do presente específico ou do
  * cadastro do produto), o fornecedor padrão da categoria e, por fim, a nota de
- * compra — "Pedido direto ao fornecedor", que não é link mas é instrução.
+ * compra: "Pedido direto ao fornecedor", que não é link mas é instrução.
  *
  * Sobrando tudo, mostra-se a categoria: informa mais que um traço.
  */

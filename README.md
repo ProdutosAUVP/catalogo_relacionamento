@@ -26,7 +26,7 @@ AUVP, que depende de credenciais do provedor.
 | Mudança de status, com motivo e histórico    | pronto, individual e em lote                   |
 | Rastreio preenchido e visível ao consultor   | pronto, pelo caminho manual                    |
 | Catálogo de presentes                        | os 49 da planilha da área, com foto            |
-| Fila da expedição, com CSV e XLSX            | pronto — substitui a planilha feita à mão      |
+| Fila da expedição, com CSV e XLSX            | pronto - substitui a planilha feita à mão      |
 | CRUD de produto, cliente e usuário           | pronto, com foto e importação por CSV          |
 | Tiny ERP e Salesforce                        | fase 2, contratos já fixados                   |
 
@@ -55,7 +55,7 @@ informando um e-mail. Para entrar como Admin, coloque o mesmo e-mail em
 | -------------------- | ----------------------------------------------- |
 | `npm run dev`        | servidor de desenvolvimento                     |
 | `npm run build`      | build de produção                               |
-| `npm run check`      | formato, lint, tipos e testes — o que a CI roda |
+| `npm run check`      | formato, lint, tipos e testes - o que a CI roda |
 | `npm test`           | testes das regras de negócio                    |
 | `npm run db:migrate` | cria/aplica migrations em desenvolvimento       |
 | `npm run db:seed`    | popula com dados de exemplo (idempotente)       |
@@ -75,7 +75,7 @@ src/
   components/             UI compartilhada (shadcn/ui do DS AUVP)
   styles/                 tokens do Design System AUVP
   lib/
-    permissions.ts        matriz de permissões — fonte única
+    permissions.ts        matriz de permissões, fonte única
     status.ts             máquina de estados do fluxo
     saldo.ts              apuração do gasto mensal
     compras.ts            fila de compras do Financeiro
