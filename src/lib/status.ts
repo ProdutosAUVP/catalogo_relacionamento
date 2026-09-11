@@ -1,4 +1,4 @@
-import { StatusSolicitacao } from '@prisma/client'
+import { OrigemProduto, StatusSolicitacao } from '@prisma/client'
 
 /**
  * Máquina de estados do fluxo de solicitação (seção 5 da spec).
@@ -185,25 +185,35 @@ export function validarMudancaDeStatus(
 /**
  * Uma solicitação precisa passar pelo Financeiro?
  *
- * Só precisa quando há algo a comprar. Item de catálogo com estoque disponível
- * já está na prateleira: aprovado, vai para a expedição sem passar pelo
- * Financeiro — regra da área, que hoje resolve isso fora do sistema.
+ * Quem responde é a **origem do produto**, que na planilha do catálogo é a
+ * coluna "Estoque": "Estoque interno" já está na prateleira, "Mediante pedido"
+ * é comprado quando alguém pede.
+ *
+ * A quantidade em estoque é um refinamento opcional, e não o critério: a área
+ * não conta peça a peça hoje. Um produto de prateleira que *também* controle
+ * quantidade e esteja sem saldo vai ao Financeiro; sem controle de quantidade,
+ * prateleira significa prateleira.
  *
  * Precisa de compra:
  * - presente específico (é comprado num site, por definição);
- * - produto que não controla estoque (não dá para afirmar que há);
- * - produto que controla estoque e está sem saldo suficiente.
+ * - produto comprado sob demanda;
+ * - produto de prateleira que controla quantidade e está sem saldo.
  */
 export type ItemParaDecisao = {
   produtoId: string | null
   quantidade: number
-  produto?: { controlaEstoque: boolean; estoque: number | null } | null
+  produto?: {
+    origem: OrigemProduto
+    controlaEstoque: boolean
+    estoque: number | null
+  } | null
 }
 
 export function precisaDeCompra(itens: readonly ItemParaDecisao[]): boolean {
   return itens.some((item) => {
     if (!item.produtoId || !item.produto) return true
-    if (!item.produto.controlaEstoque) return true
+    if (item.produto.origem === OrigemProduto.mediante_pedido) return true
+    if (!item.produto.controlaEstoque) return false
     return (item.produto.estoque ?? 0) < item.quantidade
   })
 }

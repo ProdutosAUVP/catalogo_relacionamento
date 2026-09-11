@@ -16,8 +16,11 @@ type LinhaComCategoria = {
   fotoUrl: string | null
   valor: ProdutoDoCatalogo['valor']
   tipoValor: ProdutoDoCatalogo['tipoValor']
+  origem: ProdutoDoCatalogo['origem']
   controlaEstoque: boolean
   estoque: number | null
+  urlCompra: string | null
+  notaDeCompra: string | null
   ativo: boolean
   skuTiny: string | null
   categoria: { nome: string }
@@ -33,8 +36,11 @@ function mapear(linha: LinhaComCategoria): ProdutoDoCatalogo {
     fotoUrl: linha.fotoUrl,
     valor: linha.valor,
     tipoValor: linha.tipoValor,
+    origem: linha.origem,
     controlaEstoque: linha.controlaEstoque,
     estoque: linha.controlaEstoque ? linha.estoque : null,
+    urlCompra: linha.urlCompra,
+    notaDeCompra: linha.notaDeCompra,
     ativo: linha.ativo,
     skuTiny: linha.skuTiny,
   }

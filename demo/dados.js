@@ -8,146 +8,12 @@
  * Nenhum dado real de cliente entra aqui. Os CPFs são exibidos mascarados.
  */
 
-const CATEGORIAS = [
-  'Bebidas',
-  'Vestuário',
-  'Acessórios',
-  'Canecas e garrafas',
-  'Papelaria',
-  'Sacolas & caixas',
-  'Casa & mesa',
-]
-
 /**
- * Catálogo real: os brindes físicos da AUVP, com as fotos de estúdio do
- * repositório ProdutosAUVP/central. Espelha `prisma/seed.ts`.
+ * Catálogo e categorias vivem em `demo/produtos.js`, gerado de
+ * `prisma/catalogo-auvp.ts` — a mesma fonte do seed da aplicação. Aqui ficam
+ * só os dados fictícios que a vitrine inventa: clientes, consultores e
+ * solicitações.
  */
-const PRODUTOS = [
-  {
-    slug: 'bourbon-auvp',
-    nome: 'Licor AUVP “Punch Me Up”',
-    categoria: 'Bebidas',
-    valor: 189.0,
-    estoque: null,
-    tipoValor: 'medio',
-    descricao: 'Garrafa de 700 ml com rótulo autoral, feita para as ativações e eventos.',
-    ativo: true,
-  },
-  {
-    slug: 'meia-sardinha',
-    nome: 'Meia Investidor Sardinha',
-    categoria: 'Vestuário',
-    valor: 49.9,
-    estoque: 120,
-    descricao:
-      'Meia vermelha com o símbolo do Investidor Sardinha no cano e recado bordado na ponta do pé.',
-    ativo: true,
-  },
-  {
-    slug: 'bone-capitalismo',
-    nome: 'Boné “O capitalismo é simplesmente maravilhoso”',
-    categoria: 'Vestuário',
-    valor: 89.0,
-    estoque: 60,
-    descricao:
-      'Boné vermelho com patch bordado circular — um dos brindes mais pedidos da comunidade.',
-    ativo: true,
-  },
-  {
-    slug: 'canivete-agro',
-    nome: 'Canivete AUVP Agro',
-    categoria: 'Acessórios',
-    valor: 245.0,
-    estoque: 18,
-    descricao: 'Canivete com cabo de madeira e gravação AUVP Agro, entregue em caixa kraft.',
-    ativo: true,
-  },
-  {
-    slug: 'caneca-aupo11',
-    nome: 'Caneca AUPO11',
-    categoria: 'Canecas e garrafas',
-    valor: 72.0,
-    estoque: 85,
-    temVerso: true,
-    descricao:
-      'Caneca preta com o porco coroado do AUPO11 na frente e, no verso, o recado: “Aproveite seu café com calma, seu dinheiro está no AUPO11.”',
-    ativo: true,
-  },
-  {
-    slug: 'garrafa-olho',
-    nome: 'Garrafa térmica AUVP',
-    categoria: 'Canecas e garrafas',
-    valor: 139.0,
-    estoque: 40,
-    descricao: 'Garrafa térmica preta fosca com o olho AUVP aplicado em dourado.',
-    ativo: true,
-  },
-  {
-    slug: 'caneca-auvp-dourada',
-    nome: 'Caneca AUVP II — grafismo dourado',
-    categoria: 'Canecas e garrafas',
-    valor: 68.0,
-    estoque: 70,
-    descricao: 'Caneca preta fosca com o grafismo de ondas concêntricas e o olho AUVP em dourado.',
-    ativo: true,
-  },
-  {
-    slug: 'caneca-porcelana',
-    nome: 'Caneca AUVP I — “Coma, durma, aporte”',
-    categoria: 'Canecas e garrafas',
-    valor: 64.0,
-    estoque: 95,
-    descricao:
-      'Caneca de porcelana preta com o lembrete que virou lema: “Coma, durma, aporte, pare de reclamar.”',
-    ativo: true,
-  },
-  {
-    slug: 'agenda-auvp',
-    nome: 'Agenda AUVP',
-    categoria: 'Papelaria',
-    valor: 98.0,
-    estoque: 50,
-    descricao: 'Agenda preta com elástico e a frase “Projetar futuro. Realizar com consistência.”',
-    ativo: true,
-  },
-  {
-    slug: 'ecobag',
-    nome: 'Ecobag “Bolsa? Só a de valores”',
-    categoria: 'Sacolas & caixas',
-    valor: 42.0,
-    estoque: 200,
-    descricao: 'Sacola de algodão preta com estampa em silk e o trocadilho da casa.',
-    ativo: true,
-  },
-  {
-    slug: 'porta-cartao-preto',
-    nome: 'Porta-cartão AUVP preto',
-    categoria: 'Acessórios',
-    valor: 165.0,
-    estoque: 25,
-    descricao: 'Porta-cartão dobrável em couro preto com a marca AUVP gravada em baixo relevo.',
-    ativo: true,
-  },
-  {
-    slug: 'vela-aromatica',
-    nome: 'Vela aromática AUVP',
-    categoria: 'Casa & mesa',
-    valor: 112.0,
-    estoque: 45,
-    descricao: 'Vela de flor de laranjeira (193 g) em pote de vidro com tampa dourada.',
-    ativo: true,
-  },
-  {
-    slug: 'caneca-descontinuada',
-    nome: 'Caneca AUVP (modelo descontinuado)',
-    categoria: 'Canecas e garrafas',
-    valor: 58.0,
-    estoque: null,
-    semFoto: true,
-    descricao: 'Modelo antigo, mantido apenas para histórico de solicitações.',
-    ativo: false,
-  },
-]
 
 const SOLICITACOES = [
   {
@@ -165,13 +31,19 @@ const SOLICITACOES = [
     destinatario: 'Marina Alves Pereira',
     itens: [
       {
-        produto: 'Garrafa térmica AUVP',
+        produto: 'Vinho Silk & Spice',
         quantidade: 1,
-        valorUnitario: 139.0,
+        valorUnitario: 100.0,
         site: null,
         emEstoque: false,
       },
-      { produto: 'Caneca AUPO11', quantidade: 1, valorUnitario: 72.0, site: null, emEstoque: true },
+      {
+        produto: 'Kit Café Constantino',
+        quantidade: 1,
+        valorUnitario: 190.0,
+        site: null,
+        emEstoque: false,
+      },
     ],
     historico: [
       {
@@ -204,13 +76,13 @@ const SOLICITACOES = [
     destinatario: 'Roberto Cardoso Lima',
     itens: [
       {
-        produto: 'Licor AUVP “Punch Me Up”',
+        produto: 'Whisky Woodford Reserve Bourbon',
         quantidade: 1,
-        valorUnitario: 189.0,
-        categoria: 'Bebidas',
+        valorUnitario: 250.0,
+        categoria: 'Bebida',
         site: null,
       },
-      { produto: 'Porta-cartão AUVP preto', quantidade: 1, valorUnitario: 165.0, site: null },
+      { produto: 'Carteira AUVP', quantidade: 1, valorUnitario: 35.0, site: null, emEstoque: true },
     ],
     historico: [
       {
@@ -241,20 +113,20 @@ const SOLICITACOES = [
     destinatario: 'Juliana Moreira Dias',
     itens: [
       {
-        produto: 'Vela aromática AUVP',
+        produto: 'Kit Presente Granado',
         quantidade: 1,
-        valorUnitario: 112.0,
+        valorUnitario: 150.0,
         site: null,
-        categoria: 'Casa & mesa',
+        categoria: 'Beleza e Bem estar',
         emEstoque: false,
       },
       {
-        produto: 'Licor AUVP “Punch Me Up”',
+        produto: 'Whisky Woodford Reserve Bourbon',
         quantidade: 1,
-        valorUnitario: 189.0,
+        valorUnitario: 250.0,
         site: null,
         // Sem link próprio: o site vem do fornecedor padrão da categoria.
-        categoria: 'Bebidas',
+        categoria: 'Bebida',
         emEstoque: false,
       },
       {
@@ -286,7 +158,9 @@ const SOLICITACOES = [
     carta: 'Marina, obrigado pela confiança de sempre.',
     entrega: 'Avenida Paulista, 1000 — Apto 152, Bela Vista, São Paulo/SP · 01310-100',
     destinatario: 'Marina Alves Pereira',
-    itens: [{ produto: 'Canivete AUVP Agro', quantidade: 1, valorUnitario: 245.0, site: null }],
+    itens: [
+      { produto: 'Kit Churrasco AUVP com faca', quantidade: 1, valorUnitario: 330.0, site: null },
+    ],
     historico: [
       {
         de: 'Comprado',
@@ -314,16 +188,16 @@ const SOLICITACOES = [
     // direto para a expedição.
     itens: [
       {
-        produto: 'Caneca AUVP II — grafismo dourado',
+        produto: 'Boné Capitalismo',
         quantidade: 2,
-        valorUnitario: 68.0,
+        valorUnitario: 35.0,
         site: null,
         emEstoque: true,
       },
       {
-        produto: 'Agenda AUVP',
+        produto: 'Kit Mochila AUVP',
         quantidade: 1,
-        valorUnitario: 98.0,
+        valorUnitario: 135.0,
         site: null,
         emEstoque: true,
       },
@@ -360,9 +234,9 @@ const SOLICITACOES = [
     // Tudo em estoque: ao aprovar, o Admin já libera para envio.
     itens: [
       {
-        produto: 'Ecobag “Bolsa? Só a de valores”',
+        produto: 'Meia AUVP',
         quantidade: 2,
-        valorUnitario: 42.0,
+        valorUnitario: 25.0,
         site: null,
         emEstoque: true,
       },
@@ -385,11 +259,11 @@ const SOLICITACOES = [
     // Bebida não controla estoque: esta passa pelo Financeiro.
     itens: [
       {
-        produto: 'Licor AUVP “Punch Me Up”',
+        produto: 'Whisky Woodford Reserve Bourbon',
         quantidade: 1,
-        valorUnitario: 189.0,
+        valorUnitario: 250.0,
         site: null,
-        categoria: 'Bebidas',
+        categoria: 'Bebida',
         emEstoque: false,
       },
     ],

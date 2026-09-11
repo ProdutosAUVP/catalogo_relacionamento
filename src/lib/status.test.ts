@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { StatusSolicitacao } from '@prisma/client'
+import { OrigemProduto, StatusSolicitacao } from '@prisma/client'
 import {
   FLUXO_LINEAR,
   caminhoDeEncaminhamento,
@@ -154,26 +154,28 @@ describe('atalho para a expedição', () => {
 })
 
 describe('precisa de compra', () => {
-  const emEstoque = { controlaEstoque: true, estoque: 10 }
+  const daPrateleira = {
+    origem: OrigemProduto.estoque_interno,
+    controlaEstoque: false,
+    estoque: null,
+  }
+  const emEstoque = { origem: OrigemProduto.estoque_interno, controlaEstoque: true, estoque: 10 }
+  const sobDemanda = {
+    origem: OrigemProduto.mediante_pedido,
+    controlaEstoque: false,
+    estoque: null,
+  }
 
   it('não precisa quando tudo é de catálogo e há estoque', () => {
     expect(precisaDeCompra([{ produtoId: 'p1', quantidade: 2, produto: emEstoque }])).toBe(false)
   })
 
   it('precisa quando o estoque não cobre a quantidade pedida', () => {
-    expect(
-      precisaDeCompra([
-        { produtoId: 'p1', quantidade: 20, produto: { controlaEstoque: true, estoque: 10 } },
-      ]),
-    ).toBe(true)
+    expect(precisaDeCompra([{ produtoId: 'p1', quantidade: 20, produto: emEstoque }])).toBe(true)
   })
 
-  it('precisa quando o produto não controla estoque', () => {
-    expect(
-      precisaDeCompra([
-        { produtoId: 'p1', quantidade: 1, produto: { controlaEstoque: false, estoque: null } },
-      ]),
-    ).toBe(true)
+  it('precisa quando o produto é comprado sob demanda', () => {
+    expect(precisaDeCompra([{ produtoId: 'p1', quantidade: 1, produto: sobDemanda }])).toBe(true)
   })
 
   it('precisa quando há presente específico', () => {
@@ -189,6 +191,12 @@ describe('precisa de compra', () => {
     ).toBe(true)
   })
 
+  it('prateleira sem contagem de peças não vai ao Financeiro', () => {
+    // O caso da maioria do catálogo: a área sabe que tem, mas não conta as
+    // peças. Antes isso mandava tudo para a compra.
+    expect(precisaDeCompra([{ produtoId: 'p1', quantidade: 3, produto: daPrateleira }])).toBe(false)
+  })
+
   it('sugere o próximo status conforme a necessidade de compra', () => {
     expect(proximoDepoisDaAprovacao([{ produtoId: 'p1', quantidade: 1, produto: emEstoque }])).toBe(
       StatusSolicitacao.organizando_envio,
@@ -196,12 +204,19 @@ describe('precisa de compra', () => {
     expect(proximoDepoisDaAprovacao([{ produtoId: null, quantidade: 1 }])).toBe(
       StatusSolicitacao.aguardando_compra,
     )
+    expect(
+      proximoDepoisDaAprovacao([{ produtoId: 'p1', quantidade: 1, produto: sobDemanda }]),
+    ).toBe(StatusSolicitacao.aguardando_compra)
   })
 })
 
 describe('encaminhamento em lote', () => {
-  const emEstoque = { controlaEstoque: true, estoque: 10 }
-  const noCatalogo = [{ produtoId: 'p1', quantidade: 1, produto: emEstoque }]
+  const daPrateleira = {
+    origem: OrigemProduto.estoque_interno,
+    controlaEstoque: false,
+    estoque: null,
+  }
+  const noCatalogo = [{ produtoId: 'p1', quantidade: 1, produto: daPrateleira }]
   const especifico = [{ produtoId: null, quantidade: 1 }]
 
   it('nada sai de pendente sem passar pela aprovação', () => {

@@ -96,7 +96,11 @@ export async function filaDeExpedicao(
       consultor: { select: { nome: true } },
       cliente: { select: { nome: true, cpf: true, telefone: true } },
       itens: {
-        include: { produto: { select: { nome: true, controlaEstoque: true, estoque: true } } },
+        include: {
+          produto: {
+            select: { nome: true, origem: true, controlaEstoque: true, estoque: true },
+          },
+        },
       },
     },
     // Mais antigas primeiro: a expedição trabalha por ordem de chegada.

@@ -1,4 +1,4 @@
-import type { Prisma, TipoValor, OrigemCliente } from '@prisma/client'
+import type { Prisma, TipoValor, OrigemCliente, OrigemProduto } from '@prisma/client'
 
 /**
  * Contratos das fontes de dados de catálogo e de clientes.
@@ -21,11 +21,18 @@ export type ProdutoDoCatalogo = {
   categoriaId: string
   categoriaNome: string
   fotoUrl: string | null
-  valor: Prisma.Decimal
+  /** Nulo quando a área ainda não informou o preço. Nulo não é zero. */
+  valor: Prisma.Decimal | null
   tipoValor: TipoValor
+  /** Prateleira ou compra sob demanda — decide se passa pelo Financeiro. */
+  origem: OrigemProduto
   /** Quando false, a tela omite disponibilidade em vez de exibir zero. */
   controlaEstoque: boolean
   estoque: number | null
+  /** Onde o Financeiro compra. Vence o fornecedor padrão da categoria. */
+  urlCompra: string | null
+  /** Instrução de compra que não é link — "Pedido direto ao fornecedor". */
+  notaDeCompra: string | null
   ativo: boolean
   skuTiny: string | null
 }

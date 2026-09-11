@@ -23,7 +23,7 @@ export default async function NovaSolicitacaoPage() {
     descricao: p.descricao,
     categoriaNome: p.categoriaNome,
     fotoUrl: p.fotoUrl,
-    valor: p.valor.toNumber(),
+    valor: p.valor ? p.valor.toNumber() : null,
     tipoValor: p.tipoValor,
     controlaEstoque: p.controlaEstoque,
     estoque: p.estoque,

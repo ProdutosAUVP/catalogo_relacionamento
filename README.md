@@ -25,6 +25,7 @@ AUVP, que depende de credenciais do provedor.
 | Formulário de solicitação                    | pronto, em cinco etapas                        |
 | Mudança de status, com motivo e histórico    | pronto, individual e em lote                   |
 | Rastreio preenchido e visível ao consultor   | pronto, pelo caminho manual                    |
+| Catálogo de presentes                        | os 49 da planilha da área, com foto            |
 | Fila da expedição, com CSV e XLSX            | pronto — substitui a planilha feita à mão      |
 | CRUD de produto, cliente e usuário           | pronto, com foto e importação por CSV          |
 | Tiny ERP e Salesforce                        | fase 2, contratos já fixados                   |

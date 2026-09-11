@@ -8,8 +8,10 @@
  *
  * Roda como parte de `npm run demo:build`.
  */
-import { cpSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { ILUSTRACOES } from '../src/lib/ilustracoes'
+import { CATALOGO_AUVP, CATEGORIAS_AUVP, slugDoProduto } from '../prisma/catalogo-auvp'
 
 // --- ilustrações -----------------------------------------------------------
 writeFileSync(
@@ -36,6 +38,11 @@ const ICONES: Record<string, string> = {
   'notebook-pen': 'papelaria',
   gem: 'acessórios',
   wine: 'bebidas',
+  // Categorias da planilha da área, com os mesmos ícones de
+  // `visualDaCategoria` em `src/lib/categorias.ts`.
+  baby: 'bebês e crianças',
+  'book-open': 'livro',
+  sparkles: 'beleza e bem estar',
   house: 'casa & mesa',
   boxes: 'sacolas & caixas',
   package: 'padrao',
@@ -95,6 +102,17 @@ for (const [arquivo, chave] of Object.entries(ICONES)) {
 // Produtos usa o mesmo traçado de `padrao` (o pacote), como no menu da aplicação.
 svgs['tela:produtos'] = svgs.padrao!
 
+// Dois nomes para o mesmo desenho: a planilha da área usa "Bebida" no
+// singular, e "Personalizado AUVP" reaproveita o ícone de acessórios, como a
+// aplicação faz em `visualDaCategoria`.
+const APELIDOS: Record<string, string> = {
+  bebida: 'bebidas',
+  'personalizado auvp': 'acessórios',
+}
+for (const [apelido, original] of Object.entries(APELIDOS)) {
+  svgs[apelido] = svgs[original]!
+}
+
 writeFileSync(
   'demo/icones.js',
   `/* Gerado por scripts/gerar-assets-vitrine.ts — não editar à mão.
@@ -113,3 +131,45 @@ console.log(
 cpSync('public/produtos', 'demo/produtos', { recursive: true })
 
 console.log('demo/produtos: fotos copiadas de public/produtos')
+
+// ---------------------------------------------------------------------------
+// Catálogo da vitrine
+// ---------------------------------------------------------------------------
+
+/**
+ * A vitrine mostra o catálogo de verdade, gerado da mesma fonte do seed.
+ *
+ * Antes ela tinha a própria cópia dos produtos, em `demo/dados.js`. Duas
+ * cópias da mesma lista divergem no primeiro produto que a área acrescenta —
+ * e quem aprova o V1 olha justamente a vitrine.
+ */
+const produtosDaVitrine = CATALOGO_AUVP.map((p) => ({
+  slug: slugDoProduto(p.nome),
+  nome: p.nome,
+  categoria: p.categoria,
+  valor: p.valor === null ? null : Number(p.valor),
+  origem: p.origem,
+  // Tudo o que está na planilha está ativo. A vitrine mantém o campo porque a
+  // tela filtra por ele, como a aplicação.
+  ativo: true,
+  urlCompra: p.urlCompra ?? null,
+  notaDeCompra: p.notaDeCompra ?? null,
+  // Sem o arquivo em `public/produtos/`, o card desenha a ilustração da
+  // categoria — o mesmo que a aplicação faz.
+  semFoto: !existsSync(join('public/produtos', `${slugDoProduto(p.nome)}.webp`)),
+}))
+
+writeFileSync(
+  'demo/produtos.js',
+  `/* Gerado por scripts/gerar-assets-vitrine.ts — não editar à mão.
+   O catálogo vem de prisma/catalogo-auvp.ts, a mesma fonte do seed. */
+const CATEGORIAS = ${JSON.stringify([...CATEGORIAS_AUVP], null, 2)}
+const PRODUTOS = ${JSON.stringify(produtosDaVitrine, null, 2)}
+`,
+)
+
+const semFoto = produtosDaVitrine.filter((p) => p.semFoto).length
+console.log(
+  `demo/produtos.js: ${produtosDaVitrine.length} produtos` +
+    (semFoto > 0 ? ` (${semFoto} sem foto, com ilustração)` : ''),
+)

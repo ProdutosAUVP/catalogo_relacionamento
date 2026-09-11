@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { TipoValor } from '@prisma/client'
+import { OrigemProduto, TipoValor } from '@prisma/client'
 import { Loader2, Plus, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialogo } from '@/components/ui/dialogo'
@@ -28,10 +28,14 @@ export type ProdutoEditavel = {
   descricao: string | null
   categoriaId: string
   fotoUrl: string | null
+  /** Vazio quando a área ainda não informou o preço. */
   valor: string
   tipoValor: TipoValor
+  origem: OrigemProduto
   controlaEstoque: boolean
   estoque: number | null
+  urlCompra: string | null
+  notaDeCompra: string | null
   ativo: boolean
   skuTiny: string | null
 }
@@ -50,6 +54,9 @@ export function EditorDeProduto({
   const [salvando, iniciar] = useTransition()
   const [erro, setErro] = useState<string | null>(null)
   const [controlaEstoque, setControlaEstoque] = useState(produto?.controlaEstoque ?? false)
+  const [origem, setOrigem] = useState<OrigemProduto>(
+    produto?.origem ?? OrigemProduto.mediante_pedido,
+  )
   const [previa, setPrevia] = useState<string | null>(null)
 
   const editando = Boolean(produto)
@@ -59,6 +66,7 @@ export function EditorDeProduto({
     setErro(null)
     setPrevia(null)
     setControlaEstoque(produto?.controlaEstoque ?? false)
+    setOrigem(produto?.origem ?? OrigemProduto.mediante_pedido)
     setAberto(true)
   }
 
@@ -161,11 +169,14 @@ export function EditorDeProduto({
               <Input
                 id="produto-valor"
                 name="valor"
-                required
                 inputMode="decimal"
                 defaultValue={produto?.valor}
-                placeholder="0,00"
+                placeholder="a definir"
               />
+              <p className="text-muted-foreground text-xs">
+                Em branco, o catálogo mostra “valor a definir” — e o presente não soma no gasto do
+                mês de quem o pedir.
+              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -182,41 +193,99 @@ export function EditorDeProduto({
           </div>
 
           <div className="space-y-3 rounded-lg border p-4">
-            <label className="flex items-center gap-2.5 text-sm font-medium">
-              <input
-                type="checkbox"
-                name="controlaEstoque"
-                checked={controlaEstoque}
-                onChange={(e) => setControlaEstoque(e.target.checked)}
-                className="accent-primary size-4"
-              />
-              Controlar estoque deste produto
-            </label>
+            <div className="space-y-1.5">
+              <Label htmlFor="produto-origem">De onde sai</Label>
+              <Select
+                id="produto-origem"
+                name="origem"
+                value={origem}
+                onChange={(e) => setOrigem(e.target.value as OrigemProduto)}
+              >
+                <option value={OrigemProduto.estoque_interno}>
+                  Estoque interno — já está na prateleira
+                </option>
+                <option value={OrigemProduto.mediante_pedido}>
+                  Mediante pedido — comprado quando alguém pede
+                </option>
+              </Select>
+              <p className="text-muted-foreground text-xs">
+                {origem === OrigemProduto.estoque_interno
+                  ? 'Não passa pelo Financeiro: ao aprovar, o Admin já libera para envio.'
+                  : 'Passa pelo Financeiro, que compra antes de a expedição separar.'}
+              </p>
+            </div>
 
-            {controlaEstoque ? (
+            {origem === OrigemProduto.estoque_interno ? (
+              <div className="space-y-3 border-t pt-3">
+                <label className="flex items-center gap-2.5 text-sm font-medium">
+                  <input
+                    type="checkbox"
+                    name="controlaEstoque"
+                    checked={controlaEstoque}
+                    onChange={(e) => setControlaEstoque(e.target.checked)}
+                    className="accent-primary size-4"
+                  />
+                  Contar as peças deste produto
+                </label>
+
+                {controlaEstoque ? (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="produto-estoque">Quantidade em estoque</Label>
+                    <Input
+                      id="produto-estoque"
+                      name="estoque"
+                      type="number"
+                      min={0}
+                      required
+                      defaultValue={produto?.estoque ?? 0}
+                      className="max-w-40"
+                    />
+                    <p className="text-muted-foreground text-xs">
+                      Com a contagem ligada, um pedido maior que o saldo vai ao Financeiro mesmo
+                      sendo item de prateleira.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-xs">
+                    Sem contagem, o catálogo omite disponibilidade em vez de mostrar zero — é como o
+                    catálogo da área está hoje.
+                  </p>
+                )}
+              </div>
+            ) : null}
+          </div>
+
+          {origem === OrigemProduto.mediante_pedido ? (
+            <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="produto-estoque">Quantidade em estoque</Label>
+                <Label htmlFor="produto-url-compra">Onde comprar</Label>
                 <Input
-                  id="produto-estoque"
-                  name="estoque"
-                  type="number"
-                  min={0}
-                  required
-                  defaultValue={produto?.estoque ?? 0}
-                  className="max-w-40"
+                  id="produto-url-compra"
+                  name="urlCompra"
+                  type="url"
+                  defaultValue={produto?.urlCompra ?? ''}
+                  placeholder="https://"
                 />
                 <p className="text-muted-foreground text-xs">
-                  É o que decide se a solicitação passa pelo Financeiro: com saldo suficiente, a
-                  aprovação já libera o envio.
+                  É o link que o Financeiro abre na fila de compras.
                 </p>
               </div>
-            ) : (
-              <p className="text-muted-foreground text-xs">
-                Sem controle de estoque, a tela omite disponibilidade em vez de mostrar zero — e a
-                solicitação sempre passa pelo Financeiro.
-              </p>
-            )}
-          </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="produto-nota-compra">Instrução de compra</Label>
+                <Input
+                  id="produto-nota-compra"
+                  name="notaDeCompra"
+                  defaultValue={produto?.notaDeCompra ?? ''}
+                  placeholder="Pedido direto ao fornecedor"
+                />
+                <p className="text-muted-foreground text-xs">
+                  Para quando não há link, ou quando parte do kit vem de outro lugar. Convive com o
+                  link acima.
+                </p>
+              </div>
+            </div>
+          ) : null}
 
           <div className="space-y-2">
             <Label htmlFor="produto-foto">Foto</Label>

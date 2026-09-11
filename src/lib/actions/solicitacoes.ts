@@ -131,7 +131,10 @@ export async function criarSolicitacao(
           produtoId: item.produtoId,
           descricaoLivre: null,
           urlExterna: null,
-          valorUnitario: porId.get(item.produtoId)!.valor,
+          // Produto sem preço informado congela como zero: é melhor do que
+          // recusar a solicitação por um dado que só a área pode preencher.
+          // O catálogo avisa "valor a definir" antes de a pessoa escolher.
+          valorUnitario: porId.get(item.produtoId)!.valor ?? new Prisma.Decimal(0),
           quantidade: item.quantidade,
         }
       }
@@ -281,7 +284,7 @@ export async function encaminharEmLote(
           select: {
             produtoId: true,
             quantidade: true,
-            produto: { select: { controlaEstoque: true, estoque: true } },
+            produto: { select: { origem: true, controlaEstoque: true, estoque: true } },
           },
         },
       },

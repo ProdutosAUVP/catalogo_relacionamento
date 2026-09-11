@@ -54,6 +54,17 @@ export function ProdutoImagem({
   const temVerso = Boolean(fotoUrl && fotoVersoUrl)
   const [virado, setVirado] = useState(false)
 
+  /**
+   * Foto que não carrega vira a ilustração da categoria.
+   *
+   * O catálogo da área aponta para o Drive dela, e link externo quebra: some,
+   * muda de permissão, passa a exigir login. Sem isto o card mostraria o ícone
+   * de imagem quebrada — que parece defeito do sistema, e não link vencido.
+   * A moldura tem proporção fixa, então a troca não desloca nada.
+   */
+  const [falhou, setFalhou] = useState(false)
+  const semFoto = !fotoUrl || falhou
+
   // Só o mouse vira a foto ao passar por cima: no toque o `pointerenter`
   // dispara junto do toque e brigaria com o clique, que também vira.
   const viraNoMouse = (proximo: boolean) => (e: React.PointerEvent) => {
@@ -69,7 +80,7 @@ export function ProdutoImagem({
         className,
       )}
     >
-      {!fotoUrl ? (
+      {semFoto ? (
         <svg
           viewBox="0 0 200 150"
           fill="none"
@@ -98,6 +109,7 @@ export function ProdutoImagem({
               height={ALTURA}
               priority={prioridade}
               unoptimized={semOtimizador(fotoUrl)}
+              onError={() => setFalhou(true)}
               sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 90vw"
               className="absolute inset-0 h-full w-full object-cover [backface-visibility:hidden]"
             />
@@ -107,6 +119,7 @@ export function ProdutoImagem({
               width={LARGURA}
               height={ALTURA}
               unoptimized={semOtimizador(fotoVersoUrl!)}
+              onError={() => setFalhou(true)}
               sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 90vw"
               className="absolute inset-0 h-full w-full [transform:rotateY(180deg)] object-cover [backface-visibility:hidden]"
             />
@@ -135,6 +148,7 @@ export function ProdutoImagem({
           height={ALTURA}
           priority={prioridade}
           unoptimized={semOtimizador(fotoUrl)}
+          onError={() => setFalhou(true)}
           sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 90vw"
           className="ease-apple h-full w-full object-cover transition-transform duration-500 sm:group-hover:scale-105"
         />

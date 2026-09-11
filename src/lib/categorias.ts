@@ -1,4 +1,16 @@
-import { Boxes, CupSoda, Gem, Home, NotebookPen, Package, Shirt, Wine } from 'lucide-react'
+import {
+  Baby,
+  Boxes,
+  BookOpen,
+  CupSoda,
+  Gem,
+  Home,
+  NotebookPen,
+  Package,
+  Shirt,
+  Sparkles,
+  Wine,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 /**
@@ -26,6 +38,14 @@ export const CLASSES_DE_TOM: Record<Tom, string> = {
 }
 
 const VISUAL: Record<string, { tom: Tom; icone: LucideIcon }> = {
+  // Categorias da planilha da área.
+  'personalizado auvp': { tom: 'green', icone: Gem },
+  'bebês e crianças': { tom: 'blue', icone: Baby },
+  bebida: { tom: 'amber', icone: Wine },
+  'beleza e bem estar': { tom: 'magenta', icone: Sparkles },
+  livro: { tom: 'olive', icone: BookOpen },
+
+  // Nomes da Central, mantidos porque o seed antigo e a vitrine usam.
   'canecas e garrafas': { tom: 'green', icone: CupSoda },
   vestuário: { tom: 'magenta', icone: Shirt },
   papelaria: { tom: 'blue', icone: NotebookPen },

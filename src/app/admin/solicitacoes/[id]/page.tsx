@@ -32,7 +32,11 @@ export default async function DetalheSolicitacaoPage({
       cliente: true,
       consultor: { select: { nome: true } },
       itens: {
-        include: { produto: { select: { nome: true, controlaEstoque: true, estoque: true } } },
+        include: {
+          produto: {
+            select: { nome: true, origem: true, controlaEstoque: true, estoque: true },
+          },
+        },
       },
       historico: {
         include: { usuario: { select: { nome: true } } },

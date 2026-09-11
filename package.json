@@ -2,7 +2,7 @@
   "name": "catalogo-presentes",
   "version": "0.1.0",
   "private": true,
-  "description": "Cat\u00e1logo e Solicita\u00e7\u00e3o de Presentes \u2014 \u00e1rea de Relacionamento AUVP",
+  "description": "Catálogo e Solicitação de Presentes — área de Relacionamento AUVP",
   "engines": {
     "node": ">=20.11"
   },
@@ -26,7 +26,8 @@
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test",
     "lint:fix": "eslint . --fix",
     "demo:build": "tsx scripts/gerar-assets-vitrine.ts && tailwindcss -i demo/tailwind.css -o demo/estilo.css --minify",
-    "demo:dev": "tailwindcss -i demo/tailwind.css -o demo/estilo.css --watch"
+    "demo:dev": "tailwindcss -i demo/tailwind.css -o demo/estilo.css --watch",
+    "fotos:preparar": "tsx scripts/preparar-fotos.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
