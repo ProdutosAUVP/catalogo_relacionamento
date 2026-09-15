@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { Prisma, StatusSolicitacao } from '@prisma/client'
 import { db } from '@/lib/db'
 import { autorizarAction } from '@/lib/auth-guards'
+import { filtroDeSolicitacoes } from '@/lib/permissions'
 import { proximoCodigo } from '@/lib/codigo'
 import { totalDosItens } from '@/lib/money'
 import { normalizarCpf } from '@/lib/cpf'
@@ -58,6 +59,61 @@ export async function buscarClientePorCpf(
     })
 
     return { ok: true, dados: cliente }
+  } catch (e) {
+    return comoErro(e)
+  }
+}
+
+export type PresenteJaEnviado = {
+  codigo: string
+  data: Date
+  status: StatusSolicitacao
+  itens: string[]
+}
+
+/**
+ * O que este consultor já mandou para este cliente.
+ *
+ * Existe para não repetir presente. A área manda para o mesmo cliente
+ * ano após ano, e a caneca que ele ganhou no aniversário passado é a pior
+ * escolha possível para o próximo.
+ *
+ * O recorte é o do perfil, e não o do cliente: consultor só enxerga as
+ * próprias solicitações, então a lista diz "o que você mandou", não "o que o
+ * cliente recebeu". Admin e Financeiro veem tudo, como em toda outra tela.
+ */
+export async function presentesJaEnviados(
+  clienteId: string,
+): Promise<ResultadoDaAction<PresenteJaEnviado[]>> {
+  try {
+    const usuario = await autorizarAction('solicitacao.criar')
+
+    const linhas = await db.solicitacao.findMany({
+      where: {
+        clienteId,
+        ...filtroDeSolicitacoes(usuario.perfil, usuario.id),
+      },
+      select: {
+        codigo: true,
+        dataSolicitacao: true,
+        status: true,
+        itens: { select: { descricaoLivre: true, produto: { select: { nome: true } } } },
+      },
+      orderBy: { dataSolicitacao: 'desc' },
+      // Cinco cabem na tela sem empurrar o formulário para baixo, e é mais do
+      // que a área manda para um mesmo cliente num ano.
+      take: 5,
+    })
+
+    return {
+      ok: true,
+      dados: linhas.map((l) => ({
+        codigo: l.codigo,
+        data: l.dataSolicitacao,
+        status: l.status,
+        itens: l.itens.map((i) => i.produto?.nome ?? i.descricaoLivre ?? 'item'),
+      })),
+    }
   } catch (e) {
     return comoErro(e)
   }

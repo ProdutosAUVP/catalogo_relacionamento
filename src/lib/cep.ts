@@ -14,6 +14,12 @@ export function cepValido(valor: string): boolean {
   return normalizarCep(valor).length === 8
 }
 
+/** Máscara progressiva, para o campo que está sendo digitado. */
+export function mascaraDeCep(valor: string): string {
+  const d = normalizarCep(valor).slice(0, 8)
+  return d.length <= 5 ? d : `${d.slice(0, 5)}-${d.slice(5)}`
+}
+
 export function formatarCep(valor: string): string {
   const d = normalizarCep(valor)
   if (d.length !== 8) return valor

@@ -1,5 +1,6 @@
 import { exigirPermissao } from '@/lib/auth-guards'
 import { catalogoProvider } from '@/lib/providers'
+import { saldoDoMes } from '@/lib/saldo'
 import { CabecalhoDaPagina } from '@/components/pagina'
 import { FormularioDeSolicitacao, type ProdutoDoCatalogo } from './formulario'
 
@@ -11,11 +12,18 @@ import { FormularioDeSolicitacao, type ProdutoDoCatalogo } from './formulario'
  * mais do que economizaria. `Prisma.Decimal` não atravessa a fronteira do
  * servidor, então o valor vira `number` aqui; o valor que conta é o relido do
  * banco no momento de gravar, em `criarSolicitacao`.
+ *
+ * O saldo do mês vem junto porque a decisão que ele muda acontece aqui: saber
+ * que restam R$ 200 enquanto se escolhe o presente é diferente de descobrir
+ * isso depois, na lista.
  */
 export default async function NovaSolicitacaoPage() {
-  await exigirPermissao('solicitacao.criar')
+  const usuario = await exigirPermissao('solicitacao.criar')
 
-  const pagina = await catalogoProvider.listar({ apenasAtivos: true, porPagina: 500 })
+  const [pagina, saldo] = await Promise.all([
+    catalogoProvider.listar({ apenasAtivos: true, porPagina: 500 }),
+    saldoDoMes(usuario.id),
+  ])
 
   const produtos: ProdutoDoCatalogo[] = pagina.itens.map((p) => ({
     id: p.id,
@@ -41,7 +49,12 @@ export default async function NovaSolicitacaoPage() {
         descricao="Cinco etapas, do cliente à revisão. Nada é enviado antes da última."
       />
 
-      <FormularioDeSolicitacao produtos={produtos} />
+      <FormularioDeSolicitacao
+        produtos={produtos}
+        consultor={usuario.nome}
+        gastoNoMes={saldo.gasto.toNumber()}
+        limiteMensal={saldo.limite ? saldo.limite.toNumber() : null}
+      />
     </>
   )
 }

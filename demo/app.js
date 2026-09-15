@@ -353,150 +353,735 @@ function telaCatalogo() {
     </p>`
 }
 
-/**
- * Nova solicitação.
- *
- * A vitrine mostra a etapa 2 (itens), que é a mais visual das cinco, com a
- * trilha de progresso e o resumo lateral, os mesmos de
- * `src/app/solicitacoes/nova/formulario.tsx`. O formulário é interativo no
- * sistema real; aqui ele está congelado, para caber numa página estática.
- */
-function telaNova() {
-  const ETAPAS = ['Cliente', 'Itens', 'Entrega', 'Carta', 'Revisão']
-  const ATUAL = 1
+// --- nova solicitação: estado do protótipo ----------------------------------
 
-  const trilha = ETAPAS.map((nome, i) => {
-    const concluida = i < ATUAL
-    const atual = i === ATUAL
+/**
+ * O fluxo de nova solicitação é navegável de verdade nesta vitrine.
+ *
+ * As outras telas são retratos: esta é o caminho inteiro, as cinco etapas, com
+ * as regras que mandam nele. É o que a área precisa percorrer para aprovar o
+ * V1, porque é aqui que o consultor passa o tempo dele.
+ *
+ * O que está reproduzido, e não simulado por cima: a trava do kit que embala
+ * bebida, o limite do mês, a validação por campo, a prévia da carta e a rota
+ * que o pedido segue depois da aprovação. O que não existe aqui é servidor:
+ * o CPF encontra um cliente fixo e nada é gravado.
+ */
+let novaEtapa = 0
+let novaMaiorEtapa = 0
+let novaConferir = false
+let novaCpf = ''
+let novaCliente = null
+let novaItens = []
+let novaBusca = ''
+let novaCategoria = ''
+let novaAcompanhamento = null
+let novaEntrega = {
+  cep: '',
+  logradouro: '',
+  numero: '',
+  complemento: '',
+  bairro: '',
+  cidade: '',
+  uf: '',
+  destinatario: '',
+}
+let novaCarta = { motivo: 'Aniversário', motivoOutro: '', mensagem: '' }
+
+const NOVA_ETAPAS = ['Cliente', 'Itens', 'Entrega', 'Carta', 'Revisão']
+const NOVA_CONSULTOR = 'Carlos Consultor'
+const NOVA_LIMITE = 5000
+const NOVA_GASTO_ANTERIOR = 1126
+
+/** O cliente que o CPF de exemplo encontra. Não há banco nesta vitrine. */
+const NOVA_CLIENTE_EXEMPLO = {
+  nome: 'Marina Alves Pereira',
+  cpf: '529.982.247-25',
+  telefone: '(11) 98888-7777',
+  email: 'marina@exemplo.com.br',
+  jaRecebeu: [
+    {
+      data: '12/02/2026',
+      itens: 'Vinho Silk & Spice, Kit Café Constantino',
+      status: 'aguardando_compra',
+    },
+  ],
+}
+
+const MODELOS_DEMO = {
+  Aniversário: [
+    'Feliz aniversário, {nome}! Que este novo ano venha com saúde, conquistas e boas decisões. Obrigado por caminhar com a gente.',
+    'Parabéns, {nome}! Um brinde a mais um ano e a tudo o que você vem construindo.',
+  ],
+  Casamento: [
+    'Parabéns pelo casamento, {nome}! Que a vida a dois seja tão bem planejada quanto os sonhos de vocês.',
+  ],
+  Nascimento: [
+    'Parabéns pela chegada do bebê, {nome}! Que venha muita saúde e um futuro bem preparado.',
+  ],
+  'Reforço de relacionamento': [
+    'Oi, {nome}! Passando para agradecer pela confiança. Seguimos juntos e à disposição sempre que precisar.',
+  ],
+  'Primeiro milhão': [
+    'Parabéns pelo primeiro milhão, {nome}! É o resultado de consistência e de boas escolhas.',
+  ],
+  Outro: ['Oi, {nome}! Este presente é um jeito de dizer que a gente lembra de você.'],
+}
+
+const UFS_DEMO = [
+  'AC',
+  'AL',
+  'AP',
+  'AM',
+  'BA',
+  'CE',
+  'DF',
+  'ES',
+  'GO',
+  'MA',
+  'MT',
+  'MS',
+  'MG',
+  'PA',
+  'PB',
+  'PR',
+  'PE',
+  'PI',
+  'RJ',
+  'RN',
+  'RS',
+  'RO',
+  'RR',
+  'SC',
+  'SP',
+  'SE',
+  'TO',
+]
+
+const novaPrimeiroNome = (nome) => (nome || '').trim().split(/\s+/)[0] || ''
+
+const novaProdutoPorSlug = (slug) => PRODUTOS.find((p) => p.slug === slug)
+
+const novaTotal = () =>
+  novaItens.reduce((acc, i) => acc + (novaProdutoPorSlug(i.slug)?.valor ?? 0) * i.quantidade, 0)
+
+/** Espelha `acompanhamentosFaltando` de src/lib/acompanhamentos.ts. */
+function novaPendencias() {
+  const oferecidos = new Set(
+    novaItens.map((i) => novaProdutoPorSlug(i.slug)?.serveComoAcompanhamento).filter(Boolean),
+  )
+  const faltando = new Map()
+  for (const item of novaItens) {
+    const p = novaProdutoPorSlug(item.slug)
+    if (!p?.exigeAcompanhamento || oferecidos.has(p.exigeAcompanhamento)) continue
+    const nomes = faltando.get(p.exigeAcompanhamento) ?? []
+    if (!nomes.includes(p.nome)) nomes.push(p.nome)
+    faltando.set(p.exigeAcompanhamento, nomes)
+  }
+  return [...faltando.entries()].map(([exigencia, produtos]) => ({ exigencia, produtos }))
+}
+
+/** Espelha `precisaDeCompra` de src/lib/status.ts. */
+const novaPassaPeloFinanceiro = () =>
+  novaItens.some((i) => novaProdutoPorSlug(i.slug)?.origem !== 'estoque_interno')
+
+/** Espelha a validação por campo do formulário real. */
+function novaProblemas(etapa) {
+  const p = {}
+  if (etapa === 0 && !novaCliente) p.cpf = 'Informe o CPF do cliente.'
+  if (etapa === 1) {
+    if (novaItens.length === 0) p.itens = 'Escolha ao menos um presente.'
+    else if (novaPendencias().length > 0) p.itens = 'Falta o acompanhamento.'
+  }
+  if (etapa === 2) {
+    if (novaEntrega.cep.replace(/\D/g, '').length !== 8) p.cep = 'CEP deve ter 8 dígitos.'
+    if (!novaEntrega.logradouro.trim()) p.logradouro = 'Informe a rua ou avenida.'
+    if (!novaEntrega.numero.trim()) p.numero = 'Informe o número, ou "s/n".'
+    if (!novaEntrega.bairro.trim()) p.bairro = 'Informe o bairro.'
+    if (!novaEntrega.cidade.trim()) p.cidade = 'Informe a cidade.'
+    if (novaEntrega.uf.length !== 2) p.uf = 'Escolha o estado.'
+    if (!novaEntrega.destinatario.trim()) p.destinatario = 'Informe quem recebe o presente.'
+  }
+  if (etapa === 3) {
+    if (!novaCarta.mensagem.trim()) p.mensagem = 'Escreva a mensagem da carta.'
+    if (novaCarta.motivo === 'Outro' && !novaCarta.motivoOutro.trim())
+      p.motivoOutro = 'Diga qual é o motivo.'
+  }
+  return p
+}
+
+const erroDoCampo = (erros, chave) =>
+  erros[chave]
+    ? `<p class="flex items-start gap-1.5 text-xs text-error"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 size-3 shrink-0"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>${esc(erros[chave])}</p>`
+    : ''
+
+const campoDemo = (id, rotulo, valor, erros, extra = '') => `
+  <div class="space-y-1.5 ${extra}">
+    <label for="${id}" class="font-ui text-sm font-medium">${esc(rotulo)}</label>
+    <input id="${id}" data-nova-campo="${id}" value="${esc(valor)}"
+      class="h-10 w-full rounded-md border bg-background px-3 text-sm ${erros[id] ? 'border-error' : 'border-input'}" />
+    ${erroDoCampo(erros, id)}
+  </div>`
+
+// --- nova solicitação: as cinco etapas --------------------------------------
+
+function novaTrilha() {
+  return NOVA_ETAPAS.map((nome, i) => {
+    const pendente = i <= novaMaiorEtapa && Object.keys(novaProblemas(i)).length > 0
+    const concluida = i < novaMaiorEtapa && !pendente
+    const atual = i === novaEtapa
     const marca = concluida
       ? '<span class="grid size-5 place-items-center rounded-full bg-success text-[10px] font-bold text-success-foreground">✓</span>'
       : `<span class="grid size-5 place-items-center rounded-full ${
-          atual ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+          atual
+            ? 'bg-primary text-primary-foreground'
+            : pendente
+              ? 'bg-warning text-warning-foreground'
+              : 'bg-muted text-muted-foreground'
         } text-[10px] font-bold">${i + 1}</span>`
 
     return `
       <li class="flex items-center gap-1">
-        <span class="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm ${
-          atual
-            ? 'bg-primary/10 font-medium text-primary-emphasis'
-            : concluida
-              ? 'text-muted-foreground'
-              : 'text-muted-foreground/60'
-        }">${marca}${esc(nome)}</span>
-        ${i < ETAPAS.length - 1 ? '<span class="h-px w-5 bg-border"></span>' : ''}
+        <button ${i <= novaMaiorEtapa ? `data-nova-ir="${i}"` : 'disabled'}
+          class="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors ${
+            atual
+              ? 'bg-primary/10 font-medium text-primary-emphasis'
+              : i <= novaMaiorEtapa
+                ? 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                : 'text-muted-foreground/60'
+          }">${marca}${esc(nome)}</button>
+        ${i < NOVA_ETAPAS.length - 1 ? '<span class="h-px w-5 bg-border"></span>' : ''}
       </li>`
   }).join('')
+}
 
-  // O momento retratado é o do kit escolhido sem a bebida: é o que mostra a
-  // trava funcionando, que é a pergunta que a área fez.
-  // Com preço, para o resumo lateral não ficar zerado num item que a área
-  // ainda não precificou.
-  const kit =
-    PRODUTOS.find((p) => p.exigeAcompanhamento && p.valor !== null) ||
-    PRODUTOS.find((p) => p.exigeAcompanhamento) ||
-    PRODUTOS[0]
-  const escolhidos = [{ nome: kit.nome, quantidade: 1, valor: kit.valor ?? 0 }]
-  const total = escolhidos.reduce((acc, i) => acc + i.valor * i.quantidade, 0)
+function novaEtapaCliente(erros) {
+  const c = novaCliente
+  return `
+    <p class="font-display text-lg font-semibold">Para quem é o presente?</p>
+    <p class="mt-1 text-sm text-muted-foreground">
+      O CPF identifica o cliente. Se já existir, usamos o cadastro que está lá.
+    </p>
 
-  // A grade fica recortada no que serve de acompanhamento, como o atalho do
-  // aviso faz na aplicação.
-  const acompanhamentos = PRODUTOS.filter(
-    (p) => p.ativo && p.serveComoAcompanhamento === kit.exigeAcompanhamento,
-  ).slice(0, 6)
+    <div class="mt-5 flex flex-wrap items-start gap-2">
+      <div class="min-w-56 flex-1 space-y-1.5">
+        <label for="nova-cpf" class="font-ui text-sm font-medium">CPF do cliente</label>
+        <input id="nova-cpf" data-nova-campo="nova-cpf" value="${esc(novaCpf)}" placeholder="000.000.000-00"
+          class="h-10 w-full rounded-md border bg-background px-3 text-sm ${erros.cpf ? 'border-error' : 'border-input'}" />
+        ${erroDoCampo(erros, 'cpf')}
+        <p class="text-xs text-muted-foreground">Nesta demonstração, qualquer CPF com 11 dígitos encontra um cliente.</p>
+      </div>
+      <button data-nova-buscar class="font-ui mt-[1.6rem] h-10 rounded-[5px] border border-primary bg-primary px-5 text-sm font-semibold uppercase text-primary-foreground">
+        Buscar
+      </button>
+    </div>
 
-  const cards = acompanhamentos
-    .map(
-      (p) => `
-      <div class="group flex flex-col overflow-hidden rounded-xl border text-left">
+    ${
+      c
+        ? `<div class="mt-5 space-y-3 rounded-lg border border-success/30 bg-success/10 p-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="font-ui text-xs font-semibold uppercase tracking-wider text-success">Cliente encontrado</p>
+                <p class="mt-1.5 font-medium">${esc(c.nome)}</p>
+                <p class="text-sm tabular-nums text-muted-foreground">${esc(c.cpf)}</p>
+              </div>
+              <button data-nova-trocar class="text-sm text-muted-foreground underline-offset-4 hover:underline">Trocar de cliente</button>
+            </div>
+            <dl class="grid gap-x-6 gap-y-1 text-sm text-muted-foreground sm:grid-cols-2">
+              <div class="flex gap-2"><dt>Telefone</dt><dd class="text-foreground tabular-nums">${esc(c.telefone)}</dd></div>
+              <div class="flex min-w-0 gap-2"><dt>E-mail</dt><dd class="truncate text-foreground">${esc(c.email)}</dd></div>
+            </dl>
+            <div class="space-y-2 border-t pt-3">
+              <p class="font-ui text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Você já mandou</p>
+              ${c.jaRecebeu
+                .map(
+                  (h) => `<p class="flex flex-wrap items-center gap-x-2 text-sm">
+                    <span class="tabular-nums text-muted-foreground">${esc(h.data)}</span>
+                    <span class="min-w-0 flex-1">${esc(h.itens)}</span>
+                    ${selo(h.status)}
+                  </p>`,
+                )
+                .join('')}
+              <p class="text-xs text-muted-foreground">Existe para não repetir o presente do ano passado.</p>
+            </div>
+          </div>`
+        : ''
+    }`
+}
+
+function novaEtapaItens(erros) {
+  const pendencias = novaPendencias()
+  const total = novaTotal()
+  const depois = NOVA_GASTO_ANTERIOR + total
+
+  const base = novaAcompanhamento
+    ? PRODUTOS.filter((p) => p.ativo && p.serveComoAcompanhamento === novaAcompanhamento)
+    : PRODUTOS.filter((p) => p.ativo)
+
+  const termo = novaBusca.trim().toLowerCase()
+  const visiveis = base.filter(
+    (p) =>
+      (!novaCategoria || p.categoria === novaCategoria) &&
+      (!termo || p.nome.toLowerCase().includes(termo)),
+  )
+
+  const categorias = [...new Set(base.map((p) => p.categoria))]
+    .map((nome) => ({ nome, total: base.filter((p) => p.categoria === nome).length }))
+    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+
+  const pilula = (rotulo, valor, ativa, qtd) => `
+    <button data-nova-cat="${esc(valor)}" class="rounded-xl border px-3 py-1.5 text-left transition-[border-color,background-color] ${
+      ativa ? 'border-primary bg-primary/5 ring-2 ring-primary/25' : 'hover:border-primary/40'
+    }">
+      <span class="font-display block text-xs font-bold leading-tight whitespace-nowrap">${esc(rotulo)}</span>
+      <span class="font-roboto mt-0.5 block text-[10px] leading-tight text-muted-foreground">${qtd} ${qtd === 1 ? 'item' : 'itens'}</span>
+    </button>`
+
+  const cards = visiveis
+    .slice(0, 12)
+    .map((p) => {
+      const qtd = novaItens.find((i) => i.slug === p.slug)?.quantidade ?? 0
+      return `
+      <div class="relative flex flex-col overflow-hidden rounded-xl border transition-[border-color,box-shadow] ${
+        qtd > 0 ? 'border-primary ring-2 ring-primary/20' : 'hover:border-primary/40'
+      }">
         ${imagemDoProduto(p)}
-        <div class="flex flex-1 flex-col gap-1 p-3">
-          ${categoriaBadge(p.categoria)}
+        ${qtd > 0 ? `<span class="font-ui absolute right-2 top-2 z-20 grid size-7 place-items-center rounded-full bg-primary text-xs font-bold tabular-nums text-primary-foreground">${qtd}</span>` : ''}
+        <div class="flex flex-1 flex-col items-start gap-1 p-3">
+          <div class="flex flex-wrap items-center gap-1.5">${categoriaBadge(p.categoria)}${seloDeAcompanhamento(p)}</div>
           <p class="font-display text-sm font-semibold leading-snug">${esc(p.nome)}</p>
           ${linkDaLoja(p)}
-          <p class="mt-auto pt-1 text-sm font-medium">
-            ${preco(p)}
-          </p>
+          <p class="mt-auto pt-1 text-sm font-medium">${preco(p)}</p>
         </div>
-      </div>`,
-    )
+        <button data-nova-add="${p.slug}" aria-label="Adicionar ${esc(p.nome)}" class="absolute inset-0 z-10 cursor-pointer rounded-xl"></button>
+      </div>`
+    })
     .join('')
 
-  const resumo = escolhidos
-    .map(
-      (i) => `
-      <div class="flex items-start justify-between gap-3 py-2.5">
-        <div class="min-w-0">
-          <p class="text-sm font-medium">${esc(i.nome)}</p>
-          <p class="text-xs text-muted-foreground">${i.quantidade} × ${brl(i.valor)}</p>
+  return `
+    <div class="flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
+      <div>
+        <p class="font-display text-lg font-semibold">O que vai no envio?</p>
+        <p class="mt-1 text-sm text-muted-foreground">
+          Escolha do catálogo ou descreva um presente específico com o link onde comprar.
+        </p>
+      </div>
+      ${
+        novaItens.length > 0
+          ? `<p class="text-right text-sm">
+              <span class="text-muted-foreground">${novaItens.length} ${novaItens.length === 1 ? 'item' : 'itens'}</span>
+              <span class="block font-semibold tabular-nums">${brl(total)}</span>
+            </p>`
+          : ''
+      }
+    </div>
+
+    ${
+      depois > NOVA_LIMITE
+        ? `<p class="mt-4 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm">
+            Com este pedido, o mês fecha em ${brl(depois)}, acima do limite de ${brl(NOVA_LIMITE)}.
+            Dá para seguir assim, mas o Admin vai ver o estouro.
+          </p>`
+        : ''
+    }
+
+    ${
+      novaAcompanhamento
+        ? `<div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border bg-muted/40 px-3 py-2">
+            <p class="min-w-0 flex-1 text-sm">Mostrando só o que serve como <strong>${esc(novaAcompanhamento)}</strong>.</p>
+            <button data-nova-limpar-acomp class="text-xs text-muted-foreground underline-offset-4 hover:underline">Ver o catálogo inteiro</button>
+          </div>`
+        : ''
+    }
+
+    <div class="mt-4 space-y-3">
+      <input id="nova-busca" data-nova-campo="nova-busca" value="${esc(novaBusca)}" placeholder="Buscar no catálogo"
+        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" />
+      <div class="-mx-1 flex flex-wrap gap-2 px-1">
+        ${pilula('Todos', '', !novaCategoria, base.length)}
+        ${categorias.map((c) => pilula(c.nome, c.nome, novaCategoria === c.nome, c.total)).join('')}
+      </div>
+    </div>
+
+    <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${cards}</div>
+    ${visiveis.length > 12 ? `<p class="mt-3 text-xs text-muted-foreground">Mostrando 12 de ${visiveis.length}. Na ferramenta, a grade traz o catálogo inteiro.</p>` : ''}
+
+    <div class="mt-6 rounded-lg border border-dashed p-4">
+      <p class="text-sm font-medium">Presente específico</p>
+      <p class="mt-1 text-xs text-muted-foreground">
+        Fora do catálogo. O link é obrigatório: é por ele que o Financeiro compra. Um item assim
+        nunca satisfaz o acompanhamento de um kit, porque é texto livre.
+      </p>
+    </div>
+
+    ${pendencias.length > 0 ? '' : ''}`
+}
+
+function novaEtapaEntrega(erros) {
+  return `
+    <p class="font-display text-lg font-semibold">Para onde enviar?</p>
+    <p class="mt-1 text-sm text-muted-foreground">
+      O endereço fica gravado nesta solicitação. Se o cliente se mudar, o histórico continua
+      mostrando para onde o presente foi.
+    </p>
+
+    <div class="mt-5 grid gap-3 sm:grid-cols-6">
+      <div class="space-y-1.5 sm:col-span-2">
+        <label for="nova-cep" class="font-ui text-sm font-medium">CEP</label>
+        <div class="flex gap-2">
+          <input id="nova-cep" data-nova-campo="nova-cep" value="${esc(novaEntrega.cep)}" placeholder="00000-000"
+            class="h-10 w-full rounded-md border bg-background px-3 text-sm ${erros.cep ? 'border-error' : 'border-input'}" />
+          <button data-nova-cep class="font-ui h-10 shrink-0 rounded-[5px] border border-input px-3 text-sm">Buscar</button>
         </div>
-        <span class="rounded-md border px-2 py-0.5 text-xs tabular-nums">${i.quantidade}</span>
-      </div>`,
-    )
+        ${erroDoCampo(erros, 'cep')}
+      </div>
+      ${campoDemo('logradouro', 'Logradouro', novaEntrega.logradouro, erros, 'sm:col-span-4')}
+      ${campoDemo('numero', 'Número', novaEntrega.numero, erros, 'sm:col-span-1')}
+      ${campoDemo('complemento', 'Complemento', novaEntrega.complemento, erros, 'sm:col-span-2')}
+      ${campoDemo('bairro', 'Bairro', novaEntrega.bairro, erros, 'sm:col-span-3')}
+      ${campoDemo('cidade', 'Cidade', novaEntrega.cidade, erros, 'sm:col-span-4')}
+      <div class="space-y-1.5 sm:col-span-2">
+        <label for="uf" class="font-ui text-sm font-medium">Estado</label>
+        <select id="uf" data-nova-uf class="h-10 w-full rounded-md border bg-background px-3 text-sm ${erros.uf ? 'border-error' : 'border-input'}">
+          <option value="">UF</option>
+          ${UFS_DEMO.map((uf) => `<option ${novaEntrega.uf === uf ? 'selected' : ''}>${uf}</option>`).join('')}
+        </select>
+        ${erroDoCampo(erros, 'uf')}
+      </div>
+      ${campoDemo('destinatario', 'Quem recebe', novaEntrega.destinatario, erros, 'sm:col-span-6')}
+    </div>
+    <p class="mt-2 text-xs text-muted-foreground">
+      O botão do CEP preenche rua, bairro, cidade e estado, e o cursor pula para o número.
+    </p>`
+}
+
+function novaFolhaDaCarta() {
+  const nome = novaPrimeiroNome(novaEntrega.destinatario || novaCliente?.nome || '')
+  const corpo = novaCarta.mensagem.trim()
+  const primeiraFrase = corpo.split(/[.!?]/, 1)[0] ?? ''
+  const jaCumprimenta = nome && new RegExp(`\\b${nome}\\b`, 'i').test(primeiraFrase)
+  const ocasiao =
+    novaCarta.motivo === 'Outro' ? novaCarta.motivoOutro || 'Uma lembrança' : novaCarta.motivo
+
+  return `
+    <div class="flex flex-col rounded-xl bg-card p-6 shadow-sm ring-1 ring-border/60">
+      <div class="flex items-center justify-between gap-3 border-b pb-3">
+        <svg viewBox="0 0 400 250" fill="currentColor" class="h-5 w-auto text-primary-emphasis" aria-hidden="true"><path d="${olhoPath()}"/></svg>
+        <span class="font-ui text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">${esc(ocasiao)}</span>
+      </div>
+      <div class="font-roboto flex-1 space-y-3 pt-5 text-sm leading-relaxed">
+        ${nome && !jaCumprimenta ? `<p>Olá, ${esc(nome)},</p>` : ''}
+        ${
+          corpo
+            ? `<p class="whitespace-pre-wrap">${esc(corpo)}</p>`
+            : '<p class="italic text-muted-foreground/70">A mensagem aparece aqui conforme você escreve.</p>'
+        }
+      </div>
+      <p class="font-display mt-6 border-t pt-3 text-sm text-muted-foreground">
+        ${esc(NOVA_CONSULTOR)}
+        <span class="block text-xs text-muted-foreground/70">Relacionamento AUVP</span>
+      </p>
+    </div>`
+}
+
+function novaEtapaCarta(erros) {
+  const nome = novaPrimeiroNome(novaEntrega.destinatario || novaCliente?.nome || '')
+  const modelos = MODELOS_DEMO[novaCarta.motivo] ?? []
+  const restam = 600 - novaCarta.mensagem.length
+
+  return `
+    <p class="font-display text-lg font-semibold">A carta que vai junto</p>
+    <p class="mt-1 text-sm text-muted-foreground">
+      A mensagem acompanha o presente. A impressão continua sendo feita fora do sistema.
+    </p>
+
+    <div class="mt-5 grid gap-6 lg:grid-cols-[1fr_18rem]">
+      <div class="min-w-0 space-y-5">
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="space-y-1.5">
+            <label for="nova-motivo" class="font-ui text-sm font-medium">Motivo do envio</label>
+            <select id="nova-motivo" data-nova-motivo class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+              ${Object.keys(MODELOS_DEMO)
+                .map(
+                  (m) => `<option ${novaCarta.motivo === m ? 'selected' : ''}>${esc(m)}</option>`,
+                )
+                .join('')}
+            </select>
+          </div>
+          ${
+            novaCarta.motivo === 'Outro'
+              ? `<div class="space-y-1.5">
+                  <label for="motivoOutro" class="font-ui text-sm font-medium">Qual?</label>
+                  <input id="motivoOutro" data-nova-campo="motivoOutro" value="${esc(novaCarta.motivoOutro)}" placeholder="Formatura, mudança de casa…"
+                    class="h-10 w-full rounded-md border bg-background px-3 text-sm ${erros.motivoOutro ? 'border-error' : 'border-input'}" />
+                  ${erroDoCampo(erros, 'motivoOutro')}
+                </div>`
+              : ''
+          }
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <label for="nova-mensagem" class="font-ui text-sm font-medium">Mensagem</label>
+            <span class="text-xs tabular-nums ${restam < 0 ? 'font-medium text-error' : 'text-muted-foreground'}">
+              ${restam < 0 ? `${-restam} a mais do que cabe` : `${restam} caracteres restantes`}
+            </span>
+          </div>
+          <textarea id="nova-mensagem" data-nova-campo="nova-mensagem" rows="6" placeholder="Escreva a mensagem que vai na carta."
+            class="w-full rounded-md border bg-background p-3 text-sm ${erros.mensagem ? 'border-error' : 'border-input'}">${esc(novaCarta.mensagem)}</textarea>
+          ${erroDoCampo(erros, 'mensagem')}
+
+          <div class="space-y-1.5">
+            <p class="text-xs text-muted-foreground">${novaCarta.mensagem.trim() ? 'Trocar por um modelo:' : 'Começar de um modelo:'}</p>
+            <div class="flex flex-wrap gap-2">
+              ${modelos
+                .map(
+                  (m, i) =>
+                    `<button data-nova-modelo="${i}" class="max-w-full rounded-lg border px-3 py-2 text-left text-xs leading-snug transition-colors hover:border-primary/40">
+                      <span class="line-clamp-2">${esc(m.replaceAll('{nome}', nome || 'cliente'))}</span>
+                    </button>`,
+                )
+                .join('')}
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-ui text-sm font-medium">Observações internas</label>
+          <div class="h-16 w-full rounded-md border border-input bg-background p-3 text-sm text-muted-foreground">
+            Não vai na carta. Fica para quem processa o envio.
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="font-ui mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Como vai ficar</p>
+        ${novaFolhaDaCarta()}
+      </div>
+    </div>`
+}
+
+function novaEtapaRevisao() {
+  const total = novaTotal()
+  const depois = NOVA_GASTO_ANTERIOR + total
+  const linhas = novaItens
+    .map((i) => {
+      const p = novaProdutoPorSlug(i.slug)
+      const unit = p?.valor ?? 0
+      return `
+      <li class="flex items-baseline justify-between gap-3 px-4 py-2.5 text-sm">
+        <span class="min-w-0">
+          <span class="font-medium">${esc(p?.nome ?? '')}</span>
+          <span class="block text-xs tabular-nums text-muted-foreground">${i.quantidade} × ${p?.valor === null ? 'valor a definir' : brl(unit)}</span>
+        </span>
+        <span class="shrink-0 tabular-nums">${brl(unit * i.quantidade)}</span>
+      </li>`
+    })
     .join('')
+
+  const bloco = (titulo, corpo, etapa) => `
+    <div class="rounded-lg bg-muted/40 p-4 text-sm">
+      <div class="mb-1.5 flex items-baseline justify-between gap-3">
+        <p class="font-ui text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">${esc(titulo)}</p>
+        <button data-nova-ir="${etapa}" class="text-xs text-muted-foreground underline-offset-4 hover:underline">Editar</button>
+      </div>
+      ${corpo}
+    </div>`
+
+  return `
+    <p class="font-display text-lg font-semibold">Confira antes de enviar</p>
+    <p class="mt-1 text-sm text-muted-foreground">
+      Nada foi criado ainda. A solicitação nasce ao enviar, com o código e o histórico.
+    </p>
+
+    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+      ${bloco('Cliente', `<p class="font-medium">${esc(novaCliente?.nome ?? '')}</p><p class="tabular-nums text-muted-foreground">${esc(novaCliente?.cpf ?? '')}</p>`, 0)}
+      ${bloco(
+        'Entrega',
+        `<p class="font-medium">${esc(novaEntrega.destinatario)}</p>
+         <p class="text-muted-foreground">${esc(novaEntrega.logradouro)}, ${esc(novaEntrega.numero)}${novaEntrega.complemento ? ', ' + esc(novaEntrega.complemento) : ''}</p>
+         <p class="text-muted-foreground">${esc(novaEntrega.bairro)} · ${esc(novaEntrega.cidade)}/${esc(novaEntrega.uf)} · <span class="tabular-nums">${esc(novaEntrega.cep)}</span></p>`,
+        2,
+      )}
+    </div>
+
+    <div class="mt-6">
+      <div class="mb-2 flex items-baseline justify-between gap-3">
+        <p class="font-ui text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Itens</p>
+        <button data-nova-ir="1" class="text-xs text-muted-foreground underline-offset-4 hover:underline">Editar itens</button>
+      </div>
+      <ul class="divide-y rounded-lg border">
+        ${linhas}
+        <li class="flex items-baseline justify-between gap-3 px-4 py-3">
+          <span class="text-sm text-muted-foreground">Total</span>
+          <span class="text-lg font-semibold tabular-nums">${brl(total)}</span>
+        </li>
+      </ul>
+      ${depois > NOVA_LIMITE ? `<p class="mt-2 text-xs text-muted-foreground">O mês fecha em ${brl(depois)}, acima do limite de ${brl(NOVA_LIMITE)}.</p>` : ''}
+    </div>
+
+    <div class="mt-6">
+      <div class="mb-2 flex items-baseline justify-between gap-3">
+        <p class="font-ui text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Carta</p>
+        <button data-nova-ir="3" class="text-xs text-muted-foreground underline-offset-4 hover:underline">Editar a carta</button>
+      </div>
+      ${novaFolhaDaCarta()}
+    </div>
+
+    <div class="mt-6 rounded-lg bg-muted/40 p-4 text-sm">
+      <p class="font-ui mb-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">O que acontece ao enviar</p>
+      <p>
+        O pedido entra como <strong>pendente</strong> e espera a aprovação do Admin.
+        ${
+          novaPassaPeloFinanceiro()
+            ? 'Depois dela, passa pelo Financeiro, porque há item que precisa ser comprado.'
+            : 'Depois dela, vai direto para a expedição separar: está tudo em estoque.'
+        }
+      </p>
+    </div>`
+}
+
+function novaResumo() {
+  const total = novaTotal()
+  const depois = NOVA_GASTO_ANTERIOR + total
+  const percentual = Math.min(100, (depois / NOVA_LIMITE) * 100)
+  const estoura = depois > NOVA_LIMITE
+
+  const itens = novaItens
+    .map((i) => {
+      const p = novaProdutoPorSlug(i.slug)
+      return `
+      <div class="flex items-start gap-2 text-sm">
+        <div class="min-w-0 flex-1">
+          <p class="font-medium leading-snug">${esc(p?.nome ?? '')}</p>
+          <p class="tabular-nums text-muted-foreground">${i.quantidade} × ${p?.valor === null ? 'valor a definir' : brl(p?.valor ?? 0)}</p>
+        </div>
+        <button data-nova-remove="${p?.slug}" aria-label="Remover" class="mt-1 text-muted-foreground transition-colors hover:text-error">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+        </button>
+      </div>`
+    })
+    .join('')
+
+  return `
+    <aside class="h-fit rounded-lg border bg-card p-5 lg:sticky lg:top-24">
+      <p class="font-ui mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Resumo</p>
+      ${
+        novaCliente
+          ? `<p class="text-sm font-medium">${esc(novaCliente.nome)}</p>
+             <p class="text-xs tabular-nums text-muted-foreground">${esc(novaCliente.cpf)}</p>`
+          : '<p class="text-sm text-muted-foreground">Nenhum cliente escolhido ainda.</p>'
+      }
+
+      <div class="mt-4 space-y-3 border-t pt-4">
+        ${itens || '<p class="text-sm text-muted-foreground">Nenhum item adicionado.</p>'}
+      </div>
+
+      <div class="mt-4 space-y-1 border-t pt-4">
+        <div class="flex items-baseline justify-between">
+          <span class="text-sm text-muted-foreground">Total</span>
+          <span class="text-xl font-semibold tabular-nums">${brl(total)}</span>
+        </div>
+        ${
+          novaItens.length > 0
+            ? `<p class="text-xs text-muted-foreground">${
+                novaPassaPeloFinanceiro()
+                  ? 'Depois da aprovação, passa pelo Financeiro comprar.'
+                  : 'Depois da aprovação, vai direto para a expedição.'
+              }</p>`
+            : ''
+        }
+      </div>
+
+      <div class="mt-4 space-y-1.5 border-t pt-4">
+        <div class="flex items-baseline justify-between gap-2">
+          <span class="font-ui text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Seu mês</span>
+          <span class="text-xs tabular-nums ${estoura ? 'font-medium text-warning' : 'text-muted-foreground'}">${brl(depois)} de ${brl(NOVA_LIMITE)}</span>
+        </div>
+        <div class="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div class="h-full rounded-full transition-[width] duration-500 ${estoura ? 'bg-warning' : 'bg-primary'}" style="width:${Math.max(2, percentual)}%"></div>
+        </div>
+        <p class="text-xs text-muted-foreground">
+          ${estoura ? `Passa ${brl(depois - NOVA_LIMITE)} do limite. Não impede o pedido.` : `Restam ${brl(NOVA_LIMITE - depois)} neste mês.`}
+        </p>
+      </div>
+    </aside>`
+}
+
+/**
+ * Nova solicitação: as cinco etapas, navegáveis.
+ *
+ * É a tela em que o consultor passa o tempo dele, então é a única da vitrine
+ * que funciona de verdade em vez de ser um retrato. As regras que aparecem
+ * aqui são as mesmas da ferramenta, reescritas em JavaScript puro logo acima:
+ * a trava do kit, o limite do mês, a validação por campo e a rota depois da
+ * aprovação.
+ */
+function telaNova() {
+  const erros = novaConferir ? novaProblemas(novaEtapa) : {}
+  const pendencias = novaPendencias()
+  const corpo =
+    novaEtapa === 0
+      ? novaEtapaCliente(erros)
+      : novaEtapa === 1
+        ? novaEtapaItens(erros)
+        : novaEtapa === 2
+          ? novaEtapaEntrega(erros)
+          : novaEtapa === 3
+            ? novaEtapaCarta(erros)
+            : novaEtapaRevisao()
 
   return `
     ${cabecalho('Enviar um presente', 'Cinco etapas, do cliente à revisão. Nada é enviado antes da última.', 'Nova solicitação')}
 
     <div class="grid gap-6 lg:grid-cols-[1fr_20rem]">
       <div class="min-w-0">
-        <ol class="mb-6 flex flex-wrap items-center gap-x-1 gap-y-2">${trilha}</ol>
+        <ol class="mb-6 flex flex-wrap items-center gap-x-1 gap-y-2">${novaTrilha()}</ol>
 
-        <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3">
-          <p class="min-w-0 flex-1 text-sm">
-            “${esc(kit.nome)}” precisa de um ${esc(kit.exigeAcompanhamento)} na mesma solicitação.
-            Escolha no catálogo antes de continuar.
-          </p>
-          <span class="font-ui inline-flex h-8 items-center rounded-[5px] border px-3 text-xs font-semibold uppercase">
-            Escolher o ${esc(kit.exigeAcompanhamento)}
-          </span>
-        </div>
+        ${
+          pendencias.length > 0
+            ? `<div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3">
+                <p class="min-w-0 flex-1 text-sm">
+                  ${pendencias
+                    .map(
+                      (p) =>
+                        `“${esc(p.produtos.join('”, “'))}” ${p.produtos.length === 1 ? 'precisa' : 'precisam'} de um ${esc(p.exigencia)} na mesma solicitação`,
+                    )
+                    .join('; ')}. Escolha no catálogo antes de continuar.
+                </p>
+                <button data-nova-acomp="${esc(pendencias[0].exigencia)}" class="font-ui inline-flex h-8 items-center rounded-[5px] border px-3 text-xs font-semibold uppercase">
+                  Escolher o ${esc(pendencias[0].exigencia)}
+                </button>
+              </div>`
+            : ''
+        }
 
-        <div class="rounded-lg border bg-card p-6 shadow-[0_1px_2px_rgba(11,41,5,0.04)]">
-          <p class="font-display text-lg font-semibold">O que vai no envio?</p>
-          <p class="mt-1 text-sm text-muted-foreground">
-            Escolha do catálogo ou descreva um presente específico com o link onde comprar.
-          </p>
+        <div class="rounded-lg border bg-card p-6 shadow-[0_1px_2px_rgba(11,41,5,0.04)]">${corpo}</div>
 
-          <div class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border bg-muted/40 px-3 py-2">
-            <p class="min-w-0 flex-1 text-sm">
-              Mostrando só o que serve como <strong>${esc(kit.exigeAcompanhamento)}</strong>.
-            </p>
-            <span class="text-xs text-muted-foreground">Ver o catálogo inteiro</span>
-          </div>
-
-          <div class="mt-4 h-10 w-full rounded-md border px-3 py-2 text-sm text-muted-foreground">
-            Buscar no catálogo
-          </div>
-
-          <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${cards}</div>
-
-          <div class="mt-6 rounded-lg border border-dashed p-4">
-            <p class="text-sm font-medium">Presente específico</p>
-            <p class="mt-1 text-xs text-muted-foreground">
-              Fora do catálogo. O link é obrigatório: é por ele que o Financeiro compra.
-            </p>
-          </div>
+        <div class="mt-6 flex items-center justify-between gap-3">
+          <button ${novaEtapa === 0 ? 'disabled' : `data-nova-ir="${novaEtapa - 1}"`}
+            class="font-ui h-10 rounded-[5px] px-4 text-sm font-semibold uppercase ${novaEtapa === 0 ? 'text-muted-foreground/50' : 'hover:bg-accent'}">
+            Voltar
+          </button>
+          ${
+            novaEtapa < 4
+              ? `<button data-nova-continuar class="font-ui h-10 rounded-[5px] border px-5 text-sm font-semibold uppercase ${
+                  Object.keys(novaProblemas(novaEtapa)).length === 0
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-input bg-background'
+                }">Continuar</button>`
+              : `<button data-nova-enviar class="font-ui h-10 rounded-[5px] border border-primary bg-primary px-5 text-sm font-semibold uppercase text-primary-foreground">Enviar solicitação</button>`
+          }
         </div>
       </div>
 
-      <aside class="h-fit rounded-lg border bg-card p-5">
-        <p class="font-ui mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Resumo</p>
-        <p class="text-sm font-medium">Marina Alves Pereira</p>
-        <p class="text-xs text-muted-foreground">***.982.247-**</p>
-        <div class="mt-3 divide-y border-t">${resumo}</div>
-        <div class="mt-3 flex items-baseline justify-between border-t pt-3">
-          <span class="text-sm text-muted-foreground">Total</span>
-          <span class="text-lg font-semibold">${brl(total)}</span>
-        </div>
-      </aside>
+      ${novaResumo()}
     </div>
 
     <p class="mt-6 text-xs text-muted-foreground">
-      O CPF deduplica o cliente na etapa 1; o CEP preenche o endereço na etapa 3; o valor de cada
-      item é relido do banco e congelado na hora de gravar, para que reajuste de preço não mexa em
-      solicitação já feita. O kit que embala bebida não avança sozinho: enquanto o
-      ${esc(kit.exigeAcompanhamento)} não entrar na mesma solicitação, o “Continuar” fica
-      desligado, e a mesma regra roda de novo no servidor.
+      Este fluxo é navegável: preencha, volte, edite. Nada é gravado, e o CPF encontra sempre o
+      mesmo cliente de exemplo. O valor de cada item é relido do banco e congelado na hora de
+      gravar, para que reajuste de preço não mexa em solicitação já feita.
     </p>`
 }
 
@@ -1137,7 +1722,151 @@ function render() {
   conteudo.innerHTML = `<div class="animar-entrada">${RENDER[tela]()}</div>`
 }
 
+/**
+ * Cliques do fluxo de nova solicitação.
+ *
+ * Vem antes do resto porque o protótipo tem os próprios botões de categoria e
+ * de navegação, que não devem cair nos handlers das telas de retrato.
+ */
+function cliqueDaNova(e) {
+  const ir = e.target.closest('[data-nova-ir]')
+  if (ir) {
+    novaEtapa = Number(ir.dataset.novaIr)
+    novaMaiorEtapa = Math.max(novaMaiorEtapa, novaEtapa)
+    novaConferir = false
+    render()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    return true
+  }
+
+  if (e.target.closest('[data-nova-continuar]')) {
+    // Etapa incompleta não avança, mas responde: o clique acende o que falta.
+    if (Object.keys(novaProblemas(novaEtapa)).length > 0) {
+      novaConferir = true
+    } else {
+      novaEtapa = Math.min(4, novaEtapa + 1)
+      novaMaiorEtapa = Math.max(novaMaiorEtapa, novaEtapa)
+      novaConferir = false
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+    render()
+    return true
+  }
+
+  if (e.target.closest('[data-nova-buscar]')) {
+    novaCliente = novaCpf.replace(/\D/g, '').length === 11 ? NOVA_CLIENTE_EXEMPLO : null
+    novaConferir = !novaCliente
+    if (novaCliente && !novaEntrega.destinatario) novaEntrega.destinatario = novaCliente.nome
+    render()
+    return true
+  }
+
+  if (e.target.closest('[data-nova-trocar]')) {
+    novaCliente = null
+    novaCpf = ''
+    render()
+    return true
+  }
+
+  const add = e.target.closest('[data-nova-add]')
+  if (add) {
+    const slug = add.dataset.novaAdd
+    const existente = novaItens.find((i) => i.slug === slug)
+    if (existente) existente.quantidade++
+    else novaItens.push({ slug, quantidade: 1 })
+    novaConferir = false
+    render()
+    return true
+  }
+
+  const remove = e.target.closest('[data-nova-remove]')
+  if (remove) {
+    novaItens = novaItens.filter((i) => i.slug !== remove.dataset.novaRemove)
+    render()
+    return true
+  }
+
+  const acomp = e.target.closest('[data-nova-acomp]')
+  if (acomp) {
+    novaAcompanhamento = acomp.dataset.novaAcomp
+    novaBusca = ''
+    novaCategoria = ''
+    novaEtapa = 1
+    render()
+    return true
+  }
+
+  if (e.target.closest('[data-nova-limpar-acomp]')) {
+    novaAcompanhamento = null
+    render()
+    return true
+  }
+
+  const cat = e.target.closest('[data-nova-cat]')
+  if (cat) {
+    novaCategoria = cat.dataset.novaCat
+    render()
+    return true
+  }
+
+  const modelo = e.target.closest('[data-nova-modelo]')
+  if (modelo) {
+    const nome = novaPrimeiroNome(novaEntrega.destinatario || novaCliente?.nome || '')
+    const texto = MODELOS_DEMO[novaCarta.motivo][Number(modelo.dataset.novaModelo)]
+    novaCarta.mensagem = nome
+      ? texto.replaceAll('{nome}', nome)
+      : texto.replace(/^[^{]*\{nome\}[,!.\s]*/u, '').trim()
+    novaConferir = false
+    render()
+    return true
+  }
+
+  if (e.target.closest('[data-nova-cep]')) {
+    // Sem servidor: o CEP de exemplo preenche o endereço, como o ViaCEP faria.
+    novaEntrega = {
+      ...novaEntrega,
+      cep: novaEntrega.cep || '01310-100',
+      logradouro: 'Avenida Paulista',
+      bairro: 'Bela Vista',
+      cidade: 'São Paulo',
+      uf: 'SP',
+    }
+    render()
+    document.getElementById('numero')?.focus()
+    return true
+  }
+
+  if (e.target.closest('[data-nova-enviar]')) {
+    // Fim do caminho: a vitrine mostra o que a ferramenta faria, e volta ao
+    // começo para a próxima pessoa percorrer.
+    detalheSelecionado = 'SOL-2026-0001'
+    tela = 'detalhe'
+    novaEtapa = 0
+    novaMaiorEtapa = 0
+    novaCliente = null
+    novaCpf = ''
+    novaItens = []
+    novaCarta = { motivo: 'Aniversário', motivoOutro: '', mensagem: '' }
+    novaEntrega = {
+      cep: '',
+      logradouro: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      uf: '',
+      destinatario: '',
+    }
+    render()
+    return true
+  }
+
+  return false
+}
+
 document.addEventListener('click', (e) => {
+  if (tela === 'nova' && cliqueDaNova(e)) return
+
   const cat = e.target.closest('[data-categoria]')
   if (cat) {
     filtroCategoria = cat.dataset.categoria
@@ -1163,6 +1892,16 @@ document.addEventListener('click', (e) => {
 })
 
 document.addEventListener('change', (e) => {
+  if (e.target.dataset.novaUf !== undefined) {
+    novaEntrega.uf = e.target.value
+    render()
+    return
+  }
+  if (e.target.dataset.novaMotivo !== undefined) {
+    novaCarta.motivo = e.target.value
+    render()
+    return
+  }
   if (e.target.id === 'perfil') {
     perfil = e.target.value
     render()
@@ -1173,7 +1912,36 @@ document.addEventListener('change', (e) => {
   }
 })
 
+/** Onde cada campo do protótipo guarda o que foi digitado. */
+const CAMPOS_DA_NOVA = {
+  'nova-cpf': (v) => (novaCpf = v),
+  'nova-busca': (v) => (novaBusca = v),
+  'nova-mensagem': (v) => (novaCarta.mensagem = v),
+  motivoOutro: (v) => (novaCarta.motivoOutro = v),
+  logradouro: (v) => (novaEntrega.logradouro = v),
+  numero: (v) => (novaEntrega.numero = v),
+  complemento: (v) => (novaEntrega.complemento = v),
+  bairro: (v) => (novaEntrega.bairro = v),
+  cidade: (v) => (novaEntrega.cidade = v),
+  destinatario: (v) => (novaEntrega.destinatario = v),
+  'nova-cep': (v) => (novaEntrega.cep = v),
+}
+
 document.addEventListener('input', (e) => {
+  const campo = e.target.dataset.novaCampo
+  if (campo && CAMPOS_DA_NOVA[campo]) {
+    CAMPOS_DA_NOVA[campo](e.target.value)
+    const posicao = e.target.selectionStart
+    render()
+    // Reidratar custa o foco e o cursor; devolver os dois mantém a digitação.
+    const voltou = document.getElementById(campo)
+    if (voltou) {
+      voltou.focus()
+      if (voltou.setSelectionRange) voltou.setSelectionRange(posicao, posicao)
+    }
+    return
+  }
+
   if (e.target.id === 'busca') {
     busca = e.target.value
     render()

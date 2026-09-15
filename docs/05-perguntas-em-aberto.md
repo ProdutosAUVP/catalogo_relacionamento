@@ -129,6 +129,12 @@ se a geração da carta em formato de impressão é urgente ou não.
 **Assumido:** a carta é digitada na ferramenta e o processo de impressão segue
 como é hoje. A geração em formato de impressão está fora do V1.
 
+O que existe é a **prévia**: a folha montada com saudação, corpo e assinatura,
+ao lado do campo enquanto se escreve e de novo na revisão
+(`src/components/folha-da-carta.tsx`). Ela não imprime, mas é onde se percebe
+que o nome saiu errado. Quando a resposta chegar, o arranjo da impressão parte
+dessa mesma folha.
+
 ### Há histórico de solicitações a migrar?
 
 Se houver, é preciso saber o formato e o volume. O modelo aceita carga
