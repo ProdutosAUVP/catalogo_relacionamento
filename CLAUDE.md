@@ -23,6 +23,7 @@ duplique numa tela.
 | Fila de compras do Financeiro   | `src/lib/compras.ts`             |
 | Fila da expedição               | `src/lib/expedicao.ts`           |
 | Kit que exige bebida junto      | `src/lib/acompanhamentos.ts`     |
+| Modelos e montagem da carta     | `src/lib/carta.ts`               |
 | Fornecedor padrão por categoria | `src/lib/fornecedores.ts`        |
 | Upload e leitura de foto        | `src/lib/arquivos.ts`            |
 | Leitura do CSV de clientes      | `src/lib/importacao-clientes.ts` |
@@ -122,6 +123,13 @@ O caminho principal está construído de ponta a ponta: catálogo, nova
 solicitação, mudança de status, fila de compras, fila da expedição com
 exportação, CRUD de produto e categoria com upload de foto, CRUD de cliente
 com importação CSV e edição de usuário.
+
+A nova solicitação é a tela mais detalhada, porque é onde o consultor passa o
+tempo dele: validação por campo (o "Continuar" acende o que falta e leva o
+cursor até lá, em vez de ficar desligado sem explicar), histórico do que já foi
+mandado para aquele cliente, limite do mês contado com o pedido atual dentro,
+prévia da carta ao lado do campo e na revisão, e a rota que o pedido segue
+depois da aprovação.
 
 O caminho do Admin é por pilha: a gestão encaminha em lote, e a expedição
 devolve o rastreio que o consultor lê na própria solicitação.

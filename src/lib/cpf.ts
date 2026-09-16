@@ -13,6 +13,21 @@ export function formatarCpf(valor: string): string {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
 }
 
+/**
+ * Máscara progressiva, para o campo que está sendo digitado.
+ *
+ * Diferente de `formatarCpf`, que só formata CPF completo: aqui o valor é
+ * parcial por definição, e pontuar enquanto se digita é o que faz a pessoa
+ * perceber que pulou um número antes de terminar.
+ */
+export function mascaraDeCpf(valor: string): string {
+  const d = normalizarCpf(valor).slice(0, 11)
+  if (d.length <= 3) return d
+  if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`
+  if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+}
+
 /** Mascara para exibição a quem não tem permissão de ver o dado completo. */
 export function mascararCpf(valor: string): string {
   const d = normalizarCpf(valor)
