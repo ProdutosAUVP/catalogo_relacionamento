@@ -146,6 +146,11 @@ O catálogo é o de verdade: 49 presentes transcritos da planilha da área em
 `prisma/catalogo-auvp.ts`, conferidos campo a campo. Depois de a ferramenta
 subir, quem manda é o CRUD, este arquivo é o ponto de partida.
 
+Em produção a carga é `npm run db:catalogo` (`prisma/carga-catalogo.ts`), e não
+o seed: o seed traz usuários e clientes fictícios junto e sobrescreve produto
+que já existe, o que desfaria o preço corrigido pelo CRUD. A carga só cria o
+que falta e nunca toca no que está lá.
+
 As fotos originais que a área mandou ficam em `imgs produtos/`.
 `npm run fotos:preparar` converte para `public/produtos/<slug>.webp`, na
 moldura 3:4 que o catálogo serve. Rode de novo quando ela trocar ou
