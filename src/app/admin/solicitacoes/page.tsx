@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { db } from '@/lib/db'
 import { exigirPermissao } from '@/lib/auth-guards'
 import { pode } from '@/lib/permissions'
@@ -10,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Stat } from '@/components/stat'
+import { BotaoDeFiltro, FormDeFiltro, LinkDeFiltro } from '@/components/filtro-sem-piscar'
 import { BarraDeFiltros, CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
 import { TabelaDaGestao, type LinhaDaGestao } from './tabela'
 
@@ -132,7 +132,10 @@ export default async function AdminSolicitacoesPage({
       </div>
 
       <BarraDeFiltros>
-        <form method="get" className="flex flex-1 flex-wrap items-center gap-2">
+        <FormDeFiltro
+          acao="/admin/solicitacoes"
+          className="flex flex-1 flex-wrap items-center gap-2"
+        >
           <Input
             name="busca"
             defaultValue={filtro.busca}
@@ -180,15 +183,13 @@ export default async function AdminSolicitacoesPage({
               </option>
             ))}
           </Select>
-          <Button type="submit" variant="secondary">
-            Filtrar
-          </Button>
+          <BotaoDeFiltro>Filtrar</BotaoDeFiltro>
           {filtrando ? (
             <Button variant="ghost" asChild>
-              <Link href="/admin/solicitacoes">Limpar</Link>
+              <LinkDeFiltro href="/admin/solicitacoes">Limpar</LinkDeFiltro>
             </Button>
           ) : null}
-        </form>
+        </FormDeFiltro>
       </BarraDeFiltros>
 
       {solicitacoes.length === 0 ? (
@@ -202,7 +203,7 @@ export default async function AdminSolicitacoesPage({
           acao={
             filtrando ? (
               <Button variant="outline" asChild>
-                <Link href="/admin/solicitacoes">Limpar filtros</Link>
+                <LinkDeFiltro href="/admin/solicitacoes">Limpar filtros</LinkDeFiltro>
               </Button>
             ) : null
           }

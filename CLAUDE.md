@@ -78,6 +78,12 @@ Coisas que o código já garante e que não devem ser afrouxadas:
 - **Rastreio não muda status.** Gravar o código diz que saiu; "entregue" é
   decisão de quem acompanha.
 - **Telas leem catálogo e clientes pelos providers**, não pelo Prisma direto.
+- **A tela não pisca.** Filtro é mudança da mesma tela: navega por
+  `FormDeFiltro`/`LinkDeFiltro` (`src/components/filtro-sem-piscar.tsx`), nunca
+  por `<form method="get">` solto nem `<a href>` cru, que recarregam a
+  aplicação inteira. A entrada de conteúdo parte de `opacity: 0.65`, não de
+  zero, e só roda na troca de rota. Na vitrine, `render()` só recria o elemento
+  animado quando a tela muda, senão digitar uma letra reabriria a página.
 - **Movimento não pode gerar layout shift.** Anime só `opacity` e `transform`.
   Todo `loading.tsx` reserva as medidas exatas do conteúdo, e toda imagem tem
   proporção e dimensões declaradas. O CLS medido hoje é ≤ 0,0031, com um

@@ -1228,6 +1228,17 @@ function telaGestao() {
 
 let detalheSelecionado = 'SOL-2026-0004'
 
+/**
+ * O que já está desenhado na tela.
+ *
+ * Serve para distinguir "trocou de tela" de "a mesma tela mudou de estado".
+ * A distinção importa porque a animação de entrada é de troca de tela: repetir
+ * a cada clique faz a página inteira reaparecer do zero, e filtrar uma
+ * categoria ou digitar uma letra passa a piscar.
+ */
+let telaDesenhada = null
+let perfilDesenhado = null
+
 function telaDetalhe() {
   const s = SOLICITACOES.find((x) => x.codigo === detalheSelecionado) ?? SOLICITACOES[0]
 
@@ -1713,13 +1724,26 @@ function render() {
       </details>`
     : ''
 
-  document.getElementById('abas').innerHTML = principais.map(itemPrincipal).join('') + grupoAdmin
+  // As abas só mudam quando muda a tela ativa ou o perfil que as filtra.
+  // Redesenhá-las a cada tecla digitada trocaria a barra inteira por uma
+  // cópia idêntica, e o navegador pisca o que ele acabou de substituir.
+  const trocouDeTela = tela !== telaDesenhada || perfil !== perfilDesenhado
+  if (trocouDeTela) {
+    document.getElementById('abas').innerHTML = principais.map(itemPrincipal).join('') + grupoAdmin
+  }
 
-  // Reinicia a animação de entrada a cada troca de tela: recriar o elemento é
-  // o que faz o navegador rodar a animação de novo. Só opacity e transform,
-  // que não participam do cálculo de layout, movimento sem layout shift.
+  // A animação de entrada é da troca de tela, e só dela. Recriar o elemento
+  // com a classe é o que faz o navegador rodar a animação de novo, então numa
+  // atualização da mesma tela ele é recriado sem ela: escolher uma categoria,
+  // adicionar um item ou digitar uma letra não reabre a página do zero.
+  // Só opacity e transform, que não participam do cálculo de layout.
   const conteudo = document.getElementById('conteudo')
-  conteudo.innerHTML = `<div class="animar-entrada">${RENDER[tela]()}</div>`
+  conteudo.innerHTML = trocouDeTela
+    ? `<div class="animar-entrada">${RENDER[tela]()}</div>`
+    : `<div>${RENDER[tela]()}</div>`
+
+  telaDesenhada = tela
+  perfilDesenhado = perfil
 }
 
 /**

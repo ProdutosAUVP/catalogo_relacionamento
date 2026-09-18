@@ -67,6 +67,31 @@ Aparece na navegação, na tela de login e nos estados vazios. O favicon usa o
 mesmo traçado sobre o verde da marca, sem os ~15 KB de metadados C2PA do
 arquivo original, que não servem a um ícone de aba.
 
+## Movimento, sem piscada
+
+Layout shift é o conteúdo escorregar. Piscada é outra coisa, e incomoda mais:
+a tela apagar e reacender. As três causas, e o que fecha cada uma:
+
+1. **Navegação de documento onde deveria haver transição.** `<form method="get">`
+   e `<a href>` cru recarregam a aplicação inteira: fundo branco, tudo montado
+   de novo. Filtro é mudança da mesma tela, não ida para outra. Use
+   `FormDeFiltro` e `LinkDeFiltro`, em `src/components/filtro-sem-piscar.tsx`:
+   eles continuam sendo `<form method="get">` e `<a href>` no HTML, e navegam
+   dentro de `startTransition`, que mantém o conteúdo atual na tela enquanto o
+   novo vem.
+2. **Entrada partindo do transparente.** `entrada-de-conteudo` começa em
+   `opacity: 0.65`, e não em zero: sair do nada e voltar apaga a tela por um
+   instante. O que se vê agora é o conteúdo assentando.
+3. **Reanimar a cada estado, e não a cada tela.** Na vitrine, `render()` roda a
+   cada clique e a cada tecla; ela só recria o elemento com `animar-entrada`
+   quando a tela muda de verdade. Repetir a animação a cada atualização fazia a
+   página inteira reaparecer ao filtrar uma categoria ou digitar uma letra.
+
+O esqueleto de `loading.tsx` **não** é piscada: ele entra na primeira carga de
+uma rota, quando não existe conteúdo anterior para manter, ocupa a medida exata
+do que vem depois, e some quando o servidor responde. Medido: a tela nunca fica
+vazia numa troca de rota, o esqueleto preenche ~300 ms e cede o lugar.
+
 ## Movimento, sem layout shift
 
 A navegação tem movimento, e mede-se isso: **CLS ≤ 0,0031** em todas as telas,
