@@ -22,6 +22,7 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "db:catalogo": "tsx prisma/carga-catalogo.ts",
     "db:reset": "prisma migrate reset --force",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test",
     "lint:fix": "eslint . --fix",

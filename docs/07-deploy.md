@@ -24,6 +24,9 @@ por perfil, geração de CSV e XLSX.
 3. Preencha as variáveis de ambiente (abaixo).
 4. Publique. O container aplica as migrations pendentes na subida, pelo
    `docker-entrypoint.sh`, antes de aceitar tráfego.
+5. Carregue o catálogo real, uma vez (abaixo).
+6. Entre pelo SSO com um e-mail que esteja em `BOOTSTRAP_ADMIN_EMAILS`. É o
+   primeiro login que cria o usuário, e é essa variável que o faz nascer Admin.
 
 ### Variáveis de ambiente
 
@@ -38,7 +41,11 @@ por perfil, geração de CSV e XLSX.
 | `BOOTSTRAP_ADMIN_EMAILS`  | e-mails que entram como Admin no primeiro login                 |
 | `NODE_ENV`                | `production`                                                    |
 
-Storage das fotos (`STORAGE_*`) entra quando o upload for construído.
+As variáveis `STORAGE_*` continuam vazias de propósito: a foto enviada pelo
+CRUD é gravada no próprio Postgres, na tabela `arquivos`, e servida por
+`/api/arquivos/[id]` atrás da sessão. Ver
+[ADR 0007](adr/0007-fotos-no-banco.md). Quando existir um bucket, muda
+`salvarFoto` em `src/lib/arquivos.ts` e nada mais.
 
 `env.ts` recusa produção sem `AUTH_SECRET` e sem o client OIDC completo, e
 recusa `AUTH_DEV_BYPASS` ligado. A checagem roda no `instrumentation.ts`, ou
@@ -61,7 +68,30 @@ Aplicadas na subida do container, com `prisma migrate deploy`, só executa o
 que ainda não rodou e nunca gera migration nova. Seguro em toda subida e com
 múltiplas réplicas.
 
-O seed **não** roda em produção: ele carrega dados fictícios.
+O seed **não** roda em produção: ele carrega usuários, clientes e solicitações
+fictícias, e sobrescreve produto que já existe.
+
+### Carga do catálogo real
+
+O banco sobe vazio, e a área não deveria digitar 49 presentes à mão no primeiro
+dia. Rode uma vez, de um clone do repositório, com o `DATABASE_URL` apontando
+para o Postgres de produção (o Railway mostra a string pública no serviço
+Postgres):
+
+```bash
+npm ci
+npm run fotos:preparar            # gera public/produtos/*.webp
+DATABASE_URL="postgres://..." npm run db:catalogo
+```
+
+A carga cria as categorias e os produtos que faltam, casando pelo nome, e
+**nunca toca em produto que já existe**, nem para corrigir: depois que a
+ferramenta sobe, quem manda é o CRUD em `/admin/catalogo`. Rodar de novo é
+inofensivo, e serve para levar ao ar um presente novo acrescentado à planilha
+em `prisma/catalogo-auvp.ts`.
+
+A carga é o único caminho de dados para produção. Ela não cria usuário, cliente
+nem solicitação.
 
 ### Healthcheck
 

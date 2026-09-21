@@ -4,6 +4,7 @@ import { filaDeExpedicao, pecasASeparar, STATUS_DA_EXPEDICAO } from '@/lib/exped
 import { formatarBRL } from '@/lib/money'
 import { formatarData } from '@/lib/datas'
 import { ROTULO_STATUS } from '@/lib/status'
+import { LinkDeFiltro } from '@/components/filtro-sem-piscar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -81,11 +82,13 @@ export default async function ExpedicaoPage({
       </div>
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
+        {/* Âncora crua recarregava o documento inteiro a cada troca, e a fila
+            piscava em branco. É filtro da mesma tela, não navegação. */}
         <Button variant={incluirEnviadas ? 'outline' : 'secondary'} asChild>
-          <a href="/expedicao">Só o que falta enviar</a>
+          <LinkDeFiltro href="/expedicao">Só o que falta enviar</LinkDeFiltro>
         </Button>
         <Button variant={incluirEnviadas ? 'secondary' : 'outline'} asChild>
-          <a href="/expedicao?enviadas=1">Incluir já enviados</a>
+          <LinkDeFiltro href="/expedicao?enviadas=1">Incluir já enviados</LinkDeFiltro>
         </Button>
       </div>
 

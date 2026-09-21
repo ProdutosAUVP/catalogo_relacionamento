@@ -13,6 +13,7 @@ import { CategoriaBadge } from '@/components/categoria-badge'
 import { ValorDoProduto } from '@/components/valor-do-produto'
 import { LinkDoProduto } from '@/components/link-do-produto'
 import { FiltroCategorias } from '@/components/filtro-categorias'
+import { BotaoDeFiltro, FormDeFiltro, LinkDeFiltro } from '@/components/filtro-sem-piscar'
 import { CabecalhoDaPagina, EstadoVazio } from '@/components/pagina'
 
 /**
@@ -72,8 +73,10 @@ export default async function CatalogoPage({
         }
       />
 
-      <form
-        method="get"
+      {/* Buscar mantém a grade na tela: sem o `onSubmit` do FormDeFiltro, o
+          `method="get"` recarregaria o documento inteiro. */}
+      <FormDeFiltro
+        acao="/catalogo"
         className="bg-card mb-4 flex flex-wrap items-center gap-2 rounded-lg border p-3"
       >
         {/* A categoria viaja escondida para que buscar não descarte o filtro. */}
@@ -85,18 +88,16 @@ export default async function CatalogoPage({
           aria-label="Buscar no catálogo"
           className="w-full max-w-xs flex-1"
         />
-        <Button type="submit" variant="secondary">
-          Buscar
-        </Button>
+        <BotaoDeFiltro>Buscar</BotaoDeFiltro>
         {filtrando ? (
           <Button variant="ghost" asChild>
-            <Link href="/catalogo">Limpar</Link>
+            <LinkDeFiltro href="/catalogo">Limpar</LinkDeFiltro>
           </Button>
         ) : null}
         <p className="text-muted-foreground ml-auto pr-1 text-sm">
           {pagina.total} {pagina.total === 1 ? 'presente' : 'presentes'}
         </p>
-      </form>
+      </FormDeFiltro>
 
       <FiltroCategorias
         opcoes={opcoes}
@@ -116,7 +117,7 @@ export default async function CatalogoPage({
           acao={
             filtrando ? (
               <Button variant="outline" asChild>
-                <Link href="/catalogo">Limpar filtros</Link>
+                <LinkDeFiltro href="/catalogo">Limpar filtros</LinkDeFiltro>
               </Button>
             ) : null
           }

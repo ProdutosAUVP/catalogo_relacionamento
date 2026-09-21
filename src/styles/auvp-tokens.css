@@ -267,10 +267,20 @@
    * é o que permite ter movimento sem layout shift. Qualquer animação de
    * altura, margem ou largura aqui reintroduziria o salto.
    */
+  /*
+   * Entrada do conteúdo a cada troca de rota.
+   *
+   * Não parte de `opacity: 0`: sair do transparente e voltar apaga a tela por
+   * um instante, e o olho lê isso como piscada, não como transição. Partindo
+   * de quase opaco, o que se percebe é o conteúdo assentando.
+   *
+   * Vale para a troca de rota, e só para ela. Filtrar é mudar a mesma tela:
+   * ver `src/components/filtro-sem-piscar.tsx`.
+   */
   @keyframes entrada-de-conteudo {
     from {
-      opacity: 0;
-      transform: translateY(6px);
+      opacity: 0.65;
+      transform: translateY(4px);
     }
     to {
       opacity: 1;

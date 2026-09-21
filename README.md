@@ -51,16 +51,17 @@ informando um e-mail. Para entrar como Admin, coloque o mesmo e-mail em
 
 ## Comandos
 
-| Comando              | O que faz                                       |
-| -------------------- | ----------------------------------------------- |
-| `npm run dev`        | servidor de desenvolvimento                     |
-| `npm run build`      | build de produção                               |
-| `npm run check`      | formato, lint, tipos e testes - o que a CI roda |
-| `npm test`           | testes das regras de negócio                    |
-| `npm run db:migrate` | cria/aplica migrations em desenvolvimento       |
-| `npm run db:seed`    | popula com dados de exemplo (idempotente)       |
-| `npm run db:studio`  | interface visual do banco                       |
-| `npm run demo:build` | compila o CSS da vitrine estática               |
+| Comando               | O que faz                                       |
+| --------------------- | ----------------------------------------------- |
+| `npm run dev`         | servidor de desenvolvimento                     |
+| `npm run build`       | build de produção                               |
+| `npm run check`       | formato, lint, tipos e testes - o que a CI roda |
+| `npm test`            | testes das regras de negócio                    |
+| `npm run db:migrate`  | cria/aplica migrations em desenvolvimento       |
+| `npm run db:seed`     | popula com dados de exemplo (idempotente)       |
+| `npm run db:catalogo` | carrega só o catálogo real, para produção       |
+| `npm run db:studio`   | interface visual do banco                       |
+| `npm run demo:build`  | compila o CSS da vitrine estática               |
 
 ## Estrutura
 
@@ -98,6 +99,7 @@ docs/                     documentação de decisões e operação
 - [Ambiente local](docs/06-ambiente-local.md)
 - [Deploy](docs/07-deploy.md)
 - [Identidade visual](docs/08-identidade-visual.md)
+- [Checklist de lançamento](docs/09-checklist-de-lancamento.md)
 - [Decisões de arquitetura](docs/adr/)
 
 ## Onde isso roda

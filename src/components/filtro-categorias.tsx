@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import type { Route } from 'next'
 import { LayoutGrid } from 'lucide-react'
+import { LinkDeFiltro } from '@/components/filtro-sem-piscar'
 import { CLASSES_DE_TOM, visualDaCategoria } from '@/lib/categorias'
 import { cn } from '@/lib/utils'
 
@@ -12,6 +12,9 @@ import { cn } from '@/lib/utils'
  * Next pré-carrega cada destino ao passar o mouse, e a navegação continua
  * funcionando com JavaScript desligado. A contagem ao lado do nome evita o
  * clique que leva a uma lista vazia.
+ *
+ * A navegação é `LinkDeFiltro` e não `Link`: filtrar mantém a grade na tela em
+ * vez de trocá-la pelo esqueleto e de volta.
  */
 export type OpcaoDeCategoria = { id: string; nome: string; total: number }
 
@@ -75,7 +78,7 @@ function Opcao({
   total: number
 }) {
   return (
-    <Link
+    <LinkDeFiltro
       href={href}
       aria-current={ativo ? 'true' : undefined}
       className={cn(
@@ -96,6 +99,6 @@ function Opcao({
           {total} {total === 1 ? 'item' : 'itens'}
         </span>
       </span>
-    </Link>
+    </LinkDeFiltro>
   )
 }
