@@ -26,6 +26,16 @@ const listaDeEmails = z
       .filter(Boolean),
   )
 
+const listaDeDominios = z
+  .string()
+  .default('')
+  .transform((v) =>
+    v
+      .split(',')
+      .map((d) => d.trim().toLowerCase().replace(/^@/, ''))
+      .filter(Boolean),
+  )
+
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
@@ -39,6 +49,7 @@ const schema = z.object({
   AUTH_OIDC_NAME: z.string().default('AUVP SSO'),
   AUTH_OIDC_GROUPS_CLAIM: z.string().default(''),
   AUTH_DEV_BYPASS: booleano,
+  AUTH_ALLOWED_EMAIL_DOMAINS: listaDeDominios,
 
   BOOTSTRAP_ADMIN_EMAILS: listaDeEmails,
 
@@ -84,6 +95,9 @@ function carregar() {
     if (!env.AUTH_OIDC_ISSUER) faltando.push('AUTH_OIDC_ISSUER')
     if (!env.AUTH_OIDC_CLIENT_ID) faltando.push('AUTH_OIDC_CLIENT_ID')
     if (!env.AUTH_OIDC_CLIENT_SECRET) faltando.push('AUTH_OIDC_CLIENT_SECRET')
+    // Sem a lista, quem entra depende só de o client OIDC estar bem
+    // configurado no provedor. Ver src/lib/acesso-sso.ts.
+    if (env.AUTH_ALLOWED_EMAIL_DOMAINS.length === 0) faltando.push('AUTH_ALLOWED_EMAIL_DOMAINS')
 
     if (faltando.length > 0) {
       throw new Error(

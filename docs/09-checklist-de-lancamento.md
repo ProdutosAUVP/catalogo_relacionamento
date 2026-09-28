@@ -47,7 +47,8 @@ funciona.
 Segue [o passo a passo do deploy](07-deploy.md). Em resumo:
 
 1. projeto no Railway com Postgres e o serviço da aplicação;
-2. variáveis de ambiente, incluindo `BOOTSTRAP_ADMIN_EMAILS` com o e-mail de
+2. variáveis de ambiente, incluindo `AUTH_ALLOWED_EMAIL_DOMAINS` (o domínio dos
+   e-mails da AUVP, sem ele a aplicação não sobe) e `BOOTSTRAP_ADMIN_EMAILS` com o e-mail de
    quem vai administrar. Sem ela o primeiro usuário entra como consultor e
    ninguém consegue promover ninguém;
 3. publicar, e o container aplica as migrations sozinho;

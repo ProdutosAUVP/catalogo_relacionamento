@@ -2,6 +2,7 @@ import NextAuth, { type NextAuthConfig } from 'next-auth'
 import type { Provider } from 'next-auth/providers'
 import Credentials from 'next-auth/providers/credentials'
 import { Perfil } from '@prisma/client'
+import { emailPodeEntrar } from './acesso-sso'
 import { db } from './db'
 import { devBypassHabilitado, env, ssoConfigurado } from './env'
 
@@ -19,9 +20,8 @@ import { devBypassHabilitado, env, ssoConfigurado } from './env'
  *    login. Assim, promover alguém a Admin passa a valer na próxima navegação,
  *    sem exigir que a pessoa saia e entre de novo.
  *
- * Pendência: confirmar o provedor (Google Workspace, Entra ID, Keycloak ou
- * outro) e se ele devolve grupos mapeáveis para perfil.
- * Ver docs/05-perguntas-em-aberto.md.
+ * O provedor é o Keycloak da AUVP, realm `master`. Ver
+ * docs/05-perguntas-em-aberto.md para o issuer exato e o que conferir.
  */
 
 function montarProviders(): Provider[] {
@@ -108,12 +108,18 @@ export async function sincronizarUsuario(dados: {
 export const authConfig: NextAuthConfig = {
   providers: montarProviders(),
   session: { strategy: 'jwt' },
-  pages: { signIn: '/login' },
+  // Recusa de acesso volta para a tela de login, que explica o motivo, em vez
+  // da página de erro padrão do NextAuth, em inglês e sem a marca.
+  pages: { signIn: '/login', error: '/login' },
   trustHost: true,
   callbacks: {
     async signIn({ user, profile }) {
       const email = (user.email ?? profile?.email)?.toLowerCase()
       if (!email) return false
+
+      // Antes de criar o usuário: conta de fora não chega a existir no banco.
+      const verificado = profile?.email_verified as boolean | null | undefined
+      if (!emailPodeEntrar(email, env.AUTH_ALLOWED_EMAIL_DOMAINS, verificado)) return false
 
       const registro = await sincronizarUsuario({
         email,

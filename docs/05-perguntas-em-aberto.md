@@ -183,13 +183,32 @@ entrar em uso.
 
 ## Técnicas, para começar
 
-### Qual é o provedor de SSO da AUVP, e quem libera as credenciais?
+### Qual é o provedor de SSO da AUVP, e quem libera as credenciais? ✅
 
-Necessário para ligar a autenticação: `AUTH_OIDC_ISSUER`,
-`AUTH_OIDC_CLIENT_ID`, `AUTH_OIDC_CLIENT_SECRET`.
+> É um Keycloak com OIDC. clientId: catalogo_relacionamento,
+> issuer: https://sso.auvp.com.br/, realm: master.
 
-O código já está pronto para qualquer provedor OIDC, Google Workspace, Entra
-ID, Keycloak. Sem as credenciais, a tela de login diz o que falta, e o
+O issuer que o OIDC confere é o do realm, não a raiz do servidor:
+`AUTH_OIDC_ISSUER=https://sso.auvp.com.br/realms/master`, sem barra no fim.
+O Auth.js compara o `iss` do token com esse valor caractere a caractere, e
+`https://sso.auvp.com.br/` falharia na descoberta. Keycloak anterior à versão 17
+usa `/auth/realms/master`; o endereço certo é o que responde em
+`<issuer>/.well-known/openid-configuration`.
+
+`AUTH_OIDC_CLIENT_ID=catalogo_relacionamento`. **Falta o client secret**, que
+só existe se o client estiver com "Client authentication" ligado, e precisa
+estar: o código autentica o client no servidor.
+
+O Keycloak manda `email_verified`, e `acesso-sso.ts` recusa quando vem falso.
+Usuário federado de LDAP ou AD costuma vir com falso, a menos que a federação
+tenha "Trust Email" ligado. **Conferir no primeiro login**: se a mensagem de
+acesso negado aparecer para alguém da AUVP, é isso.
+
+**Assumido:** só entra e-mail dos domínios em `AUTH_ALLOWED_EMAIL_DOMAINS`,
+obrigatória em produção. **Confirmar** quais domínios a AUVP usa (só
+`auvp.com.br`, ou também outro).
+
+Sem as credenciais, a tela de login diz o que falta, e o
 desenvolvimento roda com `AUTH_DEV_BYPASS`.
 
 **Também é preciso saber:** a URL de callback a registrar no provedor é
@@ -199,6 +218,10 @@ desenvolvimento roda com `AUTH_DEV_BYPASS`.
 
 Se devolver, dá para mapear perfil automaticamente em vez de o Admin promover
 na mão. `AUTH_OIDC_GROUPS_CLAIM` está reservado para isso.
+
+No Keycloak, devolve se a TI criar um mapper "Group Membership" no client.
+O mapeamento de grupo para perfil ainda não está escrito: a variável está
+reservada, o código não a lê.
 
 **Assumido:** não devolve. O primeiro login cria o usuário como `consultor` e o
 Admin promove. `BOOTSTRAP_ADMIN_EMAILS` resolve o problema do primeiro Admin.
