@@ -35,7 +35,7 @@ por perfil, geração de CSV e XLSX.
 | `DATABASE_URL`               | referência ao Postgres do projeto: `${{Postgres.DATABASE_URL}}` |
 | `AUTH_SECRET`                | `openssl rand -base64 32`                                       |
 | `AUTH_URL`                   | URL pública, ex. `https://presentes.auvp.com.br`                |
-| `AUTH_OIDC_ISSUER`           | issuer do SSO da AUVP                                           |
+| `AUTH_OIDC_ISSUER`           | `https://sso.auvp.com.br/realms/master`, sem barra no fim       |
 | `AUTH_OIDC_CLIENT_ID`        | client OIDC                                                     |
 | `AUTH_OIDC_CLIENT_SECRET`    | segredo do client                                               |
 | `AUTH_ALLOWED_EMAIL_DOMAINS` | domínios que podem entrar, ex. `auvp.com.br`                    |

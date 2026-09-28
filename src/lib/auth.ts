@@ -20,9 +20,8 @@ import { devBypassHabilitado, env, ssoConfigurado } from './env'
  *    login. Assim, promover alguém a Admin passa a valer na próxima navegação,
  *    sem exigir que a pessoa saia e entre de novo.
  *
- * Pendência: confirmar o provedor (Google Workspace, Entra ID, Keycloak ou
- * outro) e se ele devolve grupos mapeáveis para perfil.
- * Ver docs/05-perguntas-em-aberto.md.
+ * O provedor é o Keycloak da AUVP, realm `master`. Ver
+ * docs/05-perguntas-em-aberto.md para o issuer exato e o que conferir.
  */
 
 function montarProviders(): Provider[] {
