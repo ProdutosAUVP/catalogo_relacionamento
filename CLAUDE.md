@@ -18,6 +18,7 @@ duplique numa tela.
 | Regra                           | Arquivo                          |
 | ------------------------------- | -------------------------------- |
 | Quem pode o quê                 | `src/lib/permissions.ts`         |
+| Quem pode entrar pelo SSO       | `src/lib/acesso-sso.ts`          |
 | Transições, motivos e lote      | `src/lib/status.ts`              |
 | Gasto do mês e limite           | `src/lib/saldo.ts`               |
 | Fila de compras do Financeiro   | `src/lib/compras.ts`             |
@@ -46,6 +47,9 @@ Coisas que o código já garante e que não devem ser afrouxadas:
 - **Dinheiro é `Prisma.Decimal`.** `number` só na fronteira de exibição.
 - **Autorização acontece no servidor**, via `auth-guards.ts`. Esconder botão
   não é controle de acesso.
+- **Só entra quem é da AUVP**, pelo domínio do e-mail, conferido antes de o
+  usuário existir no banco. Não confie no client OIDC estar fechado no
+  provedor; produção não sobe sem `AUTH_ALLOWED_EMAIL_DOMAINS`.
 - **Consultor só enxerga as próprias solicitações.** Use
   `filtroDeSolicitacoes`, não um `where` escrito à mão.
 - **Preço de item vem do banco na hora de gravar.** `criarSolicitacao` relê o

@@ -13,8 +13,27 @@ import { Olho } from '@/components/marca/olho'
  * Enquanto o client OIDC não estiver configurado, a tela diz o que falta em vez
  * de mostrar um botão que não funciona.
  */
-export default async function LoginPage() {
+/**
+ * O NextAuth devolve só um código. `AccessDenied` é o `signIn` recusando:
+ * conta de fora dos domínios permitidos, e-mail não verificado ou usuário
+ * desativado pelo Admin. Não diz qual dos três, para não confirmar a quem
+ * está de fora quais contas existem.
+ */
+function mensagemDeErro(codigo: string | undefined): string | null {
+  if (!codigo) return null
+  if (codigo === 'AccessDenied') {
+    return 'Esta conta não tem acesso à ferramenta. Entre com o seu e-mail AUVP ou fale com o Admin da área.'
+  }
+  return 'Não foi possível entrar agora. Tente de novo em instantes.'
+}
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
   if (await usuarioAtual()) redirect('/')
+  const erro = mensagemDeErro((await searchParams).error)
 
   return (
     // Tela cheia com a marca sobre o verde AUVP: é a primeira coisa que a
@@ -31,6 +50,11 @@ export default async function LoginPage() {
         </div>
 
         <div className="bg-card space-y-6 rounded-lg p-6 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.6)]">
+          {erro ? (
+            <p role="alert" className="text-destructive text-sm">
+              {erro}
+            </p>
+          ) : null}
           {ssoConfigurado ? (
             <form
               action={async () => {

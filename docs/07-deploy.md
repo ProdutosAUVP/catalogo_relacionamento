@@ -30,16 +30,17 @@ por perfil, geração de CSV e XLSX.
 
 ### Variáveis de ambiente
 
-| Variável                  | Valor                                                           |
-| ------------------------- | --------------------------------------------------------------- |
-| `DATABASE_URL`            | referência ao Postgres do projeto: `${{Postgres.DATABASE_URL}}` |
-| `AUTH_SECRET`             | `openssl rand -base64 32`                                       |
-| `AUTH_URL`                | URL pública, ex. `https://presentes.auvp.com.br`                |
-| `AUTH_OIDC_ISSUER`        | issuer do SSO da AUVP                                           |
-| `AUTH_OIDC_CLIENT_ID`     | client OIDC                                                     |
-| `AUTH_OIDC_CLIENT_SECRET` | segredo do client                                               |
-| `BOOTSTRAP_ADMIN_EMAILS`  | e-mails que entram como Admin no primeiro login                 |
-| `NODE_ENV`                | `production`                                                    |
+| Variável                     | Valor                                                           |
+| ---------------------------- | --------------------------------------------------------------- |
+| `DATABASE_URL`               | referência ao Postgres do projeto: `${{Postgres.DATABASE_URL}}` |
+| `AUTH_SECRET`                | `openssl rand -base64 32`                                       |
+| `AUTH_URL`                   | URL pública, ex. `https://presentes.auvp.com.br`                |
+| `AUTH_OIDC_ISSUER`           | issuer do SSO da AUVP                                           |
+| `AUTH_OIDC_CLIENT_ID`        | client OIDC                                                     |
+| `AUTH_OIDC_CLIENT_SECRET`    | segredo do client                                               |
+| `AUTH_ALLOWED_EMAIL_DOMAINS` | domínios que podem entrar, ex. `auvp.com.br`                    |
+| `BOOTSTRAP_ADMIN_EMAILS`     | e-mails que entram como Admin no primeiro login                 |
+| `NODE_ENV`                   | `production`                                                    |
 
 As variáveis `STORAGE_*` continuam vazias de propósito: a foto enviada pelo
 CRUD é gravada no próprio Postgres, na tabela `arquivos`, e servida por
@@ -47,8 +48,10 @@ CRUD é gravada no próprio Postgres, na tabela `arquivos`, e servida por
 [ADR 0007](adr/0007-fotos-no-banco.md). Quando existir um bucket, muda
 `salvarFoto` em `src/lib/arquivos.ts` e nada mais.
 
-`env.ts` recusa produção sem `AUTH_SECRET` e sem o client OIDC completo, e
-recusa `AUTH_DEV_BYPASS` ligado. A checagem roda no `instrumentation.ts`, ou
+`env.ts` recusa produção sem `AUTH_SECRET`, sem o client OIDC completo e sem
+`AUTH_ALLOWED_EMAIL_DOMAINS`, e recusa `AUTH_DEV_BYPASS` ligado. A lista de
+domínios é a segunda tranca: se o client for criado aberto no provedor, conta
+de fora da AUVP é recusada antes de virar usuário ([`acesso-sso.ts`](../src/lib/acesso-sso.ts)). A checagem roda no `instrumentation.ts`, ou
 seja, na subida do servidor e não na primeira requisição: o log traz
 `Failed to prepare server` com a lista do que falta, o healthcheck não passa e
 o Railway marca o deploy como falho. Sem isso, um deploy mal configurado

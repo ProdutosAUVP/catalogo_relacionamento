@@ -188,6 +188,10 @@ entrar em uso.
 Necessário para ligar a autenticação: `AUTH_OIDC_ISSUER`,
 `AUTH_OIDC_CLIENT_ID`, `AUTH_OIDC_CLIENT_SECRET`.
 
+**Assumido:** só entra e-mail dos domínios em `AUTH_ALLOWED_EMAIL_DOMAINS`,
+obrigatória em produção. **Confirmar** quais domínios a AUVP usa (só
+`auvp.com.br`, ou também outro).
+
 O código já está pronto para qualquer provedor OIDC, Google Workspace, Entra
 ID, Keycloak. Sem as credenciais, a tela de login diz o que falta, e o
 desenvolvimento roda com `AUTH_DEV_BYPASS`.
