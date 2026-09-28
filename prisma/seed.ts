@@ -1,3 +1,8 @@
+// Roda fora do Next e da CLI do Prisma, que são quem lê o `.env` sozinhos.
+// Sem isto, `npm run db:seed` numa máquina nova para em "DATABASE_URL não
+// encontrada". Variável já definida no ambiente continua valendo, então a
+// carga em produção com `DATABASE_URL=... npm run db:catalogo` não muda.
+import 'dotenv/config'
 import { existsSync, readdirSync } from 'node:fs'
 import { PrismaClient, MotivoEnvio, Perfil, StatusSolicitacao, TipoValor } from '@prisma/client'
 import { formatarCodigo } from '../src/lib/codigo'
