@@ -211,8 +211,16 @@ obrigatória em produção. **Confirmar** quais domínios a AUVP usa (só
 Sem as credenciais, a tela de login diz o que falta, e o
 desenvolvimento roda com `AUTH_DEV_BYPASS`.
 
-**Também é preciso saber:** a URL de callback a registrar no provedor é
-`https://<dominio>/api/auth/callback/auvp`.
+**Conferido de fora em 28/09/2026**, sem credencial: o issuer responde a
+descoberta, e o client `catalogo_relacionamento` existe, mas ainda está
+**público** (aceita troca de código sem secret) e **sem nenhuma URL de retorno
+registrada**. A TI publica em `https://catalogo-relacionamento.prod.auvp.net`;
+a configuração exata do client, callback e post logout inclusos, está em
+[entrega para a TI](10-entrega-ti.md#1-keycloak).
+
+"Sair" encerra também a sessão do Keycloak (`src/lib/sessao-sso.ts`), senão o
+próximo "Entrar" voltaria logado sem pedir senha. Por isso o client precisa
+também da URL de post logout.
 
 ### O SSO devolve grupo ou departamento?
 

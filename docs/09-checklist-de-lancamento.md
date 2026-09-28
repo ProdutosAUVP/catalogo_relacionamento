@@ -22,8 +22,10 @@ Não precisa de nada de ninguém:
 **Esta é a única coisa que bloqueia tudo.** Sem ela ninguém entra, e a
 aplicação nem sobe: `env.ts` recusa produção sem o client OIDC completo.
 
-Alguém com acesso ao provedor de identidade da AUVP (Google Workspace, Entra
-ID, Keycloak, o que for) precisa criar um client OIDC e entregar três valores:
+O provedor é o Keycloak da AUVP, e o client `catalogo_relacionamento` já
+existe. Falta a TI ligar o secret e registrar as URLs de retorno; o passo a
+passo, junto com banco, imagem e variáveis, está em
+[entrega para a TI](10-entrega-ti.md). Os três valores que saem de lá:
 
 | O que         | Onde usar                 |
 | ------------- | ------------------------- |
@@ -34,8 +36,10 @@ ID, Keycloak, o que for) precisa criar um client OIDC e entregar três valores:
 E registrar a URL de callback no provedor:
 
 ```
-https://<dominio-escolhido>/api/auth/callback/auvp
+https://catalogo-relacionamento.prod.auvp.net/api/auth/callback/auvp
 ```
+
+e a de volta do "Sair": `https://catalogo-relacionamento.prod.auvp.net/login`.
 
 **Pergunte junto:** o token devolve grupo ou departamento? Se devolver, dá para
 mapear perfil automaticamente em vez de o Admin promover na mão
@@ -44,9 +48,9 @@ funciona.
 
 ## Etapa 2: subir
 
-Segue [o passo a passo do deploy](07-deploy.md). Em resumo:
+Segue a [entrega para a TI](10-entrega-ti.md). Em resumo:
 
-1. projeto no Railway com Postgres e o serviço da aplicação;
+1. Postgres e o container da aplicação, a partir do `Dockerfile`;
 2. variáveis de ambiente, incluindo `AUTH_ALLOWED_EMAIL_DOMAINS` (o domínio dos
    e-mails da AUVP, sem ele a aplicação não sobe) e `BOOTSTRAP_ADMIN_EMAILS` com o e-mail de
    quem vai administrar. Sem ela o primeiro usuário entra como consultor e

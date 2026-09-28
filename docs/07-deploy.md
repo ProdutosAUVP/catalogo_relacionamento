@@ -1,5 +1,11 @@
 # Deploy
 
+> **Produção é publicada pela TI** em
+> `https://catalogo-relacionamento.prod.auvp.net`. O guia que ela segue, com a
+> configuração do Keycloak, está em [entrega para a TI](10-entrega-ti.md). O
+> caminho pelo Railway abaixo continua valendo para um ambiente de
+> homologação, ou se a TI preferir essa plataforma.
+
 Dois destinos, com propósitos diferentes.
 
 |                | Aplicação          | Vitrine                       |
@@ -30,17 +36,17 @@ por perfil, geração de CSV e XLSX.
 
 ### Variáveis de ambiente
 
-| Variável                     | Valor                                                           |
-| ---------------------------- | --------------------------------------------------------------- |
-| `DATABASE_URL`               | referência ao Postgres do projeto: `${{Postgres.DATABASE_URL}}` |
-| `AUTH_SECRET`                | `openssl rand -base64 32`                                       |
-| `AUTH_URL`                   | URL pública, ex. `https://presentes.auvp.com.br`                |
-| `AUTH_OIDC_ISSUER`           | `https://sso.auvp.com.br/realms/master`, sem barra no fim       |
-| `AUTH_OIDC_CLIENT_ID`        | client OIDC                                                     |
-| `AUTH_OIDC_CLIENT_SECRET`    | segredo do client                                               |
-| `AUTH_ALLOWED_EMAIL_DOMAINS` | domínios que podem entrar, ex. `auvp.com.br`                    |
-| `BOOTSTRAP_ADMIN_EMAILS`     | e-mails que entram como Admin no primeiro login                 |
-| `NODE_ENV`                   | `production`                                                    |
+| Variável                     | Valor                                                            |
+| ---------------------------- | ---------------------------------------------------------------- |
+| `DATABASE_URL`               | referência ao Postgres do projeto: `${{Postgres.DATABASE_URL}}`  |
+| `AUTH_SECRET`                | `openssl rand -base64 32`                                        |
+| `AUTH_URL`                   | URL pública, ex. `https://catalogo-relacionamento.prod.auvp.net` |
+| `AUTH_OIDC_ISSUER`           | `https://sso.auvp.com.br/realms/master`, sem barra no fim        |
+| `AUTH_OIDC_CLIENT_ID`        | client OIDC                                                      |
+| `AUTH_OIDC_CLIENT_SECRET`    | segredo do client                                                |
+| `AUTH_ALLOWED_EMAIL_DOMAINS` | domínios que podem entrar, ex. `auvp.com.br`                     |
+| `BOOTSTRAP_ADMIN_EMAILS`     | e-mails que entram como Admin no primeiro login                  |
+| `NODE_ENV`                   | `production`                                                     |
 
 As variáveis `STORAGE_*` continuam vazias de propósito: a foto enviada pelo
 CRUD é gravada no próprio Postgres, na tabela `arquivos`, e servida por
@@ -64,6 +70,14 @@ A URL de callback é:
 ```
 https://<seu-dominio>/api/auth/callback/auvp
 ```
+
+E a de volta do "Sair" (post logout redirect URI):
+
+```
+https://<seu-dominio>/login
+```
+
+O passo a passo no Keycloak está em [entrega para a TI](10-entrega-ti.md#1-keycloak).
 
 ### Migrations
 

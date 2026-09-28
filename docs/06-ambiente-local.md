@@ -60,6 +60,23 @@ não haveria ninguém com poder de promover.
 O bypass é recusado fora de `NODE_ENV=development`: `env.ts` derruba o boot se
 alguém tentar ligá-lo em produção.
 
+"Sair" fica no menu do seu nome, no canto direito da barra.
+
+## Testar o SSO de verdade
+
+O `.env.example` já traz o issuer e o client ID do Keycloak da AUVP. Falta o
+secret, que a TI entrega (ver [entrega para a TI](10-entrega-ti.md)), e que
+`http://localhost:3000/api/auth/callback/auvp` esteja nas redirect URIs do
+client. Com os dois:
+
+```
+AUTH_OIDC_CLIENT_SECRET="<secret entregue pela TI>"
+```
+
+Reinicie o `npm run dev`. A tela de login passa a mostrar "Entrar com AUVP
+SSO" acima do "Entrar sem SSO". O e-mail que vem do Keycloak precisa estar em
+`BOOTSTRAP_ADMIN_EMAILS` para você entrar como Admin.
+
 ## Ver a ferramenta com os olhos de cada perfil
 
 O bypass aceita qualquer e-mail, e o seed já criou estes usuários. Saia e
@@ -123,3 +140,26 @@ CREATE DATABASE catalogo_presentes OWNER catalogo;
 
 Ou aponte `DATABASE_URL` para um banco que já exista. Só é preciso que o
 usuário possa criar tabelas.
+
+### Windows sem Docker e sem instalador
+
+O instalador oficial do Postgres para Windows (EnterpriseDB, o mesmo que
+winget, Chocolatey e Scoop baixam) responde 403 em algumas redes. O pacote npm
+`@embedded-postgres/windows-x64` traz os mesmos binários, sem instalador e sem
+administrador. Numa pasta fora do repositório, no PowerShell:
+
+```powershell
+mkdir $HOME\pgsql-local; cd $HOME\pgsql-local
+npm init -y
+npm install @embedded-postgres/windows-x64@16.14.0-beta.17
+$bin = ".\node_modules\@embedded-postgres\windows-x64\native\bin"
+Set-Content pw.tmp "catalogo" -NoNewline
+& "$bin\initdb.exe" -D data -U catalogo --pwfile=pw.tmp -A scram-sha-256 -E UTF8 --locale=C
+Remove-Item pw.tmp
+& "$bin\pg_ctl.exe" -D data -l postgres.log start
+```
+
+O usuário e a senha são os que o `.env.example` já espera, e o
+`npm run db:migrate` cria o banco `catalogo_presentes` sozinho. Para parar,
+`pg_ctl.exe -D data stop`; para voltar, o mesmo `start`. O Postgres não sobe
+sozinho com o Windows.

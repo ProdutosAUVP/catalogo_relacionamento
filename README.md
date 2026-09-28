@@ -10,29 +10,32 @@ O documento de origem está em
 ## Estado atual
 
 O V1 está de pé de ponta a ponta: o consultor pede, o Admin move o status, o
-Financeiro compra e a expedição recebe o pedido pronto. Falta ligar o SSO da
-AUVP, que depende de credenciais do provedor.
+Financeiro compra e a expedição recebe o pedido pronto. Falta a TI publicar e
+ligar o secret do client no Keycloak da AUVP, ver
+[entrega para a TI](docs/10-entrega-ti.md).
 
-| Área                                         | Situação                                       |
-| -------------------------------------------- | ---------------------------------------------- |
-| Modelo de dados e migrations                 | pronto, com restrições de integridade no banco |
-| Permissões por perfil                        | pronto e testado                               |
-| Fluxo de status                              | pronto e testado                               |
-| Saldo mensal por consultor                   | pronto e testado                               |
-| Exportação CSV/XLSX                          | pronto e testado                               |
-| Autenticação SSO (OIDC)                      | pronto, aguardando credenciais do provedor     |
-| Catálogo, gestão, fila de compras, listagens | telas prontas                                  |
-| Formulário de solicitação                    | pronto, em cinco etapas                        |
-| Mudança de status, com motivo e histórico    | pronto, individual e em lote                   |
-| Rastreio preenchido e visível ao consultor   | pronto, pelo caminho manual                    |
-| Catálogo de presentes                        | os 49 da planilha da área, com foto            |
-| Fila da expedição, com CSV e XLSX            | pronto - substitui a planilha feita à mão      |
-| CRUD de produto, cliente e usuário           | pronto, com foto e importação por CSV          |
-| Tiny ERP e Salesforce                        | fase 2, contratos já fixados                   |
+| Área                                           | Situação                                       |
+| ---------------------------------------------- | ---------------------------------------------- |
+| Modelo de dados e migrations                   | pronto, com restrições de integridade no banco |
+| Permissões por perfil                          | pronto e testado                               |
+| Fluxo de status                                | pronto e testado                               |
+| Saldo mensal por consultor                     | pronto e testado                               |
+| Exportação CSV/XLSX                            | pronto e testado                               |
+| Autenticação SSO (OIDC), com saída no Keycloak | pronto, aguardando o secret do client          |
+| Catálogo, gestão, fila de compras, listagens   | telas prontas                                  |
+| Formulário de solicitação                      | pronto, em cinco etapas                        |
+| Mudança de status, com motivo e histórico      | pronto, individual e em lote                   |
+| Rastreio preenchido e visível ao consultor     | pronto, pelo caminho manual                    |
+| Catálogo de presentes                          | os 49 da planilha da área, com foto            |
+| Fila da expedição, com CSV e XLSX              | pronto - substitui a planilha feita à mão      |
+| CRUD de produto, cliente e usuário             | pronto, com foto e importação por CSV          |
+| Tiny ERP e Salesforce                          | fase 2, contratos já fixados                   |
 
 ## Como rodar
 
-Requisitos: Node 20.11+ e Docker (para o Postgres local).
+Requisitos: Node 20.11+ e um Postgres 16 (Docker, instalado ou portátil, ver
+[ambiente local](docs/06-ambiente-local.md)). Para publicar em produção, a TI
+segue a [entrega para a TI](docs/10-entrega-ti.md).
 
 ```bash
 cp .env.example .env      # ajuste o que precisar
@@ -100,6 +103,7 @@ docs/                     documentação de decisões e operação
 - [Deploy](docs/07-deploy.md)
 - [Identidade visual](docs/08-identidade-visual.md)
 - [Checklist de lançamento](docs/09-checklist-de-lancamento.md)
+- [Entrega para a TI](docs/10-entrega-ti.md)
 - [Decisões de arquitetura](docs/adr/)
 
 ## Onde isso roda

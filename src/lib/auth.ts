@@ -131,7 +131,11 @@ export const authConfig: NextAuthConfig = {
       return registro.ativo
     },
 
-    async jwt({ token }) {
+    async jwt({ token, account }) {
+      // Guardado só para o "Sair" encerrar também a sessão do Keycloak. Fica
+      // no JWT, que é cifrado no cookie, e não vai para a sessão do navegador.
+      if (account?.provider === 'auvp' && account.id_token) token.idToken = account.id_token
+
       if (!token.email) return token
 
       const usuario = await db.usuario.findUnique({

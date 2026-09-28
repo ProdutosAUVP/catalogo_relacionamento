@@ -26,6 +26,8 @@ declare module '@auth/core/jwt' {
     usuarioId?: string
     perfil?: Perfil
     ativo?: boolean
+    /** Só de quem entrou pelo SSO; ver `src/lib/sessao-sso.ts`. */
+    idToken?: string
   }
 }
 
