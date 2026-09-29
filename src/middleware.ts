@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { ehCookieDeSessao } from '@/lib/sessao-sso'
 
 /**
  * Barreira de borda: quem não tem cookie de sessão nem chega a renderizar
@@ -18,8 +19,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  const temSessao =
-    req.cookies.has('authjs.session-token') || req.cookies.has('__Secure-authjs.session-token')
+  const temSessao = req.cookies.getAll().some((c) => ehCookieDeSessao(c.name))
 
   if (temSessao) return NextResponse.next()
 

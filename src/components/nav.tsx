@@ -9,6 +9,7 @@ import {
   ChevronDown,
   Gift,
   ListChecks,
+  LogOut,
   Package,
   Settings2,
   ShoppingCart,
@@ -25,6 +26,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { sair } from '@/lib/actions/sessao'
 import { pode, ROTULO_PERFIL, type Acao } from '@/lib/permissions'
 import { cn } from '@/lib/utils'
 
@@ -355,16 +357,37 @@ export function Nav({ perfil, nome }: { perfil: Perfil; nome: string }) {
 
         <div className="flex shrink-0 items-center gap-2.5">
           <div className="bg-border mx-0.5 hidden h-4 w-px md:block" />
-          <div className="hidden text-right leading-tight sm:block">
-            <p className="text-foreground text-sm">{nome}</p>
-            <p className="text-muted-foreground text-xs">{ROTULO_PERFIL[perfil]}</p>
-          </div>
-          <span
-            className="bg-muted text-foreground font-ui grid size-9 place-items-center rounded-full text-xs font-semibold"
-            aria-hidden="true"
-          >
-            {iniciais}
-          </span>
+
+          {/* O form fica fora do menu: o conteúdo do dropdown desmonta ao
+              fechar, e o envio não pode depender dele continuar na tela. */}
+          <form id="form-sair" action={sair} className="hidden" />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label={`Conta de ${nome}`}
+              className="hover:bg-muted -mr-1.5 flex items-center gap-2.5 rounded-xl py-1 pr-1.5 pl-2 transition-colors outline-none"
+            >
+              <span className="hidden text-right leading-tight sm:block">
+                <span className="text-foreground block text-sm">{nome}</span>
+                <span className="text-muted-foreground block text-xs">{ROTULO_PERFIL[perfil]}</span>
+              </span>
+              <span
+                className="bg-muted text-foreground font-ui grid size-9 place-items-center rounded-full text-xs font-semibold"
+                aria-hidden="true"
+              >
+                {iniciais}
+              </span>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem asChild>
+                <button type="submit" form="form-sair" className="w-full items-center">
+                  <LogOut className="h-4 w-4" aria-hidden="true" />
+                  Sair
+                </button>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
