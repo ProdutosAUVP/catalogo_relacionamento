@@ -54,6 +54,11 @@ CRUD é gravada no próprio Postgres, na tabela `arquivos`, e servida por
 [ADR 0007](adr/0007-fotos-no-banco.md). Quando existir um bucket, muda
 `salvarFoto` em `src/lib/arquivos.ts` e nada mais.
 
+Variável criada sem valor vale como ausente: painel de plataforma e `.env`
+copiado do exemplo costumam deixar a chave vazia, e ela cai no valor padrão em
+vez de falhar na validação. O build também não exige `DATABASE_URL`, porque não
+abre conexão; quem exige o banco é o processo que serve a aplicação.
+
 `env.ts` recusa produção sem `AUTH_SECRET`, sem o client OIDC completo e sem
 `AUTH_ALLOWED_EMAIL_DOMAINS`, e recusa `AUTH_DEV_BYPASS` ligado. A lista de
 domínios é a segunda tranca: se o client for criado aberto no provedor, conta
