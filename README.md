@@ -104,13 +104,15 @@ docs/                     documentação de decisões e operação
 - [Identidade visual](docs/08-identidade-visual.md)
 - [Checklist de lançamento](docs/09-checklist-de-lancamento.md)
 - [Entrega para a TI](docs/10-entrega-ti.md)
+- [Homologação na Vercel](docs/12-homologacao-vercel.md)
 - [Logística](docs/11-logistica.md)
 - [Decisões de arquitetura](docs/adr/)
 
 ## Onde isso roda
 
-**Aplicação:** Railway, com Postgres no mesmo projeto. Ver
-[docs/07-deploy.md](docs/07-deploy.md).
+**Aplicação:** produção na infraestrutura da TI, por Docker
+([entrega para a TI](docs/10-entrega-ti.md)), e homologação na Vercel a cada
+merge no `main` ([homologação na Vercel](docs/12-homologacao-vercel.md)).
 
 **Vitrine:** GitHub Pages, a partir de `demo/`. É uma demonstração navegável
 com dados fictícios, sem login e sem banco, feita para mostrar as telas a quem

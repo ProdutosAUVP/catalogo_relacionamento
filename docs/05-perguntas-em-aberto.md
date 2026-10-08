@@ -219,6 +219,21 @@ houver compra, ou "Recebido" se tudo sai do estoque. O pedido no Tiny nasce em
 **"Organizando envio"**, quando tudo está comprado: antes disso não há o que
 despachar. Ver [ADR 0009](adr/0009-integracoes-por-fila.md).
 
+### Quais números tornam a semana "alto volume" ou "crítica"?
+
+**Assumido:** alto volume a partir de 10 pedidos e 1,5× a média das 8
+semanas anteriores; risco com uma atrasada; crítica com 3 atrasadas, ou 2
+que sejam um quarto das abertas. A tabela completa está em
+[Logística](11-logistica.md#como-o-painel-conta).
+**Onde mudar:** `LIMIARES` em `src/lib/logistica/status-operacional.ts`.
+
+### Subsidiárias e departamentos
+
+O relatório pede a hierarquia "Do Not Scare Soluções Interativas LTDA →
+Produto & CX". **Assumido:** os dois vêm de campos do ClickUp, como texto; o
+seed traz uma lista ilustrativa. Falta a lista real, que só importa para
+conferir o mapeamento quando o ClickUp for ligado.
+
 ### O que falta saber do ClickUp
 
 - qual lista ou espaço é o da Logística;

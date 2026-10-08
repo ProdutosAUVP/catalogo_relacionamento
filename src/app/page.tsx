@@ -100,7 +100,6 @@ export default async function Home() {
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Relacionamento AUVP"
         titulo={`Olá, ${usuario.nome.split(' ')[0]}`}
         descricao="Presentes para clientes: solicitação, acompanhamento e custo por consultor."
       />

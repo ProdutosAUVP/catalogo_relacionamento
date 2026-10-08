@@ -33,7 +33,6 @@ export default async function AdminUsuariosPage() {
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Administração"
         titulo="Usuários"
         descricao="Perfil e limite mensal são geridos aqui, dentro da ferramenta, sem passar por TI."
       />

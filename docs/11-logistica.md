@@ -17,22 +17,72 @@ O protótipo não tinha código. Tudo aqui foi construído do zero.
 
 ## O que o painel mostra
 
-| Pedido da área                                                                | Onde                                               | Situação   |
-| ----------------------------------------------------------------------------- | -------------------------------------------------- | ---------- |
-| Filtro global: semanal, mensal, anual ou datas livres (relatório, item 3)     | `src/lib/periodo.ts`                               | pronto     |
-| Status operacional em destaque: normal, alto volume, risco, crítica (item 1)  | dashboard                                          | em seguida |
-| "Volume de Pedidos por Departamento", com subsidiária e departamento (item 2) | dashboard                                          | em seguida |
-| Comparativo com o período anterior e evolução semanal (proposta, item 1)      | dashboard                                          | em seguida |
-| Horas por produto e tempo médio por envio (proposta, item 2)                  | dashboard                                          | em seguida |
-| Trilha de demandas com a esteira prioritária dentro dela (item 4)             | dashboard                                          | em seguida |
-| Status, item ou "Kit", observações no hover, previsão obrigatória (item 4)    | trilha                                             | em seguida |
-| Exportar a trilha respeitando o filtro de período (item 4)                    | trilha                                             | em seguida |
-| Título ou ID da demanda como link para a tarefa no ClickUp (item 5)           | trilha                                             | em seguida |
-| Apresentação da equipe (item 6)                                               | `/logistica/equipe`                                | em seguida |
-| FAQ, com conteúdo em elaboração (item 7)                                      | `/logistica/faq`                                   | em seguida |
-| Fases operacionais padronizadas (proposta, item 5)                            | enum no schema                                     | em seguida |
-| Leitura das tarefas do ClickUp                                                | provider, sincronização                            | depois     |
-| Solicitação aprovada vira tarefa no ClickUp e pedido no Tiny                  | fila, [ADR 0009](adr/0009-integracoes-por-fila.md) | depois     |
+| Pedido da área                                                                | Onde                                               | Situação |
+| ----------------------------------------------------------------------------- | -------------------------------------------------- | -------- |
+| Filtro global: semanal, mensal, anual ou datas livres (relatório, item 3)     | `src/lib/periodo.ts`                               | pronto   |
+| Status operacional em destaque: normal, alto volume, risco, crítica (item 1)  | dashboard                                          | pronto   |
+| "Volume de Pedidos por Departamento", com subsidiária e departamento (item 2) | dashboard                                          | pronto   |
+| Comparativo com o período anterior e evolução semanal (proposta, item 1)      | dashboard                                          | pronto   |
+| Horas por produto e tempo médio por envio (proposta, item 2)                  | dashboard                                          | pronto   |
+| Trilha de demandas com a esteira prioritária dentro dela (item 4)             | dashboard                                          | pronto   |
+| Status, item ou "Kit", observações no hover, previsão obrigatória (item 4)    | trilha                                             | pronto   |
+| Exportar a trilha respeitando o filtro de período (item 4)                    | trilha                                             | pronto   |
+| Título ou ID da demanda como link para a tarefa no ClickUp (item 5)           | trilha                                             | pronto   |
+| Apresentação da equipe (item 6)                                               | `/logistica/equipe`                                | pronto   |
+| FAQ, com conteúdo em elaboração (item 7)                                      | `/logistica/faq`                                   | pronto   |
+| Fases operacionais padronizadas (proposta, item 5)                            | enum no schema                                     | pronto   |
+| Leitura das tarefas do ClickUp                                                | provider, sincronização                            | depois   |
+| Solicitação aprovada vira tarefa no ClickUp e pedido no Tiny                  | fila, [ADR 0009](adr/0009-integracoes-por-fila.md) | depois   |
+
+## Como o painel conta
+
+Regras em `src/lib/logistica/`, puras e testadas, com a leitura do banco à
+parte em `painel.ts`:
+
+- **Volume** é o que foi _pedido_ no período (`solicitadaEm`). O comparativo é
+  com o período anterior do mesmo tamanho.
+- **O gráfico de volume é de barras**, e não a rosca do protótipo. Comparar
+  fatias de rosca é adivinhação; comprimento de barra se lê. Cada barra traz
+  quantidade e percentual, então a tabela que ficava embaixo da rosca deixou
+  de ser necessária. Uma cor só, porque o que se compara é tamanho.
+- **A trilha** mostra o que esteve _em andamento_ em algum momento do período:
+  pedido antes do fim e não concluído antes do início. Por isso a trilha de uma
+  semana inclui o que vem aberto de semanas anteriores. Ordem: abertas antes
+  de concluídas; dentro das abertas, prioritárias (urgente e alta), atrasadas
+  antes; depois pela previsão mais próxima, com a demanda sem previsão no fim
+  do seu grupo. A tela mostra até 200; a exportação leva todas.
+- **Atrasada** é a demanda aberta com a previsão de conclusão vencida.
+  **Sem previsão** aparece como aviso na trilha, porque a área considera a
+  previsão obrigatória.
+- **"Kit"**: mais de um item na demanda. A lista completa abre no hover.
+- **Horas** somam o tempo apontado nas demandas pedidas no período, por
+  produto, com a média por envio.
+- **O status da semana** vale para a semana selecionada, ou para a semana
+  atual quando o filtro é mês, ano ou personalizado. Sugestão automática, a
+  mais grave que se aplica:
+
+  | Situação         | Quando                                                      |
+  | ---------------- | ----------------------------------------------------------- |
+  | Operação crítica | 3 ou mais atrasadas, ou 2 ou mais que sejam 25% das abertas |
+  | Risco de atraso  | ao menos 1 atrasada                                         |
+  | Alto volume      | 10 ou mais pedidos e 1,5× a média das 8 semanas anteriores  |
+  | Operação normal  | nenhuma das anteriores                                      |
+
+  A Logística pode definir à mão, com um porquê, e voltar ao automático. O
+  painel diz quem definiu e quando, e mostra ao lado o que os números sugerem.
+  Os limiares são suposição, ver [perguntas em aberto](05-perguntas-em-aberto.md#logística),
+  e moram em `LIMIARES`, em `status-operacional.ts`.
+
+- **As observações** só chegam ao navegador de quem pode lê-las: o filtro é
+  no servidor, na tela e na exportação.
+
+## Dados de exemplo
+
+Enquanto o ClickUp não está ligado, `npm run db:seed` cria cerca de 115
+demandas **fictícias** em 14 semanas (`prisma/exemplo-logistica.ts`), com
+datas relativas a hoje, três membros de equipe inventados e um status manual
+no histórico. Departamentos e subsidiárias são ilustrativos. A carga de
+produção (`db:catalogo`) não leva nada disso.
 
 ## O período
 

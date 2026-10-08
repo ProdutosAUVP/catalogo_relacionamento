@@ -32,7 +32,6 @@ export default async function AdminClientesPage() {
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Administração"
         titulo="Clientes"
         descricao="Cadastro manual ou importação por CSV. O CPF é a chave que evita duplicatas."
         acoes={
