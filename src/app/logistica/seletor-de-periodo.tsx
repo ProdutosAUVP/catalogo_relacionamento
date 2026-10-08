@@ -49,7 +49,7 @@ export function SeletorDePeriodo({ periodo }: { periodo: Periodo }) {
       </nav>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div className="text-right leading-tight">
+        <div className="leading-tight sm:text-right">
           <p className="font-display text-base font-semibold">{periodo.rotulo}</p>
           {periodo.detalhe ? (
             <p className="text-muted-foreground text-xs tabular-nums">{periodo.detalhe}</p>
@@ -60,7 +60,7 @@ export function SeletorDePeriodo({ periodo }: { periodo: Periodo }) {
           <Button size="sm" variant="ghost" asChild>
             <LinkDeFiltro href={hrefDo(periodo.anterior)} aria-label="Período anterior">
               <ChevronLeft aria-hidden="true" />
-              Anterior
+              <span className="max-sm:hidden">Anterior</span>
             </LinkDeFiltro>
           </Button>
           <Button size="sm" variant="ghost" asChild>
@@ -70,7 +70,9 @@ export function SeletorDePeriodo({ periodo }: { periodo: Periodo }) {
           </Button>
           <Button size="sm" variant="ghost" asChild>
             <LinkDeFiltro href={hrefDo(periodo.proximo)} aria-label="Próximo período">
-              {periodo.tipo === 'semana' ? 'Próxima' : 'Próximo'}
+              <span className="max-sm:hidden">
+                {periodo.tipo === 'semana' ? 'Próxima' : 'Próximo'}
+              </span>
               <ChevronRight aria-hidden="true" />
             </LinkDeFiltro>
           </Button>

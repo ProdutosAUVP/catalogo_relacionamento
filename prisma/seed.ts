@@ -8,6 +8,7 @@ import { PrismaClient, MotivoEnvio, Perfil, StatusSolicitacao, TipoValor } from 
 import { formatarCodigo } from '../src/lib/codigo'
 import { totalDosItens } from '../src/lib/money'
 import { CATALOGO_AUVP, CATEGORIAS_AUVP, slugDoProduto } from './catalogo-auvp'
+import { semearLogistica } from './exemplo-logistica'
 
 /**
  * Carga inicial do banco.
@@ -17,7 +18,8 @@ import { CATALOGO_AUVP, CATEGORIAS_AUVP, slugDoProduto } from './catalogo-auvp'
  * ferramenta estiver no ar, quem manda é o CRUD de catálogo, este arquivo é o
  * ponto de partida.
  *
- * O resto (usuários, clientes e algumas solicitações) é exemplo mesmo, para
+ * O resto (usuários, clientes, algumas solicitações e as demandas da
+ * Logística, em `prisma/exemplo-logistica.ts`) é exemplo mesmo, para
  * que quem clonar o repositório abra as telas com conteúdo plausível:
  * solicitações em status diferentes e uma com presente específico com link.
  *
@@ -309,6 +311,11 @@ async function main() {
     criadas++
   }
   console.log(`  ${criadas} solicitações`)
+
+  const logistica = await semearLogistica(db)
+  console.log(
+    `  ${logistica.demandas} demandas da Logística e ${logistica.membros} membros da equipe`,
+  )
   console.log('Pronto.')
 }
 

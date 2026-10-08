@@ -103,9 +103,10 @@ model Usuario {
   criadoEm     DateTime @default(now()) @map("criado_em")
   atualizadoEm DateTime @updatedAt @map("atualizado_em")
 
-  solicitacoes    Solicitacao[]          @relation("SolicitacoesDoConsultor")
+  solicitacoes    Solicitacao[]             @relation("SolicitacoesDoConsultor")
   historicos      SolicitacaoHistorico[]
-  clientesCriados Cliente[]              @relation("ClientesCriadosPor")
+  clientesCriados Cliente[]                 @relation("ClientesCriadosPor")
+  statusDefinidos StatusOperacionalSemana[]
 
   @@index([perfil, ativo])
   @@map("usuarios")
@@ -337,4 +338,147 @@ model Arquivo {
   criadoEm  DateTime @default(now()) @map("criado_em")
 
   @@map("arquivos")
+}
+
+// ---------------------------------------------------------------------------
+// Logística (ADR 0008)
+// ---------------------------------------------------------------------------
+
+/// As fases operacionais padronizadas da proposta da Logística, na ordem em
+/// que uma demanda anda. É o "status" que a trilha mostra.
+enum FaseOperacional {
+  recebido
+  em_analise
+  aguardando_documentacao
+  aguardando_suprimentos
+  em_execucao
+  revisao
+  finalizacao
+  concluido
+}
+
+/// As quatro prioridades do ClickUp, para casar sem tradução.
+enum PrioridadeDemanda {
+  urgente
+  alta
+  normal
+  baixa
+}
+
+enum ComplexidadeDemanda {
+  baixa
+  media
+  alta
+}
+
+/// Status geral da operação na semana, como a proposta pede.
+enum SituacaoOperacional {
+  normal
+  alto_volume
+  risco_de_atraso
+  critica
+}
+
+/// De onde a demanda veio. `solicitacao` é a ponte com o catálogo de
+/// presentes (ADR 0009); `clickup`, a tarefa que a Logística abriu lá.
+enum OrigemDemanda {
+  clickup
+  solicitacao
+}
+
+/// Uma demanda da Logística: o envio que o dashboard conta e a trilha lista.
+///
+/// É o espelho local de uma tarefa do ClickUp, onde o detalhe operacional
+/// continua morando. Espelhar, em vez de consultar o ClickUp a cada tela,
+/// é o que permite filtrar por semana ISO, somar por departamento e exportar
+/// sem bater no limite de requisições da API deles.
+///
+/// Departamento, subsidiária e produto ficam como texto: são os rótulos das
+/// listas suspensas do ClickUp, e uma tabela de cadastro aqui seria um
+/// segundo lugar para manter a mesma lista.
+model DemandaLogistica {
+  id                String               @id @default(cuid())
+  origem            OrigemDemanda        @default(clickup)
+  /// ID da tarefa no ClickUp. Único: é a chave da sincronização.
+  clickupId         String?              @unique @map("clickup_id")
+  clickupUrl        String?              @map("clickup_url")
+  titulo            String
+  subsidiaria       String?
+  departamento      String?
+  produto           String?
+  /// O que está sendo enviado. Mais de um item vira "Kit" na tela.
+  itens             String[]             @default([])
+  fase              FaseOperacional      @default(recebido)
+  prioridade        PrioridadeDemanda    @default(normal)
+  complexidade      ComplexidadeDemanda?
+  responsavel       String?
+  /// Texto livre do ClickUp, onde aparece nome e endereço de quem recebe.
+  /// Lido só por quem tem `logistica.verObservacoes`.
+  observacoes       String?
+  linkFormulario    String?              @map("link_formulario")
+  solicitadaEm      DateTime             @map("solicitada_em")
+  previsaoInicio    DateTime?            @map("previsao_inicio")
+  /// Obrigatória pela área. Nula só quando a tarefa veio do ClickUp sem ela,
+  /// e a trilha aponta a falta em vez de esconder.
+  previsaoConclusao DateTime?            @map("previsao_conclusao")
+  concluidaEm       DateTime?            @map("concluida_em")
+  /// Tempo apontado na tarefa, em minutos.
+  minutosApontados  Int                  @default(0) @map("minutos_apontados")
+  sincronizadaEm    DateTime?            @map("sincronizada_em")
+  criadoEm          DateTime             @default(now()) @map("criado_em")
+  atualizadoEm      DateTime             @updatedAt @map("atualizado_em")
+
+  @@index([solicitadaEm])
+  @@index([concluidaEm])
+  @@index([previsaoConclusao])
+  @@map("demandas_logistica")
+}
+
+/// O status da semana definido à mão pela Logística.
+///
+/// Sem linha, ou com `situacao` nula, vale o automático calculado em
+/// `src/lib/logistica/status-operacional.ts`. Voltar ao automático anula a
+/// situação em vez de apagar a linha: quem definiu e quando continuam lá.
+model StatusOperacionalSemana {
+  id            String               @id @default(cuid())
+  ano           Int
+  semana        Int
+  situacao      SituacaoOperacional?
+  observacao    String?
+  definidoPorId String?              @map("definido_por_id")
+  definidoEm    DateTime             @default(now()) @map("definido_em")
+
+  definidoPor Usuario? @relation(fields: [definidoPorId], references: [id], onDelete: SetNull)
+
+  @@unique([ano, semana])
+  @@map("status_operacional_semana")
+}
+
+/// Quem compõe o time de Logística, para a seção "Equipe".
+model MembroEquipe {
+  id        String   @id @default(cuid())
+  nome      String
+  funcao    String
+  descricao String?
+  email     String?
+  fotoUrl   String?  @map("foto_url")
+  ordem     Int      @default(0)
+  ativo     Boolean  @default(true)
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  @@index([ativo, ordem])
+  @@map("membros_equipe")
+}
+
+/// Pergunta frequente. O conteúdo está em elaboração pela Logística.
+model PerguntaFrequente {
+  id       String   @id @default(cuid())
+  pergunta String
+  resposta String
+  ordem    Int      @default(0)
+  ativo    Boolean  @default(true)
+  criadoEm DateTime @default(now()) @map("criado_em")
+
+  @@index([ativo, ordem])
+  @@map("perguntas_frequentes")
 }

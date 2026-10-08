@@ -54,8 +54,7 @@ export default async function SolicitacoesPage() {
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Minhas solicitações"
-        titulo="Solicitações"
+        titulo="Minhas solicitações"
         descricao="Os presentes que você pediu, com o status e o rastreio de cada envio."
         acoes={
           podeCriar ? (

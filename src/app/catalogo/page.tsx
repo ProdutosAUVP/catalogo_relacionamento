@@ -61,7 +61,6 @@ export default async function CatalogoPage({
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Presentes"
         titulo="Catálogo"
         descricao="Escolha o presente e siga para a solicitação. Produtos desativados não aparecem aqui."
         acoes={

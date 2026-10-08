@@ -47,7 +47,6 @@ export default async function ExpedicaoPage({
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Expedição"
         titulo="Pedidos para separar"
         descricao="Tudo o que a expedição precisa para embalar e postar, em ordem de chegada. A carta continua sendo escrita fora daqui."
         acoes={

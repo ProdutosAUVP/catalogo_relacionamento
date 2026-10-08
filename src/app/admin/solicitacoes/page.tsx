@@ -100,7 +100,6 @@ export default async function AdminSolicitacoesPage({
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Gestão"
         titulo="Solicitações"
         descricao="Acompanhe o fluxo inteiro, corrija dados e exporte o resultado filtrado."
         acoes={
