@@ -52,7 +52,6 @@ export default async function AdminCatalogoPage() {
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Administração"
         titulo="Gerenciar catálogo"
         descricao="Cadastro, edição e ativação de produtos, feitos pela própria área, sem depender do time técnico."
         acoes={

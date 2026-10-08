@@ -36,7 +36,6 @@ export default async function FilaDeComprasPage() {
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Financeiro"
         titulo="Fila de compras"
         descricao="Itens das solicitações enviadas para compra, em ordem de chegada."
       />

@@ -5,8 +5,9 @@ import { cn } from '@/lib/utils'
 /**
  * Cabeçalho padrão das telas.
  *
- * A "sobrancelha" acima do título dá contexto de seção sem exigir um segundo
- * nível de navegação: o consultor sabe onde está sem migalha de pão.
+ * A "sobrancelha" acima do título é só para dado, como a data e o cliente no
+ * detalhe da solicitação. O nome da seção não vai ali: o menu já o marca, e
+ * repetido acima do título vira ruído.
  */
 export function CabecalhoDaPagina({
   sobrancelha,

@@ -27,7 +27,6 @@ export default async function EquipePage() {
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Logística"
         titulo="Equipe de Logística"
         descricao="Quem recebe, separa, compra e envia. Para dúvidas sobre um envio, o caminho é a tarefa no ClickUp."
         acoes={

@@ -338,7 +338,7 @@ function telaCatalogo() {
     .join('')
 
   return `
-    ${cabecalho('Catálogo', 'Escolha o presente e siga para a solicitação. Produtos desativados não aparecem aqui.', 'Presentes')}
+    ${cabecalho('Catálogo', 'Escolha o presente e siga para a solicitação. Produtos desativados não aparecem aqui.')}
     <div class="mb-4 flex flex-wrap items-center gap-2 rounded-lg border bg-card p-3">
       <input id="busca" value="${esc(busca)}" placeholder="Buscar por nome ou descrição"
         class="h-10 w-64 rounded-md border border-input bg-background px-3 text-sm" />
@@ -1039,7 +1039,7 @@ function telaNova() {
             : novaEtapaRevisao()
 
   return `
-    ${cabecalho('Enviar um presente', 'Cinco etapas, do cliente à revisão. Nada é enviado antes da última.', 'Nova solicitação')}
+    ${cabecalho('Enviar um presente', 'Cinco etapas, do cliente à revisão. Nada é enviado antes da última.')}
 
     <div class="grid gap-6 lg:grid-cols-[1fr_20rem]">
       <div class="min-w-0">
@@ -1152,7 +1152,7 @@ function telaMinhas() {
   const pct = Math.min(100, (gasto / limite) * 100)
 
   return `
-    ${cabecalho('Solicitações', 'Os presentes que você pediu, com o status e o rastreio de cada envio.', 'Minhas solicitações')}
+    ${cabecalho('Minhas solicitações', 'Os presentes que você pediu, com o status e o rastreio de cada envio.')}
     <div class="mb-6 rounded-lg border bg-card p-5 shadow-sm">
       <p class="text-sm text-muted-foreground">Gasto no mês</p>
       <p class="mt-1 text-2xl font-semibold">${brl(gasto)}</p>
@@ -1180,7 +1180,7 @@ function telaGestao() {
   const pendentes = SOLICITACOES.filter((s) => ENCAMINHAVEIS.includes(s.status)).length
 
   return `
-    ${cabecalho('Solicitações', 'Acompanhe o fluxo inteiro, corrija dados e exporte o resultado filtrado.', 'Gestão')}
+    ${cabecalho('Solicitações', 'Acompanhe o fluxo inteiro, corrija dados e exporte o resultado filtrado.')}
     <div class="mb-6 flex flex-wrap items-center gap-2">
       <input placeholder="Código, cliente ou consultor" class="h-9 w-56 rounded-md border border-input px-3 text-sm" />
       <input type="date" class="h-9 rounded-md border border-input px-3 text-sm" />
@@ -1407,7 +1407,7 @@ function telaCompras() {
     .join('')
 
   return `
-    ${cabecalho('Fila de compras', 'Itens das solicitações enviadas para compra, em ordem de chegada.', 'Financeiro')}
+    ${cabecalho('Fila de compras', 'Itens das solicitações enviadas para compra, em ordem de chegada.')}
     <div class="mb-6 grid gap-4 sm:grid-cols-3">
       ${cartao('Valor total da fila', brl(total), `${naFila.length} ${naFila.length === 1 ? 'item' : 'itens'} no total.`, true)}
       ${cartao('Aguardando compra', String(naFila.filter((i) => i.status === 'aguardando_compra').length), 'Ainda não comprados.')}
@@ -1495,7 +1495,7 @@ function telaExpedicao() {
     ${cabecalho(
       'Pedidos para separar',
       'Tudo o que a expedição precisa para embalar e postar, em ordem de chegada. A carta continua sendo escrita fora daqui.',
-      'Expedição',
+      null,
       '<span class="rounded-[5px] border px-5 py-2 font-ui text-sm font-semibold uppercase">Baixar CSV</span><span class="rounded-[5px] border px-5 py-2 font-ui text-sm font-semibold uppercase">Baixar planilha</span>',
     )}
     <div class="mb-8 grid gap-4 sm:grid-cols-3">
@@ -1540,7 +1540,7 @@ function telaClientes() {
     ${cabecalho(
       'Clientes',
       'Cadastro manual ou importação por CSV. O CPF é a chave que evita duplicatas.',
-      'Administração',
+      null,
       '<span class="rounded-[5px] border px-5 py-2 font-ui text-sm font-semibold uppercase">Importar CSV</span><span class="rounded-[5px] border border-primary bg-primary px-5 py-2 font-ui text-sm font-semibold uppercase text-primary-foreground">Novo cliente</span>',
     )}
     <div class="overflow-hidden rounded-lg border bg-card">
@@ -1589,7 +1589,7 @@ function telaProdutos() {
     ${cabecalho(
       'Gerenciar catálogo',
       'Cadastro, edição e ativação de produtos, feitos pela própria área.',
-      'Administração',
+      null,
       '<span class="rounded-[5px] border px-5 py-2 font-ui text-sm font-semibold uppercase">Categorias</span><span class="rounded-[5px] border border-primary bg-primary px-5 py-2 font-ui text-sm font-semibold uppercase text-primary-foreground">Novo produto</span>',
     )}
     <div class="overflow-hidden rounded-lg border bg-card">
@@ -1621,7 +1621,7 @@ function telaUsuarios() {
   ).join('')
 
   return `
-    ${cabecalho('Usuários', 'Perfil e limite mensal são geridos aqui, dentro da ferramenta, sem passar por TI.', 'Administração')}
+    ${cabecalho('Usuários', 'Perfil e limite mensal são geridos aqui, dentro da ferramenta, sem passar por TI.')}
     <p class="mb-6 text-sm text-muted-foreground">
       Usuários não são criados aqui: entram sozinhos no primeiro login pelo SSO, como consultor.
       Esta tela promove, define o teto mensal e desativa quem saiu do time.
@@ -1792,7 +1792,7 @@ function telaLogistica() {
     ${cabecalho(
       'Dashboard Logístico',
       'Status da operação, volume de pedidos e a trilha de demandas do período. O detalhe de cada envio está no ClickUp.',
-      'Logística',
+      null,
     )}
 
     <div class="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-lg border bg-card p-3">

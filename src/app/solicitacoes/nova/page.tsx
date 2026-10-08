@@ -44,7 +44,6 @@ export default async function NovaSolicitacaoPage() {
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Nova solicitação"
         titulo="Enviar um presente"
         descricao="Cinco etapas, do cliente à revisão. Nada é enviado antes da última."
       />

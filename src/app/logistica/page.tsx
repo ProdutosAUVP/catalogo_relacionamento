@@ -66,7 +66,6 @@ export default async function LogisticaPage({
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Logística"
         titulo="Dashboard Logístico"
         descricao="Status da operação, volume de pedidos e a trilha de demandas do período. O detalhe de cada envio está no ClickUp."
       />

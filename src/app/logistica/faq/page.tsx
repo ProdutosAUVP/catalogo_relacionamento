@@ -26,7 +26,6 @@ export default async function FaqPage() {
   return (
     <>
       <CabecalhoDaPagina
-        sobrancelha="Logística"
         titulo="Perguntas frequentes"
         descricao="As dúvidas que mais chegam à Logística, respondidas pelo próprio time."
         acoes={

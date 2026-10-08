@@ -20,15 +20,18 @@ import { Skeleton } from '@/components/ui/skeleton'
 export function EsqueletoDeCabecalho({
   comAcoes = false,
   acoes = 1,
+  comSobrancelha = false,
 }: {
   comAcoes?: boolean
+  /** Só as telas de detalhe têm a linha de dado acima do título. */
+  comSobrancelha?: boolean
   /** Quantos botões a tela põe no cabeçalho, dois reservam mais largura. */
   acoes?: number
 }) {
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <Skeleton className="mb-2 h-3 w-24" />
+        {comSobrancelha ? <Skeleton className="mb-2 h-3 w-24" /> : null}
         {/* h-9 = altura do <h1> em text-3xl */}
         <Skeleton className="h-9 w-56" />
         <Skeleton className="mt-2 h-4 w-96 max-w-full" />
