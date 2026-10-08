@@ -6,22 +6,28 @@ botão e bloquear a ação nunca divirjam.
 
 ## Matriz
 
-| Ação                                      |    Consultor    | Admin | Financeiro |
-| ----------------------------------------- | :-------------: | :---: | :--------: |
-| Ver catálogo                              |        ✓        |   ✓   |     ✓      |
-| Criar solicitação                         |        ✓        |   ✓   |     -      |
-| Ver as próprias solicitações              |        ✓        |   ✓   |     ✓      |
-| Ver todas as solicitações                 |        -        |   ✓   |     ✓      |
-| Ver a fila de compras                     |        -        |   ✓   |     ✓      |
-| Ver a fila da expedição                   |        -        |   ✓   |     ✓      |
-| Ver dados sensíveis do cliente            | só das próprias |   ✓   |    ✓ ¹     |
-| Alterar status                            |        -        |   ✓   |     ✓      |
-| Editar/corrigir solicitação               |        -        |   ✓   |     -      |
-| Gerenciar catálogo, categorias e usuários |        -        |   ✓   |     -      |
-| Exportar                                  |        -        |   ✓   |     ✓      |
-| Ver saldo gasto                           |     próprio     | todos |   todos    |
+| Ação                                      |    Consultor    | Admin | Financeiro | Logística |
+| ----------------------------------------- | :-------------: | :---: | :--------: | :-------: |
+| Ver catálogo                              |        ✓        |   ✓   |     ✓      |     ✓     |
+| Criar solicitação                         |        ✓        |   ✓   |     -      |     -     |
+| Ver as próprias solicitações              |        ✓        |   ✓   |     ✓      |     -     |
+| Ver todas as solicitações                 |        -        |   ✓   |     ✓      |     -     |
+| Ver a fila de compras                     |        -        |   ✓   |     ✓      |     -     |
+| Ver a fila da expedição e anotar rastreio |        -        |   ✓   |     ✓      |     ✓     |
+| Ver dados sensíveis do cliente            | só das próprias |   ✓   |    ✓ ¹     |     ✓     |
+| Alterar status                            |        -        |   ✓   |     ✓      |     -     |
+| Editar/corrigir solicitação               |        -        |   ✓   |     -      |     -     |
+| Gerenciar catálogo, categorias e usuários |        -        |   ✓   |     -      |     -     |
+| Exportar solicitações                     |        -        |   ✓   |     ✓      |     -     |
+| Ver saldo gasto                           |     próprio     | todos |   todos    |     -     |
+| Ver o Dashboard Logístico                 |        ✓        |   ✓   |     ✓      |     ✓     |
+| Ler as observações das demandas           |       - ²       |   ✓   |    - ²     |     ✓     |
+| Definir o status da semana, equipe e FAQ  |        -        |   ✓   |     -      |     ✓     |
 
 ¹ Único ponto do perfil Financeiro ainda sem confirmação da área. Ver abaixo.
+
+² Suposição: as observações vêm do ClickUp em texto livre e é ali que aparecem
+nome e endereço de quem recebe. Isolado em `PENDENTE_CONFIRMACAO`.
 
 ## Perfil Financeiro
 
@@ -44,20 +50,27 @@ Foi implementado assim:
 - **Alteração de status**: liberada, com as mesmas transições e as mesmas
   exigências de motivo que valem para o Admin.
 
-## A expedição não é um perfil
+## Perfil Logística
 
-A ação `expedicao.verFila` abre `/expedicao`, a lista de pedidos prontos para
-separar. Ela existe para Admin e Financeiro; não há perfil "expedição" porque a
-expedição trabalha fora desta ferramenta, hoje recebe uma planilha, e a tela é
-o que substitui essa planilha.
+Entrou com o Dashboard Logístico ([ADR 0008](adr/0008-logistica-no-mesmo-app.md)).
+O time de Logística é quem separa e posta, então a fila da expedição e o
+registro de rastreio, que antes eram de Admin e Financeiro por falta de quem
+operasse dentro da ferramenta, passam a ser também dele. O endereço de envio
+está nessa fila, e por isso o perfil vê dados sensíveis do cliente.
 
-Se um dia a expedição passar a entrar no sistema, o perfil entra em
-`Perfil` no schema e ganha uma coluna na matriz; nenhuma tela muda.
+O que o perfil não faz: criar ou acompanhar solicitação de presente, mexer em
+status, catálogo, cliente ou usuário. O escopo de solicitações dele é
+**nenhum**, e não "todas": a home manda quem tem escopo nenhum para
+`/logistica`, em vez de mostrar um resumo que não lhe cabe.
 
-O acesso a dados sensíveis do cliente segue liberado por coerência com a
-permissão de exportar, já que a exportação definida na spec carrega CPF,
-telefone e endereço. Está isolado em `PENDENTE_CONFIRMACAO`: se a área quiser
-restringir, é a troca de uma linha, e ela vale nos dois lugares de uma vez.
+O Dashboard Logístico é leitura para todos os perfis, porque a proposta pede
+"leitura rápida por qualquer colaborador, desde operação até diretoria".
+
+O acesso a dados sensíveis do cliente pelo Financeiro segue liberado por
+coerência com a permissão de exportar, já que a exportação definida na spec
+carrega CPF, telefone e endereço. Está isolado em `PENDENTE_CONFIRMACAO`: se a
+área quiser restringir, é a troca de uma linha, e ela vale nos dois lugares de
+uma vez.
 
 ## Escopo de leitura
 

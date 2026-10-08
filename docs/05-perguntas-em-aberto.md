@@ -165,6 +165,11 @@ nos mesmos dois campos, então ligar uma não mexe em nenhuma tela.
 com exportação em CSV e XLSX nas mesmas colunas da planilha atual, o dado
 deixa de ser redigitado, mas ainda é levado à mão para o outro sistema.
 
+**Decidido em 08/10/2026:** a solicitação aprovada vira pedido no Tiny, e
+também tarefa no ClickUp. Ver [Logística](#logística) e
+[ADR 0009](adr/0009-integracoes-por-fila.md). O texto abaixo é o registro de
+antes da decisão.
+
 **Para fechar o ciclo**, inclusive puxar o rastreio sozinho, em vez de alguém
 digitá-lo: é preciso saber qual é o sistema da expedição e se ele tem API. Se for o Tiny, o caminho já está previsto na fase 2: os campos
 `tiny_pedido_id`, `rastreio` e `transportadora` existem no modelo esperando
@@ -180,6 +185,59 @@ Admin usa observações e histórico.
 **Se não atender:** o status desce para o item e o da solicitação passa a ser
 derivado. É mudança de porte médio, melhor decidida antes de a ferramenta
 entrar em uso.
+
+## Logística
+
+O módulo novo, ver [Logística](11-logistica.md). A decisão de fundo foi
+tomada em 08/10/2026:
+
+> Solicitação aprovada vira tarefa no ClickUp **e** pedido no Tiny. O
+> Dashboard Logístico existe só como protótipo e é construído aqui. O
+> AUVP-Eventos é referência para a integração com o Tiny, não base de código.
+
+### Quem vê o Dashboard Logístico?
+
+**Assumido:** todos os perfis, porque a proposta pede leitura "desde operação
+até diretoria". As **observações** de cada demanda ficam só com Logística e
+Admin: vêm do ClickUp em texto livre e é onde aparecem nome e endereço de quem
+recebe.
+**Onde mudar:** `PENDENTE_CONFIRMACAO.todosVeemObservacoesDaLogistica` em
+`src/lib/permissions.ts`.
+
+### A Logística opera a expedição dentro da ferramenta?
+
+**Assumido:** sim. O perfil Logística vê a fila de `/expedicao` e registra o
+rastreio, que até aqui eram de Admin e Financeiro por falta de quem operasse
+dentro da ferramenta.
+**Onde mudar:** a coluna `logistica` da matriz em `src/lib/permissions.ts`.
+
+### Quando nasce a tarefa no ClickUp, e quando nasce o pedido no Tiny?
+
+**Assumido:** a tarefa nasce **na aprovação**, para a Logística enxergar a
+demanda e a previsão desde cedo, na fase "Aguardando suprimentos" se ainda
+houver compra, ou "Recebido" se tudo sai do estoque. O pedido no Tiny nasce em
+**"Organizando envio"**, quando tudo está comprado: antes disso não há o que
+despachar. Ver [ADR 0009](adr/0009-integracoes-por-fila.md).
+
+### O que falta saber do ClickUp
+
+- qual lista ou espaço é o da Logística;
+- os nomes dos campos personalizados: produto, departamento, subsidiária,
+  prioridade, complexidade, previsão de início e de conclusão, link do
+  formulário, observações;
+- se as horas vêm do controle de tempo do próprio ClickUp;
+- um token de API, de preferência de uma conta de serviço, que vai para o
+  `.env` e nunca para o repositório.
+
+### O que falta saber do Tiny
+
+- o token da conta da AUVP;
+- se os produtos do catálogo têm SKU no Tiny (o campo `sku_tiny` existe e está
+  vazio);
+- se o presente comprado fora, "mediante pedido", entra no pedido do Tiny ou
+  só os itens de estoque;
+- a transportadora e a forma de envio padrão, e se há um marcador para
+  separar os pedidos de presente dos demais.
 
 ## Técnicas, para começar
 

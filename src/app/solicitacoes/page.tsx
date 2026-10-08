@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 import { exigirUsuario } from '@/lib/auth-guards'
 import { filtroDeSolicitacoes, pode } from '@/lib/permissions'
@@ -30,7 +31,8 @@ export default async function SolicitacoesPage() {
   const usuario = await exigirUsuario()
 
   const filtro = filtroDeSolicitacoes(usuario.perfil, usuario.id)
-  if (!filtro) return null
+  // Quem não acompanha solicitação, a Logística, não tem lista aqui.
+  if (!filtro) redirect('/')
 
   const [solicitacoes, saldo] = await Promise.all([
     db.solicitacao.findMany({

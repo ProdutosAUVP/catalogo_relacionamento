@@ -86,11 +86,13 @@ entre com um deles para ver o que cada perfil enxerga:
 | ------------------------ | ---------- | ------------- |
 | `bia@auvp.com.br`        | Admin      | -             |
 | `financeiro@auvp.com.br` | Financeiro | -             |
+| `logistica@auvp.com.br`  | Logística  | -             |
 | `carlos@auvp.com.br`     | Consultor  | R$ 5.000      |
 | `fernanda@auvp.com.br`   | Consultor  | R$ 3.000      |
 
 Com o Carlos, a lista mostra só as solicitações dele; com o Financeiro, a
-fila de compras; com a Bia, tudo.
+fila de compras; com a Logística, o Dashboard Logístico e a expedição; com a
+Bia, tudo.
 
 O seed é idempotente: pode rodar quantas vezes precisar. `npm run db:reset`
 apaga tudo e começa de novo.

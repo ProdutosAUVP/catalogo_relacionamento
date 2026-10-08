@@ -26,6 +26,9 @@ enum Perfil {
   consultor
   admin
   financeiro
+  /// Time de Logística: opera a expedição e mantém o Dashboard Logístico.
+  /// Não cria nem acompanha solicitação de presente. Ver ADR 0008.
+  logistica
 }
 
 /// De onde o presente sai quando alguém pede.

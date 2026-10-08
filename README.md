@@ -104,6 +104,7 @@ docs/                     documentação de decisões e operação
 - [Identidade visual](docs/08-identidade-visual.md)
 - [Checklist de lançamento](docs/09-checklist-de-lancamento.md)
 - [Entrega para a TI](docs/10-entrega-ti.md)
+- [Logística](docs/11-logistica.md)
 - [Decisões de arquitetura](docs/adr/)
 
 ## Onde isso roda

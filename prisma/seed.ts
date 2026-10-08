@@ -33,6 +33,7 @@ const db = new PrismaClient()
 const USUARIOS = [
   { nome: 'Bia Relacionamento', email: 'bia@auvp.com.br', perfil: Perfil.admin },
   { nome: 'Financeiro AUVP', email: 'financeiro@auvp.com.br', perfil: Perfil.financeiro },
+  { nome: 'Logística AUVP', email: 'logistica@auvp.com.br', perfil: Perfil.logistica },
   {
     nome: 'Carlos Consultor',
     email: 'carlos@auvp.com.br',

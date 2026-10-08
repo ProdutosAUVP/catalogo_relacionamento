@@ -21,6 +21,13 @@ import { Perfil } from '@prisma/client'
  * CPF, telefone e endereço. Único ponto ainda não confirmado do perfil, e por
  * isso isolado em `PENDENTE_CONFIRMACAO`.
  * Ver docs/05-perguntas-em-aberto.md.
+ *
+ * O perfil Logística entrou com o Dashboard Logístico (ADR 0008). O dashboard
+ * é leitura para a empresa inteira, a proposta pede "leitura rápida por
+ * qualquer colaborador", então `logistica.ver` vale para todos os perfis. O
+ * que é só do time: definir o status da semana, cuidar de equipe e FAQ, e ler
+ * as observações das demandas, que podem trazer nome e endereço de cliente.
+ * O time também opera a expedição, que até aqui era feita fora da ferramenta.
  */
 
 export const ACOES = [
@@ -40,6 +47,9 @@ export const ACOES = [
   'exportar',
   'saldo.verProprio',
   'saldo.verTodos',
+  'logistica.ver',
+  'logistica.verObservacoes',
+  'logistica.gerenciar',
 ] as const
 
 export type Acao = (typeof ACOES)[number]
@@ -55,6 +65,12 @@ export type Escopo = 'nenhum' | 'proprias' | 'todas'
  * Isolado aqui para que a resposta vire a alteração de uma linha.
  */
 const PENDENTE_CONFIRMACAO = {
+  /**
+   * Proposta: as observações das demandas ficam só com Logística e Admin.
+   * Vêm do ClickUp em texto livre, e é onde aparecem nome e endereço de quem
+   * recebe. Virar `true` abre para todos os perfis que veem o dashboard.
+   */
+  todosVeemObservacoesDaLogistica: false,
   /**
    * Proposta: Financeiro vê dados sensíveis de todos os clientes.
    * A lista que a área pediu para a fila de compras, data, produto, valor,
@@ -83,6 +99,9 @@ const MATRIZ: Record<Perfil, Record<Acao, boolean>> = {
     exportar: false,
     'saldo.verProprio': true,
     'saldo.verTodos': false,
+    'logistica.ver': true,
+    'logistica.verObservacoes': PENDENTE_CONFIRMACAO.todosVeemObservacoesDaLogistica,
+    'logistica.gerenciar': false,
   },
   [Perfil.admin]: {
     'catalogo.ver': true,
@@ -101,6 +120,9 @@ const MATRIZ: Record<Perfil, Record<Acao, boolean>> = {
     exportar: true,
     'saldo.verProprio': true,
     'saldo.verTodos': true,
+    'logistica.ver': true,
+    'logistica.verObservacoes': true,
+    'logistica.gerenciar': true,
   },
   [Perfil.financeiro]: {
     'catalogo.ver': true,
@@ -120,6 +142,32 @@ const MATRIZ: Record<Perfil, Record<Acao, boolean>> = {
     exportar: true,
     'saldo.verProprio': true,
     'saldo.verTodos': true,
+    'logistica.ver': true,
+    'logistica.verObservacoes': PENDENTE_CONFIRMACAO.todosVeemObservacoesDaLogistica,
+    'logistica.gerenciar': false,
+  },
+  [Perfil.logistica]: {
+    'catalogo.ver': true,
+    'catalogo.gerenciar': false,
+    'compras.verFila': false,
+    // Quem separa e posta é o time, então a fila e o rastreio são dele.
+    'expedicao.verFila': true,
+    'expedicao.registrarRastreio': true,
+    'solicitacao.criar': false,
+    'solicitacao.verProprias': false,
+    'solicitacao.verTodas': false,
+    'solicitacao.editar': false,
+    'solicitacao.alterarStatus': false,
+    // O endereço de envio está na fila da expedição, e sem ele não há envio.
+    'cliente.verDadosSensiveis': true,
+    'cliente.gerenciar': false,
+    'usuario.gerenciar': false,
+    exportar: false,
+    'saldo.verProprio': false,
+    'saldo.verTodos': false,
+    'logistica.ver': true,
+    'logistica.verObservacoes': true,
+    'logistica.gerenciar': true,
   },
 }
 
@@ -166,4 +214,5 @@ export const ROTULO_PERFIL: Record<Perfil, string> = {
   consultor: 'Consultor',
   admin: 'Admin',
   financeiro: 'Financeiro',
+  logistica: 'Logística',
 }

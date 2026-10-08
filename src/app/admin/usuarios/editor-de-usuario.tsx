@@ -108,8 +108,8 @@ export function EditorDeUsuario({ usuario }: { usuario: UsuarioEditavel }) {
 
           {perfil !== Perfil.consultor ? (
             <p className="bg-muted/50 text-muted-foreground rounded-md border px-3 py-2 text-xs leading-relaxed">
-              Admin e Financeiro não criam solicitação, então o limite mensal não se aplica a eles,
-              o painel mostra o gasto do time.
+              Admin, Financeiro e Logística não criam solicitação, então o limite mensal não se
+              aplica a eles.
             </p>
           ) : null}
 
