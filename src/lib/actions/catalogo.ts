@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 import { autorizarAction } from '@/lib/auth-guards'
-import { salvarFoto } from '@/lib/arquivos'
+import { fotoDoFormulario } from '@/lib/arquivos'
 import { produtoSchema, categoriaSchema } from '@/lib/validators/produto'
 import { comoErro, primeiroErro, type ResultadoDaAction } from './comuns'
 
@@ -23,29 +23,6 @@ function revalidarCatalogo() {
   revalidatePath('/admin/catalogo')
   revalidatePath('/catalogo')
   revalidatePath('/solicitacoes/nova')
-}
-
-/**
- * Lê a foto do formulário.
- *
- * São dois caminhos no mesmo campo: o arquivo enviado agora, que é gravado e
- * vira URL, ou a URL que já estava lá, inclusive vazia, quando a pessoa
- * removeu a foto.
- */
-async function resolverFoto(
-  dados: FormData,
-  usuarioId: string,
-): Promise<{ ok: true; url: string | null } | { ok: false; erro: string }> {
-  const arquivo = dados.get('foto')
-
-  if (arquivo instanceof File && arquivo.size > 0) {
-    const salvo = await salvarFoto(arquivo, usuarioId)
-    if (!salvo.ok) return { ok: false, erro: salvo.erro }
-    return { ok: true, url: salvo.url }
-  }
-
-  const atual = String(dados.get('fotoUrl') ?? '').trim()
-  return { ok: true, url: atual || null }
 }
 
 /** Campos do formulário, já no formato que o schema espera. */
@@ -73,7 +50,7 @@ export async function salvarProduto(dados: FormData): Promise<ResultadoDaAction<
   try {
     const usuario = await autorizarAction('catalogo.gerenciar')
 
-    const foto = await resolverFoto(dados, usuario.id)
+    const foto = await fotoDoFormulario(dados, usuario.id)
     if (!foto.ok) return { ok: false, erro: foto.erro, campo: 'foto' }
 
     // A URL interna não passa por `urlOpcional`, que exige URL absoluta.

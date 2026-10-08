@@ -55,3 +55,26 @@ export async function salvarFoto(arquivo: File, usuarioId: string): Promise<Resu
 export function ehArquivoInterno(url: string | null | undefined): boolean {
   return Boolean(url?.startsWith('/api/arquivos/'))
 }
+
+/**
+ * Lê a foto do formulário.
+ *
+ * São dois caminhos no mesmo campo: o arquivo enviado agora, que é gravado e
+ * vira URL, ou a URL que já estava lá, inclusive vazia, quando a pessoa
+ * removeu a foto.
+ */
+export async function fotoDoFormulario(
+  dados: FormData,
+  usuarioId: string,
+): Promise<{ ok: true; url: string | null } | { ok: false; erro: string }> {
+  const arquivo = dados.get('foto')
+
+  if (arquivo instanceof File && arquivo.size > 0) {
+    const salvo = await salvarFoto(arquivo, usuarioId)
+    if (!salvo.ok) return { ok: false, erro: salvo.erro }
+    return { ok: true, url: salvo.url }
+  }
+
+  const atual = String(dados.get('fotoUrl') ?? '').trim()
+  return { ok: true, url: atual || null }
+}

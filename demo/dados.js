@@ -307,3 +307,95 @@ const CONSULTORES = [
   { nome: 'Bia Relacionamento', limite: null, perfil: 'Admin' },
   { nome: 'Financeiro AUVP', limite: null, perfil: 'Financeiro' },
 ]
+
+/**
+ * Dashboard Logístico, fictício. Espelha o que `prisma/exemplo-logistica.ts`
+ * gera para a aplicação, congelado numa semana para a vitrine não mudar.
+ */
+const LOGISTICA = {
+  semana: '2026-34',
+  dias: '17/08 – 23/08',
+  status: {
+    situacao: 'risco_de_atraso',
+    motivo: '1 demanda passou da previsão.',
+  },
+  volume: { total: 26, anterior: 21 },
+  porDepartamento: [
+    {
+      subsidiaria: 'Do Not Scare Soluções Interativas LTDA',
+      linhas: [
+        ['Produto & CX', 12],
+        ['Conteúdo', 3],
+        ['Eventos', 2],
+      ],
+    },
+    { subsidiaria: 'AUVP Consultoria', linhas: [['Consultoria', 6]] },
+    { subsidiaria: 'AUVP Holding', linhas: [['Administrativo', 3]] },
+  ],
+  evolucao: [
+    ['2026-27', 18],
+    ['2026-28', 21],
+    ['2026-29', 19],
+    ['2026-30', 24],
+    ['2026-31', 22],
+    ['2026-32', 31],
+    ['2026-33', 21],
+    ['2026-34', 26],
+  ],
+  // [produto, minutos, envios]
+  horas: [
+    ['Holding', 1080, 3],
+    ['AUVP Escola', 840, 15],
+    ['The Brain', 240, 2],
+    ['Consultoria', 156, 6],
+  ],
+  trilha: [
+    {
+      titulo: 'Camisetas BR para o encontro',
+      prioridade: 'Alta',
+      fase: 'em_execucao',
+      itens: ['Camiseta BR'],
+      contexto: 'Produto & CX · AUVP Escola · Ana Souza',
+      previsao: '24/08/2026',
+    },
+    {
+      titulo: 'Documentos para cartório',
+      prioridade: 'Urgente',
+      fase: 'aguardando_documentacao',
+      itens: ['Documentos'],
+      contexto: 'Administrativo · Holding · Bruno Lima',
+      previsao: '21/08/2026',
+      obs: 'Levar em mãos. Confirmar o horário do cartório na véspera.',
+    },
+    {
+      titulo: 'Kit boas-vindas da turma',
+      fase: 'finalizacao',
+      itens: ['Camiseta', 'Caneca', 'Caderno'],
+      contexto: 'Produto & CX · AUVP Escola · Carla Mendes',
+      atrasada: '18/08/2026',
+      obs: 'Entregar na recepção do prédio, aos cuidados da equipe do departamento.',
+    },
+    {
+      titulo: 'Brindes do evento The Brain',
+      fase: 'aguardando_suprimentos',
+      itens: ['Garrafa', 'Ecobag', 'Caneta'],
+      contexto: 'Eventos · The Brain · Carla Mendes',
+      previsao: '25/08/2026',
+    },
+    {
+      titulo: 'Material de apoio para consultores',
+      fase: 'em_analise',
+      itens: ['Pasta de apresentação'],
+      contexto: 'Consultoria · Ana Souza',
+      previsao: null,
+    },
+    {
+      titulo: 'Livros para alunos da Imersão',
+      fase: 'concluido',
+      itens: ['Livro AUVP'],
+      contexto: 'Produto & CX · AUVP Escola · Bruno Lima',
+      concluida: '19/08/2026',
+    },
+  ],
+  equipe: 'Ana (Coordenação de Logística) · Bruno (Expedição) · Carla (Suprimentos)',
+}

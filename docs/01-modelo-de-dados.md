@@ -125,3 +125,27 @@ A spec lista nove status. O schema tem dez: `cancelado` é exigido por duas
 regras do próprio documento, "de Deu problema a solicitação pode voltar para
 qualquer status anterior ou ser cancelada" e "o saldo considera todos os status
 exceto os cancelados e devolvidos". Sem ele, nenhuma das duas é representável.
+
+## Logística
+
+Quatro tabelas, do módulo de Logística ([ADR 0008](adr/0008-logistica-no-mesmo-app.md)):
+
+| Tabela                      | O que guarda                                                    |
+| --------------------------- | --------------------------------------------------------------- |
+| `demandas_logistica`        | cada envio da Logística, espelho local da tarefa no ClickUp     |
+| `status_operacional_semana` | o status da semana definido à mão; sem linha, vale o automático |
+| `membros_equipe`            | a seção "Equipe" do dashboard                                   |
+| `perguntas_frequentes`      | o FAQ                                                           |
+
+A demanda é **espelho**, não consulta ao vivo: filtrar por semana ISO, somar
+por departamento e exportar direto do ClickUp a cada tela esbarraria no
+limite de requisições da API deles. Departamento, subsidiária e produto ficam
+como texto, porque são os rótulos das listas suspensas do ClickUp, e uma
+tabela de cadastro aqui seria um segundo lugar para manter a mesma lista.
+
+`fase` usa as oito fases padronizadas da proposta da Logística; `prioridade`,
+as quatro do ClickUp, para casar sem tradução.
+
+Restrições no banco: semana ISO entre 1 e 53, minutos apontados não negativos
+e demanda de origem `clickup` sempre com a tarefa de onde veio. O status
+manual que volta ao automático anula a situação em vez de apagar a linha.

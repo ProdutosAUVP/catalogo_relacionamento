@@ -15,26 +15,28 @@ resposta que já foi assumida em algum lugar.
 Cada regra de negócio tem **um** lugar. Ao mexer numa delas, mexa lá, nunca
 duplique numa tela.
 
-| Regra                           | Arquivo                          |
-| ------------------------------- | -------------------------------- |
-| Quem pode o quê                 | `src/lib/permissions.ts`         |
-| Quem pode entrar pelo SSO       | `src/lib/acesso-sso.ts`          |
-| Transições, motivos e lote      | `src/lib/status.ts`              |
-| Gasto do mês e limite           | `src/lib/saldo.ts`               |
-| Fila de compras do Financeiro   | `src/lib/compras.ts`             |
-| Fila da expedição               | `src/lib/expedicao.ts`           |
-| Período do Dashboard Logístico  | `src/lib/periodo.ts`             |
-| Kit que exige bebida junto      | `src/lib/acompanhamentos.ts`     |
-| Modelos e montagem da carta     | `src/lib/carta.ts`               |
-| Fornecedor padrão por categoria | `src/lib/fornecedores.ts`        |
-| Upload e leitura de foto        | `src/lib/arquivos.ts`            |
-| Leitura do CSV de clientes      | `src/lib/importacao-clientes.ts` |
-| Catálogo de presentes da área   | `prisma/catalogo-auvp.ts`        |
-| Aritmética de dinheiro          | `src/lib/money.ts`               |
-| Colunas e formato da exportação | `src/lib/export/`                |
-| Validação de formulário         | `src/lib/validators/`            |
-| Leitura de catálogo e clientes  | `src/lib/providers/`             |
-| Cores, tipografia e raio        | `src/styles/auvp-tokens.css`     |
+| Regra                           | Arquivo                                   |
+| ------------------------------- | ----------------------------------------- |
+| Quem pode o quê                 | `src/lib/permissions.ts`                  |
+| Quem pode entrar pelo SSO       | `src/lib/acesso-sso.ts`                   |
+| Transições, motivos e lote      | `src/lib/status.ts`                       |
+| Gasto do mês e limite           | `src/lib/saldo.ts`                        |
+| Fila de compras do Financeiro   | `src/lib/compras.ts`                      |
+| Fila da expedição               | `src/lib/expedicao.ts`                    |
+| Período do Dashboard Logístico  | `src/lib/periodo.ts`                      |
+| Status da semana e limiares     | `src/lib/logistica/status-operacional.ts` |
+| Trilha, "Kit", atraso e somas   | `src/lib/logistica/demandas.ts`           |
+| Kit que exige bebida junto      | `src/lib/acompanhamentos.ts`              |
+| Modelos e montagem da carta     | `src/lib/carta.ts`                        |
+| Fornecedor padrão por categoria | `src/lib/fornecedores.ts`                 |
+| Upload e leitura de foto        | `src/lib/arquivos.ts`                     |
+| Leitura do CSV de clientes      | `src/lib/importacao-clientes.ts`          |
+| Catálogo de presentes da área   | `prisma/catalogo-auvp.ts`                 |
+| Aritmética de dinheiro          | `src/lib/money.ts`                        |
+| Colunas e formato da exportação | `src/lib/export/`                         |
+| Validação de formulário         | `src/lib/validators/`                     |
+| Leitura de catálogo e clientes  | `src/lib/providers/`                      |
+| Cores, tipografia e raio        | `src/styles/auvp-tokens.css`              |
 
 ## Invariantes
 
@@ -162,6 +164,9 @@ o Dashboard Logístico em `/logistica`, que todos os perfis leem, e o perfil
 - **Um período só** filtra o painel inteiro e a exportação, e mora na URL. Toda
   conta de semana, mês ou intervalo passa por `src/lib/periodo.ts`: semana
   ISO, calendário de São Paulo, intervalo `[inicio, fim)`.
+- **Observação de demanda é filtrada no servidor.** Quem não tem
+  `logistica.verObservacoes` não recebe o texto nem no HTML nem na planilha;
+  esconder na tela não basta.
 - **Integração externa não trava a aprovação.** ClickUp e Tiny entram por fila
   no banco, gravada na mesma transação da mudança de status ([ADR 0009](docs/adr/0009-integracoes-por-fila.md)).
 
