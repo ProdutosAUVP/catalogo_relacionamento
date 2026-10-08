@@ -285,15 +285,18 @@
    *
    * Vale para a troca de rota, e só para ela. Filtrar é mudar a mesma tela:
    * ver `src/components/filtro-sem-piscar.tsx`.
+   *
+   * Só opacidade, sem deslize. Um `transform` no wrapper, mesmo a identidade
+   * que o `both` deixa depois da animação, faz todo `position: fixed` lá dentro
+   * se medir pelo wrapper e não pela janela: o login, que ocupa a tela, ficava
+   * espremido numa faixa de 80 px, e as dicas fixas do celular saíam do lugar.
    */
   @keyframes entrada-de-conteudo {
     from {
       opacity: 0.65;
-      transform: translateY(4px);
     }
     to {
       opacity: 1;
-      transform: none;
     }
   }
 

@@ -65,3 +65,45 @@ describe('o banco no build e fora dele', () => {
     )
   })
 })
+
+describe('modo demonstração', () => {
+  const DEMONSTRACAO = {
+    NODE_ENV: 'production',
+    DATABASE_URL: BANCO,
+    AUTH_SECRET: 'segredo',
+    MODO_DEMONSTRACAO: 'true',
+    VERCEL: '1',
+  }
+
+  it('na Vercel, sobe sem SSO e sem lista de domínios', () => {
+    const env = carregarEnv(DEMONSTRACAO)
+    expect(env.MODO_DEMONSTRACAO).toBe(true)
+  })
+
+  it('continua exigindo o segredo da sessão', () => {
+    expect(() => carregarEnv({ ...DEMONSTRACAO, AUTH_SECRET: '' })).toThrow(/AUTH_SECRET/)
+  })
+
+  it('fora da Vercel, recusa subir: a imagem da TI nunca tem VERCEL=1', () => {
+    const { VERCEL: _vercel, ...semVercel } = DEMONSTRACAO
+    expect(() => carregarEnv(semVercel)).toThrow(/só roda na Vercel/)
+    expect(() => carregarEnv({ ...DEMONSTRACAO, NODE_ENV: 'development', VERCEL: '' })).toThrow(
+      /só roda na Vercel/,
+    )
+  })
+
+  it('recusa o endereço da produção, mesmo na Vercel', () => {
+    expect(() =>
+      carregarEnv({
+        ...DEMONSTRACAO,
+        AUTH_URL: 'https://catalogo-relacionamento.prod.auvp.net',
+      }),
+    ).toThrow(/endereço da produção/)
+  })
+
+  it('desligado, a produção volta a exigir o SSO', () => {
+    expect(() => carregarEnv({ ...DEMONSTRACAO, MODO_DEMONSTRACAO: 'false' })).toThrow(
+      /SSO é obrigatório/,
+    )
+  })
+})

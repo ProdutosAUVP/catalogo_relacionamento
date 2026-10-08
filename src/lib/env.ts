@@ -36,6 +36,9 @@ const listaDeDominios = z
       .filter(Boolean),
   )
 
+/** Onde a TI publica a produção. Ver docs/10-entrega-ti.md. */
+const ENDERECO_DA_PRODUCAO = 'catalogo-relacionamento.prod.auvp.net'
+
 /** A fase em que o Next roda o `next build`. */
 const FASE_DE_BUILD = 'phase-production-build'
 
@@ -58,6 +61,12 @@ const schema = (durandoBuild: boolean) =>
     AUTH_OIDC_NAME: z.string().default('AUVP SSO'),
     AUTH_OIDC_GROUPS_CLAIM: z.string().default(''),
     AUTH_DEV_BYPASS: booleano,
+    // Aplicação real com dados fictícios e login por perfil, sem SSO. Ver
+    // src/lib/demonstracao.ts e as travas em `carregarEnv`.
+    MODO_DEMONSTRACAO: booleano,
+    // A própria Vercel define `VERCEL=1` em build e runtime; a imagem Docker da
+    // TI nunca tem. É o que prende o modo demonstração à homologação.
+    VERCEL: z.string().optional(),
     AUTH_ALLOWED_EMAIL_DOMAINS: listaDeDominios,
 
     BOOTSTRAP_ADMIN_EMAILS: listaDeEmails,
@@ -120,15 +129,33 @@ export function carregarEnv(
 
   const env = parsed.data
 
+  // O modo demonstração deixa qualquer um com o endereço entrar como Admin de
+  // dados fictícios. Por isso duas travas que não dependem de ninguém lembrar
+  // de desligar: só roda na Vercel, onde fica a homologação, e nunca no
+  // endereço da produção, mesmo que alguém copie as variáveis para lá.
+  if (env.MODO_DEMONSTRACAO) {
+    if (env.VERCEL !== '1') {
+      throw new Error(
+        'MODO_DEMONSTRACAO só roda na Vercel, na homologação. Ver docs/12-homologacao-vercel.md.',
+      )
+    }
+    if (env.AUTH_URL?.includes(ENDERECO_DA_PRODUCAO)) {
+      throw new Error('MODO_DEMONSTRACAO não pode ser ligado no endereço da produção.')
+    }
+  }
+
   if (env.NODE_ENV === 'production' && !durandoBuild) {
     const faltando: string[] = []
     if (!env.AUTH_SECRET) faltando.push('AUTH_SECRET')
-    if (!env.AUTH_OIDC_ISSUER) faltando.push('AUTH_OIDC_ISSUER')
-    if (!env.AUTH_OIDC_CLIENT_ID) faltando.push('AUTH_OIDC_CLIENT_ID')
-    if (!env.AUTH_OIDC_CLIENT_SECRET) faltando.push('AUTH_OIDC_CLIENT_SECRET')
-    // Sem a lista, quem entra depende só de o client OIDC estar bem
-    // configurado no provedor. Ver src/lib/acesso-sso.ts.
-    if (env.AUTH_ALLOWED_EMAIL_DOMAINS.length === 0) faltando.push('AUTH_ALLOWED_EMAIL_DOMAINS')
+    // Na demonstração não há SSO: o login é por perfil fictício.
+    if (!env.MODO_DEMONSTRACAO) {
+      if (!env.AUTH_OIDC_ISSUER) faltando.push('AUTH_OIDC_ISSUER')
+      if (!env.AUTH_OIDC_CLIENT_ID) faltando.push('AUTH_OIDC_CLIENT_ID')
+      if (!env.AUTH_OIDC_CLIENT_SECRET) faltando.push('AUTH_OIDC_CLIENT_SECRET')
+      // Sem a lista, quem entra depende só de o client OIDC estar bem
+      // configurado no provedor. Ver src/lib/acesso-sso.ts.
+      if (env.AUTH_ALLOWED_EMAIL_DOMAINS.length === 0) faltando.push('AUTH_ALLOWED_EMAIL_DOMAINS')
+    }
 
     if (faltando.length > 0) {
       throw new Error(
@@ -147,8 +174,16 @@ export function carregarEnv(
 
 export const env = carregarEnv(process.env, process.env.NEXT_PHASE)
 
-/** O SSO só está utilizável quando o client OIDC inteiro foi configurado. */
+/** Dados fictícios e login por perfil; já passou pelas travas de `carregarEnv`. */
+export const modoDemonstracao = env.MODO_DEMONSTRACAO
+
+/**
+ * O SSO só está utilizável quando o client OIDC inteiro foi configurado. Na
+ * demonstração ele fica de fora mesmo configurado: duas portas de entrada na
+ * mesma tela confundiriam quem está testando.
+ */
 export const ssoConfigurado =
+  !env.MODO_DEMONSTRACAO &&
   Boolean(env.AUTH_OIDC_ISSUER) &&
   Boolean(env.AUTH_OIDC_CLIENT_ID) &&
   Boolean(env.AUTH_OIDC_CLIENT_SECRET)

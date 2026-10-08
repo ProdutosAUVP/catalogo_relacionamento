@@ -33,14 +33,61 @@ O repositório já traz o que a Vercel precisa:
 
 ## Passo 1: o banco
 
-1. No projeto, **Storage → Create Database → Neon (Postgres)**.
-2. Região **AWS São Paulo (sa-east-1)**, a mesma das funções.
-3. Em **Connect Project**, marque só o ambiente **Production**. Os previews
-   ficam sem banco de propósito.
+1. **Antes de tudo, apague a `DATABASE_URL` vazia** em Settings → Environment
+   Variables. O projeto já tem essa chave, criada sem valor, e com ela no
+   caminho a conexão do banco pode não conseguir gravar a dela.
+2. No projeto, **Storage → Create Database → Neon (Postgres)**.
+3. Região **AWS São Paulo (sa-east-1)**, a mesma das funções.
+4. Em **Connect Project**, marque só o ambiente **Production** e **deixe o
+   prefixo das variáveis em branco**. Com prefixo, elas viram `ALGO_DATABASE_URL`
+   e a aplicação não as encontra. Os previews ficam sem banco de propósito.
 
 A integração cria sozinha `DATABASE_URL`, com pooler, que a aplicação usa, e
 `DATABASE_URL_UNPOOLED`, a conexão direta, que as migrations usam. Não é
 preciso copiar nenhuma das duas.
+
+## Atalho: a demonstração, antes do SSO
+
+Com o banco do passo 1 pronto, dá para ver **a aplicação de verdade com dados
+fictícios** sem esperar o client do Keycloak. No **modo demonstração**:
+
+- a tela de login troca o SSO por cinco cartões, um por perfil (Bia/Admin,
+  Carlos e Fernanda/Consultores, Financeiro, Logística). Só esses usuários
+  fictícios entram, nenhum e-mail digitado;
+- uma faixa em todas as telas avisa que os dados são fictícios;
+- cada deploy recarrega os dados do seed: catálogo real, clientes,
+  solicitações e as demandas da Logística, com as datas do dia.
+
+Tudo funciona como na ferramenta de verdade: aprovar, mudar status, exportar,
+cadastrar. O que alguém muda testando fica gravado até o próximo deploy.
+
+**Para ligar**, em Settings → Environment Variables, ambiente Production:
+
+| Variável            | Valor                                                 |
+| ------------------- | ----------------------------------------------------- |
+| `MODO_DEMONSTRACAO` | `true`                                                |
+| `AUTH_SECRET`       | um novo, só da homologação: `openssl rand -base64 32` |
+
+Depois, **Redeploy** do último deploy do `main`. O log mostra as migrations,
+"Modo demonstração: recarregando os dados fictícios." e as contagens do seed.
+
+**As travas**, em `src/lib/env.ts` e com teste: o modo só liga na Vercel
+(`VERCEL=1`, que a imagem Docker da TI nunca tem) e nunca com o `AUTH_URL` da
+produção. Ligado em qualquer outro lugar, a aplicação se recusa a subir.
+
+**Quem pode abrir.** Qualquer um com o endereço entra como Admin de dados
+fictícios. Para fechar, ligue **Settings → Deployment Protection → Vercel
+Authentication**: só quem tem acesso ao time na Vercel abre. Dependendo do
+plano, o endereço fixo do projeto continua aberto mesmo assim; confira abrindo
+numa janela anônima.
+
+**Para sair da demonstração**, quando o client do Keycloak existir:
+
+1. apague `MODO_DEMONSTRACAO` e siga os passos 2 e 3;
+2. zere o banco, para os usuários e pedidos fictícios não ficarem na
+   homologação: `DATABASE_URL="<DATABASE_URL_UNPOOLED>" npx prisma migrate reset --force`
+   (apaga tudo e reaplica as migrations; **só contra o banco da homologação**);
+3. Redeploy.
 
 ## Passo 2: o client de homologação no Keycloak
 
@@ -146,15 +193,16 @@ Quem quer testar um PR, mescla e testa na homologação.
 
 ## Problemas comuns
 
-| Sintoma                                               | Causa provável                                                     |
-| ----------------------------------------------------- | ------------------------------------------------------------------ |
-| Build falha em "Collecting page data", variáveis `''` | o PR de variáveis vazias ainda não foi mesclado                    |
-| Build falha em `migrate deploy`                       | banco não ligado ao ambiente Production (passo 1)                  |
-| Toda página dá erro 500                               | variável do passo 3 faltando; o log das funções lista quais        |
-| Keycloak: `Invalid parameter: redirect_uri`           | redirect URI do passo 2 diferente do `AUTH_URL`                    |
-| Keycloak: `Invalid client credentials`                | secret de outro client, ou do client de produção                   |
-| Erro `prepared statement "s0" already exists`         | acrescente `pgbouncer=true` ao `DATABASE_URL`                      |
-| Lento na primeira tela depois de um tempo parado      | o Postgres da Vercel hiberna sem uso; a primeira consulta o acorda |
+| Sintoma                                                     | Causa provável                                                         |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Build falha em "Collecting page data", variáveis `''`       | o PR de variáveis vazias ainda não foi mesclado                        |
+| Build para em "O banco da homologação não está configurado" | passo 1 incompleto; a mensagem lista as variáveis de banco que existem |
+| Build falha em `migrate deploy`                             | banco ligado, mas fora do ar ou com a conexão direta errada            |
+| Toda página dá erro 500                                     | variável do passo 3 faltando; o log das funções lista quais            |
+| Keycloak: `Invalid parameter: redirect_uri`                 | redirect URI do passo 2 diferente do `AUTH_URL`                        |
+| Keycloak: `Invalid client credentials`                      | secret de outro client, ou do client de produção                       |
+| Erro `prepared statement "s0" already exists`               | acrescente `pgbouncer=true` ao `DATABASE_URL`                          |
+| Lento na primeira tela depois de um tempo parado            | o Postgres da Vercel hiberna sem uso; a primeira consulta o acorda     |
 
 ## Mais adiante
 

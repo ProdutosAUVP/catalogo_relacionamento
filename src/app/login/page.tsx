@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
 import { signIn } from '@/lib/auth'
 import { usuarioAtual } from '@/lib/auth-guards'
-import { devBypassHabilitado, env, ssoConfigurado } from '@/lib/env'
+import { devBypassHabilitado, env, modoDemonstracao, ssoConfigurado } from '@/lib/env'
+import { USUARIOS_DA_DEMONSTRACAO } from '@/lib/demonstracao'
+import { ROTULO_PERFIL } from '@/lib/permissions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -55,7 +57,46 @@ export default async function LoginPage({
               {erro}
             </p>
           ) : null}
-          {ssoConfigurado ? (
+          {modoDemonstracao ? (
+            // Um formulário por perfil: o e-mail vai escondido e o servidor
+            // ainda confere que ele é da lista, então editar o HTML não abre
+            // porta para nenhuma outra conta.
+            <div className="space-y-3">
+              <div>
+                <p className="font-medium">Demonstração com dados fictícios</p>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Escolha um perfil para ver a ferramenta com os olhos dele. Nada aqui é dado real.
+                </p>
+              </div>
+              <ul className="space-y-2">
+                {USUARIOS_DA_DEMONSTRACAO.map((u) => (
+                  <li key={u.email}>
+                    <form
+                      action={async () => {
+                        'use server'
+                        await signIn('demonstracao', { email: u.email, redirectTo: '/' })
+                      }}
+                    >
+                      <button
+                        type="submit"
+                        className="hover:border-foreground/30 hover:bg-muted focus-visible:ring-ring w-full rounded-lg border px-4 py-3 text-left transition-colors outline-none focus-visible:ring-2"
+                      >
+                        <span className="flex items-baseline justify-between gap-3">
+                          <span className="font-medium">{u.nome}</span>
+                          <span className="text-muted-foreground text-xs">
+                            {ROTULO_PERFIL[u.perfil]}
+                          </span>
+                        </span>
+                        <span className="text-muted-foreground mt-0.5 block text-sm">
+                          {u.oQueVe}
+                        </span>
+                      </button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : ssoConfigurado ? (
             <form
               action={async () => {
                 'use server'
