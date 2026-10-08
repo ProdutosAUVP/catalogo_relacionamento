@@ -33,10 +33,14 @@ O repositório já traz o que a Vercel precisa:
 
 ## Passo 1: o banco
 
-1. No projeto, **Storage → Create Database → Neon (Postgres)**.
-2. Região **AWS São Paulo (sa-east-1)**, a mesma das funções.
-3. Em **Connect Project**, marque só o ambiente **Production**. Os previews
-   ficam sem banco de propósito.
+1. **Antes de tudo, apague a `DATABASE_URL` vazia** em Settings → Environment
+   Variables. O projeto já tem essa chave, criada sem valor, e com ela no
+   caminho a conexão do banco pode não conseguir gravar a dela.
+2. No projeto, **Storage → Create Database → Neon (Postgres)**.
+3. Região **AWS São Paulo (sa-east-1)**, a mesma das funções.
+4. Em **Connect Project**, marque só o ambiente **Production** e **deixe o
+   prefixo das variáveis em branco**. Com prefixo, elas viram `ALGO_DATABASE_URL`
+   e a aplicação não as encontra. Os previews ficam sem banco de propósito.
 
 A integração cria sozinha `DATABASE_URL`, com pooler, que a aplicação usa, e
 `DATABASE_URL_UNPOOLED`, a conexão direta, que as migrations usam. Não é
@@ -146,15 +150,16 @@ Quem quer testar um PR, mescla e testa na homologação.
 
 ## Problemas comuns
 
-| Sintoma                                               | Causa provável                                                     |
-| ----------------------------------------------------- | ------------------------------------------------------------------ |
-| Build falha em "Collecting page data", variáveis `''` | o PR de variáveis vazias ainda não foi mesclado                    |
-| Build falha em `migrate deploy`                       | banco não ligado ao ambiente Production (passo 1)                  |
-| Toda página dá erro 500                               | variável do passo 3 faltando; o log das funções lista quais        |
-| Keycloak: `Invalid parameter: redirect_uri`           | redirect URI do passo 2 diferente do `AUTH_URL`                    |
-| Keycloak: `Invalid client credentials`                | secret de outro client, ou do client de produção                   |
-| Erro `prepared statement "s0" already exists`         | acrescente `pgbouncer=true` ao `DATABASE_URL`                      |
-| Lento na primeira tela depois de um tempo parado      | o Postgres da Vercel hiberna sem uso; a primeira consulta o acorda |
+| Sintoma                                                     | Causa provável                                                         |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Build falha em "Collecting page data", variáveis `''`       | o PR de variáveis vazias ainda não foi mesclado                        |
+| Build para em "O banco da homologação não está configurado" | passo 1 incompleto; a mensagem lista as variáveis de banco que existem |
+| Build falha em `migrate deploy`                             | banco ligado, mas fora do ar ou com a conexão direta errada            |
+| Toda página dá erro 500                                     | variável do passo 3 faltando; o log das funções lista quais            |
+| Keycloak: `Invalid parameter: redirect_uri`                 | redirect URI do passo 2 diferente do `AUTH_URL`                        |
+| Keycloak: `Invalid client credentials`                      | secret de outro client, ou do client de produção                       |
+| Erro `prepared statement "s0" already exists`               | acrescente `pgbouncer=true` ao `DATABASE_URL`                          |
+| Lento na primeira tela depois de um tempo parado            | o Postgres da Vercel hiberna sem uso; a primeira consulta o acorda     |
 
 ## Mais adiante
 

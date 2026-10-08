@@ -25,8 +25,26 @@ const direta =
   process.env.POSTGRES_URL_NON_POOLING ||
   process.env.DATABASE_URL
 
-if (!direta) {
-  console.error('DATABASE_URL não está configurada no ambiente de homologação da Vercel.')
+// A aplicação usa DATABASE_URL em runtime. Migrar com sucesso e publicar sem
+// ela daria um site que falha em toda página, então as duas são exigidas aqui.
+if (!direta || !process.env.DATABASE_URL?.trim()) {
+  // Só nomes e se estão vazias: valor de variável de banco é segredo e não vai
+  // para log de build.
+  const encontradas = Object.keys(process.env)
+    .filter((nome) => /DATABASE|POSTGRES/.test(nome))
+    .sort()
+    .map((nome) => `${nome} (${process.env[nome]?.trim() ? 'preenchida' : 'vazia'})`)
+
+  console.error(
+    [
+      'O banco da homologação não está configurado no ambiente Production da Vercel.',
+      `Variáveis de banco encontradas: ${encontradas.length ? encontradas.join(', ') : 'nenhuma'}.`,
+      'Esperado: DATABASE_URL e DATABASE_URL_UNPOOLED preenchidas, criadas ao conectar o',
+      'Postgres ao ambiente Production, sem prefixo personalizado. Se uma DATABASE_URL vazia',
+      'já existia no projeto, apague-a e conecte o banco de novo.',
+      'Ver docs/12-homologacao-vercel.md, passo 1.',
+    ].join('\n'),
+  )
   process.exit(1)
 }
 
