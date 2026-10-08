@@ -36,43 +36,80 @@ const listaDeDominios = z
       .filter(Boolean),
   )
 
-const schema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+/** A fase em que o Next roda o `next build`. */
+const FASE_DE_BUILD = 'phase-production-build'
 
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
+const schema = (durandoBuild: boolean) =>
+  z.object({
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
-  AUTH_SECRET: z.string().default(''),
-  AUTH_URL: z.string().url().optional(),
-  AUTH_OIDC_ISSUER: z.string().default(''),
-  AUTH_OIDC_CLIENT_ID: z.string().default(''),
-  AUTH_OIDC_CLIENT_SECRET: z.string().default(''),
-  AUTH_OIDC_NAME: z.string().default('AUVP SSO'),
-  AUTH_OIDC_GROUPS_CLAIM: z.string().default(''),
-  AUTH_DEV_BYPASS: booleano,
-  AUTH_ALLOWED_EMAIL_DOMAINS: listaDeDominios,
+    // O build não abre conexão: o Next só importa as rotas para coletar
+    // metadados. Exigir o banco ali obrigaria todo lugar que compila, CI,
+    // imagem Docker, Vercel, a ter um endereço em mãos, mesmo que falso.
+    DATABASE_URL: durandoBuild
+      ? z.string().default('')
+      : z.string().min(1, 'DATABASE_URL é obrigatória'),
 
-  BOOTSTRAP_ADMIN_EMAILS: listaDeEmails,
+    AUTH_SECRET: z.string().default(''),
+    AUTH_URL: z.string().url().optional(),
+    AUTH_OIDC_ISSUER: z.string().default(''),
+    AUTH_OIDC_CLIENT_ID: z.string().default(''),
+    AUTH_OIDC_CLIENT_SECRET: z.string().default(''),
+    AUTH_OIDC_NAME: z.string().default('AUVP SSO'),
+    AUTH_OIDC_GROUPS_CLAIM: z.string().default(''),
+    AUTH_DEV_BYPASS: booleano,
+    AUTH_ALLOWED_EMAIL_DOMAINS: listaDeDominios,
 
-  STORAGE_ENDPOINT: z.string().default(''),
-  STORAGE_REGION: z.string().default('us-east-1'),
-  STORAGE_BUCKET: z.string().default(''),
-  STORAGE_ACCESS_KEY_ID: z.string().default(''),
-  STORAGE_SECRET_ACCESS_KEY: z.string().default(''),
+    BOOTSTRAP_ADMIN_EMAILS: listaDeEmails,
 
-  CATALOG_PROVIDER: z.enum(['local', 'tiny']).default('local'),
-  CLIENT_PROVIDER: z.enum(['local', 'salesforce']).default('local'),
+    STORAGE_ENDPOINT: z.string().default(''),
+    STORAGE_REGION: z.string().default('us-east-1'),
+    STORAGE_BUCKET: z.string().default(''),
+    STORAGE_ACCESS_KEY_ID: z.string().default(''),
+    STORAGE_SECRET_ACCESS_KEY: z.string().default(''),
 
-  TINY_API_TOKEN: z.string().default(''),
-  TINY_API_BASE_URL: z.string().default('https://api.tiny.com.br/api2'),
-  SALESFORCE_INSTANCE_URL: z.string().default(''),
-  SALESFORCE_CLIENT_ID: z.string().default(''),
-  SALESFORCE_CLIENT_SECRET: z.string().default(''),
+    CATALOG_PROVIDER: z.enum(['local', 'tiny']).default('local'),
+    CLIENT_PROVIDER: z.enum(['local', 'salesforce']).default('local'),
 
-  VIACEP_BASE_URL: z.string().default('https://viacep.com.br/ws'),
-})
+    TINY_API_TOKEN: z.string().default(''),
+    TINY_API_BASE_URL: z.string().default('https://api.tiny.com.br/api2'),
+    SALESFORCE_INSTANCE_URL: z.string().default(''),
+    SALESFORCE_CLIENT_ID: z.string().default(''),
+    SALESFORCE_CLIENT_SECRET: z.string().default(''),
 
-function carregar() {
-  const parsed = schema.safeParse(process.env)
+    VIACEP_BASE_URL: z.string().default('https://viacep.com.br/ws'),
+  })
+
+/**
+ * Variável vazia é variável ausente.
+ *
+ * Painel de plataforma (Vercel, Railway) e `.env` copiado do exemplo costumam
+ * criar a chave sem valor. Sem esta limpeza, `AUTH_URL=""` falha como URL
+ * inválida e `CATALOG_PROVIDER=""` como opção desconhecida, em vez de cair no
+ * valor padrão que vale quando a variável não existe.
+ */
+export function semVazias(
+  fonte: Record<string, string | undefined>,
+): Record<string, string | undefined> {
+  return Object.fromEntries(
+    Object.entries(fonte).filter(([, valor]) => valor !== undefined && valor.trim() !== ''),
+  )
+}
+
+/**
+ * Lê e valida a configuração. Recebe a fonte e a fase como parâmetros para
+ * poder ser testada sem mexer no `process.env` do próprio teste.
+ */
+export function carregarEnv(
+  fonte: Record<string, string | undefined>,
+  fase: string | undefined = undefined,
+) {
+  // Durante `next build` o Next importa cada rota para coletar metadados, com
+  // NODE_ENV=production. Exigir credencial de runtime aí obrigaria o build a
+  // ter os segredos em mãos, o que quebraria CI e imagem Docker. As exigências
+  // de produção valem no processo que serve a aplicação, não no que a compila.
+  const durandoBuild = fase === FASE_DE_BUILD
+  const parsed = schema(durandoBuild).safeParse(semVazias(fonte))
 
   if (!parsed.success) {
     const detalhes = parsed.error.issues
@@ -82,12 +119,6 @@ function carregar() {
   }
 
   const env = parsed.data
-
-  // Durante `next build` o Next importa cada rota para coletar metadados, com
-  // NODE_ENV=production. Exigir credencial de runtime aí obrigaria o build a
-  // ter os segredos em mãos, o que quebraria CI e imagem Docker. As exigências
-  // de produção valem no processo que serve a aplicação, não no que a compila.
-  const durandoBuild = process.env.NEXT_PHASE === 'phase-production-build'
 
   if (env.NODE_ENV === 'production' && !durandoBuild) {
     const faltando: string[] = []
@@ -114,7 +145,7 @@ function carregar() {
   return env
 }
 
-export const env = carregar()
+export const env = carregarEnv(process.env, process.env.NEXT_PHASE)
 
 /** O SSO só está utilizável quando o client OIDC inteiro foi configurado. */
 export const ssoConfigurado =
