@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Anek_Latin, Roboto, Sora } from 'next/font/google'
 import { usuarioAtual } from '@/lib/auth-guards'
+import { modoDemonstracao } from '@/lib/env'
 import { Nav } from '@/components/nav'
 import { Transicao } from '@/components/transicao'
 import './globals.css'
@@ -56,6 +57,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       {/* Mesma casca da Central: fundo liso, header sticky, conteúdo em 7xl e
           rodapé. Os cards se separam pela borda, não por contraste de fundo. */}
       <body className="bg-background flex min-h-screen flex-col antialiased">
+        {/* Ninguém pode confundir a demonstração com a ferramenta de verdade:
+            quem testa precisa saber que o que aprova e exclui é fictício. */}
+        {modoDemonstracao && usuario ? (
+          <div className="bg-warning/15 border-warning/30 border-b px-4 py-2 text-center text-sm">
+            <strong>Demonstração.</strong> Dados fictícios: pode aprovar, editar e exportar à
+            vontade.
+          </div>
+        ) : null}
         {usuario ? <Nav perfil={usuario.perfil} nome={usuario.nome} /> : null}
 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 md:px-8">

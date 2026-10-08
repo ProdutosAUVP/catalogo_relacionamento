@@ -4,7 +4,8 @@ import Credentials from 'next-auth/providers/credentials'
 import { Perfil } from '@prisma/client'
 import { emailPodeEntrar } from './acesso-sso'
 import { db } from './db'
-import { devBypassHabilitado, env, ssoConfigurado } from './env'
+import { usuarioDaDemonstracao } from './demonstracao'
+import { devBypassHabilitado, env, modoDemonstracao, ssoConfigurado } from './env'
 
 /**
  * Autenticação por SSO da AUVP (OIDC). Não existe senha própria.
@@ -68,6 +69,24 @@ function montarProviders(): Provider[] {
     )
   }
 
+  // Demonstração: entra quem escolhe um dos perfis fictícios na tela de login.
+  // Nenhum e-mail fora de `USUARIOS_DA_DEMONSTRACAO` passa, e o modo só liga
+  // na Vercel (ver as travas em env.ts).
+  if (modoDemonstracao) {
+    providers.push(
+      Credentials({
+        id: 'demonstracao',
+        name: 'Demonstração',
+        credentials: { email: { label: 'E-mail', type: 'email' } },
+        authorize: async (credenciais) => {
+          const usuario = usuarioDaDemonstracao(credenciais?.email)
+          if (!usuario) return null
+          return { id: usuario.email, email: usuario.email, name: usuario.nome }
+        },
+      }),
+    )
+  }
+
   return providers
 }
 
@@ -82,6 +101,8 @@ export async function sincronizarUsuario(dados: {
   email: string
   nome: string
   ssoSubject?: string | null
+  /** Perfil de quem ainda não existe. Só a demonstração usa: o perfil do cartão. */
+  perfilInicial?: Perfil
 }) {
   const email = dados.email.trim().toLowerCase()
   const ehBootstrapAdmin = env.BOOTSTRAP_ADMIN_EMAILS.includes(email)
@@ -92,7 +113,7 @@ export async function sincronizarUsuario(dados: {
       email,
       nome: dados.nome || email,
       ssoSubject: dados.ssoSubject ?? null,
-      perfil: ehBootstrapAdmin ? Perfil.admin : Perfil.consultor,
+      perfil: ehBootstrapAdmin ? Perfil.admin : (dados.perfilInicial ?? Perfil.consultor),
     },
     update: {
       // O nome acompanha o provedor de identidade. Perfil e limite mensal, não:
@@ -113,7 +134,7 @@ export const authConfig: NextAuthConfig = {
   pages: { signIn: '/login', error: '/login' },
   trustHost: true,
   callbacks: {
-    async signIn({ user, profile }) {
+    async signIn({ user, profile, account }) {
       const email = (user.email ?? profile?.email)?.toLowerCase()
       if (!email) return false
 
@@ -125,6 +146,8 @@ export const authConfig: NextAuthConfig = {
         email,
         nome: user.name ?? profile?.name ?? '',
         ssoSubject: profile?.sub ?? null,
+        perfilInicial:
+          account?.provider === 'demonstracao' ? usuarioDaDemonstracao(email)?.perfil : undefined,
       })
 
       // Usuário desativado pelo Admin não entra, mesmo com SSO válido.

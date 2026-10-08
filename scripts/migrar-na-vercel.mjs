@@ -48,10 +48,22 @@ if (!direta || !process.env.DATABASE_URL?.trim()) {
   process.exit(1)
 }
 
-const resultado = spawnSync('npx', ['prisma', 'migrate', 'deploy'], {
-  stdio: 'inherit',
-  shell: true,
-  env: { ...process.env, DATABASE_URL: direta },
-})
+function rodar(comando, args) {
+  const resultado = spawnSync(comando, args, {
+    stdio: 'inherit',
+    shell: true,
+    env: { ...process.env, DATABASE_URL: direta },
+  })
+  if (resultado.status !== 0) process.exit(resultado.status ?? 1)
+}
 
-process.exit(resultado.status ?? 1)
+rodar('npx', ['prisma', 'migrate', 'deploy'])
+
+// Na demonstração, cada deploy recarrega os dados fictícios: as demandas da
+// Logística acompanham a data do dia, e o que alguém apagou ou mudou testando
+// volta. O seed é idempotente. Fora da demonstração ele nunca roda aqui: na
+// homologação com SSO os dados são os que a área cadastrar.
+if (process.env.MODO_DEMONSTRACAO === 'true') {
+  console.log('Modo demonstração: recarregando os dados fictícios.')
+  rodar('npm', ['run', 'db:seed'])
+}

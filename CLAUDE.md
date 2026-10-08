@@ -84,6 +84,10 @@ Coisas que o código já garante e que não devem ser afrouxadas:
   se contorna digitando qualquer coisa não é trava. A tela impede e
   `criarSolicitacao` valida de novo.
 
+- **Modo demonstração só na homologação.** `MODO_DEMONSTRACAO` troca o SSO
+  por cartões de perfil fictícios (`src/lib/demonstracao.ts`); `env.ts` recusa
+  subir fora da Vercel ou no endereço da produção. Não afrouxe essas travas.
+
 - **Rastreio não muda status.** Gravar o código diz que saiu; "entregue" é
   decisão de quem acompanha.
 - **Telas leem catálogo e clientes pelos providers**, não pelo Prisma direto.
@@ -93,7 +97,9 @@ Coisas que o código já garante e que não devem ser afrouxadas:
   aplicação inteira. A entrada de conteúdo parte de `opacity: 0.65`, não de
   zero, e só roda na troca de rota. Na vitrine, `render()` só recria o elemento
   animado quando a tela muda, senão digitar uma letra reabriria a página.
-- **Movimento não pode gerar layout shift.** Anime só `opacity` e `transform`.
+- **Movimento não pode gerar layout shift.** Anime só `opacity` e `transform`,
+  e a entrada de rota só `opacity`: `transform` no wrapper da transição prende
+  todo `position: fixed` da página a ele (o login ficava numa faixa de 80 px).
   Todo `loading.tsx` reserva as medidas exatas do conteúdo, e toda imagem tem
   proporção e dimensões declaradas. O CLS medido hoje é ≤ 0,0031, com um
   contexto de navegador novo por rota, porque `addInitScript` é cumulativo e

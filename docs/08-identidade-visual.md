@@ -81,7 +81,9 @@ a tela apagar e reacender. As três causas, e o que fecha cada uma:
    novo vem.
 2. **Entrada partindo do transparente.** `entrada-de-conteudo` começa em
    `opacity: 0.65`, e não em zero: sair do nada e voltar apaga a tela por um
-   instante. O que se vê agora é o conteúdo assentando.
+   instante. O que se vê agora é o conteúdo assentando. Só opacidade, sem
+   deslize: um `transform` no wrapper prende todo `position: fixed` da página
+   a ele, e o login, que ocupa a tela inteira, ficava espremido numa faixa.
 3. **Reanimar a cada estado, e não a cada tela.** Na vitrine, `render()` roda a
    cada clique e a cada tecla; ela só recria o elemento com `animar-entrada`
    quando a tela muda de verdade. Repetir a animação a cada atualização fazia a

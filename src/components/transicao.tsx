@@ -9,7 +9,9 @@ import { usePathname } from 'next/navigation'
  * elemento persiste entre navegações e a animação só aconteceria na primeira
  * carga.
  *
- * A animação em si é `opacity` + `transform`, ambas fora do cálculo de layout.
+ * A animação é só de `opacity`, fora do cálculo de layout. Nada de
+ * `transform` aqui: ele prenderia todo `position: fixed` da página a este div.
+ *
  * O esqueleto de `loading.tsx` entra com a mesma transição, então a sequência
  *: esqueleto, depois conteúdo: é contínua, e as duas etapas ocupam
  * exatamente o mesmo espaço.

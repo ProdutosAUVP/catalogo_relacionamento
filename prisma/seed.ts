@@ -4,8 +4,9 @@
 // carga em produção com `DATABASE_URL=... npm run db:catalogo` não muda.
 import 'dotenv/config'
 import { existsSync, readdirSync } from 'node:fs'
-import { PrismaClient, MotivoEnvio, Perfil, StatusSolicitacao, TipoValor } from '@prisma/client'
+import { PrismaClient, MotivoEnvio, StatusSolicitacao, TipoValor } from '@prisma/client'
 import { formatarCodigo } from '../src/lib/codigo'
+import { USUARIOS_DA_DEMONSTRACAO } from '../src/lib/demonstracao'
 import { totalDosItens } from '../src/lib/money'
 import { CATALOGO_AUVP, CATEGORIAS_AUVP, slugDoProduto } from './catalogo-auvp'
 import { semearLogistica } from './exemplo-logistica'
@@ -32,23 +33,8 @@ const db = new PrismaClient()
  * O catálogo real da área vive em `prisma/catalogo-auvp.ts`, transcrito da
  * planilha "Lista de Produtos". Aqui só se grava.
  */
-const USUARIOS = [
-  { nome: 'Bia Relacionamento', email: 'bia@auvp.com.br', perfil: Perfil.admin },
-  { nome: 'Financeiro AUVP', email: 'financeiro@auvp.com.br', perfil: Perfil.financeiro },
-  { nome: 'Logística AUVP', email: 'logistica@auvp.com.br', perfil: Perfil.logistica },
-  {
-    nome: 'Carlos Consultor',
-    email: 'carlos@auvp.com.br',
-    perfil: Perfil.consultor,
-    limiteMensal: '5000.00',
-  },
-  {
-    nome: 'Fernanda Consultora',
-    email: 'fernanda@auvp.com.br',
-    perfil: Perfil.consultor,
-    limiteMensal: '3000.00',
-  },
-]
+// Os mesmos que entram no modo demonstração, ver src/lib/demonstracao.ts.
+const USUARIOS = USUARIOS_DA_DEMONSTRACAO
 
 // CPFs com dígitos verificadores válidos, a validação recusaria fictícios.
 const CLIENTES = [
