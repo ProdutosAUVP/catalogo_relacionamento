@@ -17,6 +17,7 @@ import {
   Users,
   UserSquare,
   Table2,
+  Warehouse,
   type LucideIcon,
 } from 'lucide-react'
 import { Olho } from '@/components/marca/olho'
@@ -90,6 +91,14 @@ const PRINCIPAIS: readonly ItemDeMenu[] = [
     descricao: 'Pedidos prontos para separar, com endereço de envio',
     icone: Truck,
     acao: 'expedicao.verFila',
+  },
+  {
+    id: 'logistica',
+    href: '/logistica',
+    rotulo: 'Logística',
+    descricao: 'Status da operação, volume, demandas e equipe',
+    icone: Warehouse,
+    acao: 'logistica.ver',
   },
   {
     id: 'gestao',

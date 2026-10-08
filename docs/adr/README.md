@@ -10,3 +10,5 @@ o contexto, o que foi decidido e o que se abre mão.
 - [0005: Perfil e limite fora do provedor de identidade](0005-perfil-fora-do-sso.md)
 - [0006: Identidade vem do Design System AUVP, portada](0006-identidade-do-design-system-auvp.md)
 - [0007: Fotos de produto no Postgres, não em bucket](0007-fotos-no-banco.md)
+- [0008: Logística como módulo desta aplicação](0008-logistica-no-mesmo-app.md)
+- [0009: Integrações externas por fila no banco](0009-integracoes-por-fila.md)

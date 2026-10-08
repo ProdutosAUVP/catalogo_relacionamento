@@ -9,7 +9,7 @@
 const FUSO = 'America/Sao_Paulo'
 
 /** Partes ano/mês/dia de um instante, já no fuso de São Paulo. */
-function partesLocais(data: Date): { ano: number; mes: number; dia: number } {
+export function partesLocais(data: Date): { ano: number; mes: number; dia: number } {
   const fmt = new Intl.DateTimeFormat('en-CA', {
     timeZone: FUSO,
     year: 'numeric',
@@ -31,7 +31,8 @@ function offsetEmMinutos(data: Date): number {
   return (utc.getTime() - local.getTime()) / 60_000
 }
 
-function instanteLocal(ano: number, mes: number, dia: number): Date {
+/** Meia-noite de São Paulo no dia dado, como instante UTC. */
+export function instanteLocal(ano: number, mes: number, dia: number): Date {
   const palpite = new Date(Date.UTC(ano, mes - 1, dia, 0, 0, 0, 0))
   return new Date(palpite.getTime() + offsetEmMinutos(palpite) * 60_000)
 }

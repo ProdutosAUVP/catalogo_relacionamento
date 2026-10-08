@@ -23,6 +23,7 @@ duplique numa tela.
 | Gasto do mês e limite           | `src/lib/saldo.ts`               |
 | Fila de compras do Financeiro   | `src/lib/compras.ts`             |
 | Fila da expedição               | `src/lib/expedicao.ts`           |
+| Período do Dashboard Logístico  | `src/lib/periodo.ts`             |
 | Kit que exige bebida junto      | `src/lib/acompanhamentos.ts`     |
 | Modelos e montagem da carta     | `src/lib/carta.ts`               |
 | Fornecedor padrão por categoria | `src/lib/fornecedores.ts`        |
@@ -51,7 +52,9 @@ Coisas que o código já garante e que não devem ser afrouxadas:
   usuário existir no banco. Não confie no client OIDC estar fechado no
   provedor; produção não sobe sem `AUTH_ALLOWED_EMAIL_DOMAINS`.
 - **Consultor só enxerga as próprias solicitações.** Use
-  `filtroDeSolicitacoes`, não um `where` escrito à mão.
+  `filtroDeSolicitacoes`, não um `where` escrito à mão. Nulo quer dizer
+  **nenhuma**, e não todas: a Logística tem escopo nulo, e um `?? {}` abriria
+  todas as solicitações para ela.
 - **Preço de item vem do banco na hora de gravar.** `criarSolicitacao` relê o
   produto; valor que chega do navegador não é usado.
 - **Tudo conta no saldo do mês**, cancelado e devolvido inclusive, a área
@@ -149,6 +152,18 @@ O que continua fora do V1, por decisão registrada em
 integração com o sistema da expedição (que escreveria rastreio e status sem
 digitação) e as integrações da fase 2 (Tiny e Salesforce, que já têm provider e
 campos reservados).
+
+## Logística
+
+Módulo do time de Logística, na mesma aplicação ([ADR 0008](docs/adr/0008-logistica-no-mesmo-app.md)):
+o Dashboard Logístico em `/logistica`, que todos os perfis leem, e o perfil
+`logistica`, que opera a expedição. Ver `docs/11-logistica.md`.
+
+- **Um período só** filtra o painel inteiro e a exportação, e mora na URL. Toda
+  conta de semana, mês ou intervalo passa por `src/lib/periodo.ts`: semana
+  ISO, calendário de São Paulo, intervalo `[inicio, fim)`.
+- **Integração externa não trava a aprovação.** ClickUp e Tiny entram por fila
+  no banco, gravada na mesma transação da mudança de status ([ADR 0009](docs/adr/0009-integracoes-por-fila.md)).
 
 ## Catálogo e fotos
 
