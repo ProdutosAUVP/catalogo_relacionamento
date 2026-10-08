@@ -2,9 +2,11 @@
 
 > **Produção é publicada pela TI** em
 > `https://catalogo-relacionamento.prod.auvp.net`. O guia que ela segue, com a
-> configuração do Keycloak, está em [entrega para a TI](10-entrega-ti.md). O
-> caminho pelo Railway abaixo continua valendo para um ambiente de
-> homologação, ou se a TI preferir essa plataforma.
+> configuração do Keycloak, está em [entrega para a TI](10-entrega-ti.md).
+>
+> **A homologação roda na Vercel**, a cada merge no `main`:
+> [homologação na Vercel](12-homologacao-vercel.md). O caminho pelo Railway
+> abaixo fica como alternativa, se a TI preferir essa plataforma.
 
 Dois destinos, com propósitos diferentes.
 

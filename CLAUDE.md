@@ -187,6 +187,9 @@ de HEIC: não é preciso apagar o original ruim.
 
 `demo/` é uma demonstração com dados fictícios publicada no GitHub Pages, para
 mostrar as telas a quem aprova o V1. **A aplicação real não roda no Pages**,
-ela precisa de Postgres, sessão e servidor, e vai para o Railway.
+ela precisa de Postgres, sessão e servidor. A produção é da TI, por Docker
+(`docs/10-entrega-ti.md`); a homologação é a Vercel, a cada merge no `main`
+(`docs/12-homologacao-vercel.md`). Migration nova roda sozinha nas duas: no
+`docker-entrypoint.sh` e no `npm run vercel-build`.
 
 Ao mudar uma tela de forma relevante, vale refletir na vitrine.
